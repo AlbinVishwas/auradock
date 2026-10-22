@@ -3,9 +3,6 @@ agp             = "8.3.0"
 kotlin          = "1.9.22"
 ksp             = "1.9.22-1.0.17"
 hilt            = "2.50"
-hiltWork        = "1.2.0"
-room            = "2.6.1"
-workmanager     = "2.9.0"
 coroutines      = "1.7.3"
 lifecycle       = "2.7.0"
 coreKtx         = "1.12.0"
@@ -23,12 +20,6 @@ core-ktx                = { group = "androidx.core",                 name = "cor
 appcompat               = { group = "androidx.appcompat",            name = "appcompat",                     version.ref = "appcompat" }
 hilt-android            = { group = "com.google.dagger",             name = "hilt-android",                  version.ref = "hilt" }
 hilt-compiler           = { group = "com.google.dagger",             name = "hilt-android-compiler",         version.ref = "hilt" }
-hilt-work               = { group = "androidx.hilt",                 name = "hilt-work",                     version.ref = "hiltWork" }
-hilt-work-compiler      = { group = "androidx.hilt",                 name = "hilt-compiler",                 version.ref = "hiltWork" }
-room-runtime            = { group = "androidx.room",                 name = "room-runtime",                  version.ref = "room" }
-room-ktx                = { group = "androidx.room",                 name = "room-ktx",                      version.ref = "room" }
-room-compiler           = { group = "androidx.room",                 name = "room-compiler",                 version.ref = "room" }
-workmanager-ktx         = { group = "androidx.work",                 name = "work-runtime-ktx",              version.ref = "workmanager" }
 coroutines-android      = { group = "org.jetbrains.kotlinx",         name = "kotlinx-coroutines-android",    version.ref = "coroutines" }
 lifecycle-viewmodel     = { group = "androidx.lifecycle",            name = "lifecycle-viewmodel-ktx",       version.ref = "lifecycle" }
 lifecycle-runtime       = { group = "androidx.lifecycle",            name = "lifecycle-runtime-ktx",         version.ref = "lifecycle" }

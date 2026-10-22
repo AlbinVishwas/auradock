@@ -7,15 +7,11 @@ import com.auradock.data.CalendarEvent
 import com.auradock.data.CalendarRepository
 import com.auradock.data.NotificationItem
 import com.auradock.data.NotificationRepository
-import com.auradock.core.StandbyController
-import com.auradock.core.StandbyState as CoreStandbyState
 import com.auradock.standby.StandbyState
 import com.auradock.standby.StandbyTriggerMode
 import com.auradock.ui.template.StandbyTemplate
 import com.auradock.ui.template.TemplateDefaults
 import com.auradock.ui.template.sanitizedForStandby
-import com.auradock.widget.WidgetData
-import com.auradock.widget.WidgetManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -31,15 +27,9 @@ import javax.inject.Inject
 
 @HiltViewModel
 class StandbyViewModel @Inject constructor(
-    private val controller: StandbyController,
-    private val widgetManager: WidgetManager,
     private val calendarRepository: CalendarRepository,
     private val notificationRepository: NotificationRepository
 ) : ViewModel() {
-
-    val coreStandbyState: StateFlow<CoreStandbyState> = controller.state
-
-    val widgetDataFlow: SharedFlow<WidgetData> = widgetManager.widgetDataFlow
 
     private val _currentTemplate = MutableStateFlow(TemplateDefaults.Minimal.sanitizedForStandby())
     val currentTemplate: StateFlow<StandbyTemplate> = _currentTemplate.asStateFlow()
