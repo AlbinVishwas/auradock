@@ -64,6 +64,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             AuraDockTheme {
                 val currentTemplate by standbyViewModel.currentTemplate.collectAsState()
+                val timeMillis by standbyViewModel.currentTimeMillis.collectAsState()
                 val standbyState by standbyViewModel.standbyState.collectAsState()
                 val triggerMode by standbyViewModel.standbyTriggerMode.collectAsState()
                 val todayEvents by standbyViewModel.todayEvents.collectAsState()
@@ -128,6 +129,7 @@ class MainActivity : ComponentActivity() {
                     when (mode) {
                         "standby" -> StandbyScreen(
                             template = currentTemplate,
+                            timeMillis = timeMillis,
                             todayEvents = todayEvents,
                             calendarPermissionState = calendarPermissionState,
                             importantNotifications = importantNotifications,
@@ -146,6 +148,7 @@ class MainActivity : ComponentActivity() {
 
                         else -> DashboardScreen(
                             currentTemplate = currentTemplate,
+                            timeMillis = timeMillis,
                             todayEvents = todayEvents,
                             calendarPermissionState = calendarPermissionState,
                             importantNotifications = importantNotifications,

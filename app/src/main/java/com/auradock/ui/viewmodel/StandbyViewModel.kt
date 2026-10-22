@@ -9,6 +9,7 @@ import com.auradock.data.NotificationItem
 import com.auradock.data.NotificationRepository
 import com.auradock.standby.StandbyState
 import com.auradock.standby.StandbyTriggerManager
+import com.auradock.time.MinuteClock
 import com.auradock.standby.StandbyTriggerMode
 import com.auradock.ui.template.StandbyTemplate
 import com.auradock.ui.template.TemplateDefaults
@@ -32,8 +33,13 @@ import javax.inject.Inject
 class StandbyViewModel @Inject constructor(
     @ApplicationContext context: Context,
     private val calendarRepository: CalendarRepository,
-    private val notificationRepository: NotificationRepository
+    private val notificationRepository: NotificationRepository,
+    minuteClock: MinuteClock
 ) : ViewModel() {
+
+    /** Current time, refreshed at the start of every minute. Shared by the clock, preview and dashboard date. */
+    val currentTimeMillis: StateFlow<Long> = minuteClock.minutes
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), minuteClock.currentMillis())
 
     private val _currentTemplate = MutableStateFlow(TemplateDefaults.Minimal.sanitizedForStandby())
     val currentTemplate: StateFlow<StandbyTemplate> = _currentTemplate.asStateFlow()

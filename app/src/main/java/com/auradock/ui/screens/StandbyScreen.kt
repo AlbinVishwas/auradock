@@ -21,6 +21,7 @@ import com.auradock.ui.viewmodel.CalendarPermissionUiState
 @Composable
 fun StandbyScreen(
     template: StandbyTemplate,
+    timeMillis: Long,
     todayEvents: List<CalendarEvent> = emptyList(),
     calendarPermissionState: CalendarPermissionUiState = CalendarPermissionUiState.DENIED,
     importantNotifications: List<NotificationItem> = emptyList(),
@@ -43,6 +44,7 @@ fun StandbyScreen(
     ) {
         TemplateRenderer(
             template = template,
+            timeMillis = timeMillis,
             todayEvents = todayEvents,
             calendarPermissionState = calendarPermissionState,
             importantNotifications = importantNotifications,

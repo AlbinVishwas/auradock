@@ -33,6 +33,7 @@ import com.auradock.data.CalendarEvent
 import com.auradock.data.NotificationItem
 import com.auradock.standby.StandbyTriggerMode
 import com.auradock.ui.components.QuickActionButton
+import com.auradock.time.formatDashboardDate
 import com.auradock.ui.components.ScaledPreview
 import com.auradock.ui.components.StandbyPreviewCard
 import com.auradock.ui.components.TodaySnapshotCard
@@ -48,6 +49,7 @@ import com.auradock.ui.viewmodel.VoiceState
 @Composable
 fun DashboardScreen(
     currentTemplate: StandbyTemplate,
+    timeMillis: Long,
     modifier: Modifier = Modifier,
     todayEvents: List<CalendarEvent> = emptyList(),
     calendarPermissionState: CalendarPermissionUiState = CalendarPermissionUiState.DENIED,
@@ -73,7 +75,7 @@ fun DashboardScreen(
         }
     }
 
-    val dateText = "Tuesday • March 12"
+    val dateText = formatDashboardDate(timeMillis)
     val pulseTransition = rememberInfiniteTransition(label = "voicePulse")
     val micScale by pulseTransition.animateFloat(
         initialValue = 1f,
@@ -164,6 +166,7 @@ fun DashboardScreen(
             ScaledPreview(designWidth = 800.dp) {
                 TemplateRenderer(
                     template = currentTemplate,
+                    timeMillis = timeMillis,
                     todayEvents = todayEvents,
                     calendarPermissionState = calendarPermissionState,
                     importantNotifications = importantNotifications,
@@ -183,6 +186,6 @@ fun DashboardScreen(
 @Composable
 private fun DashboardScreenPreview() {
     AuraDockTheme {
-        DashboardScreen(currentTemplate = TemplateDefaults.Split)
+        DashboardScreen(currentTemplate = TemplateDefaults.Split, timeMillis = System.currentTimeMillis())
     }
 }

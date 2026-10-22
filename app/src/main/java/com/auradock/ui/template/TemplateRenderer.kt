@@ -49,6 +49,7 @@ fun WidgetPosition.toLayoutSlot(): LayoutSlot = when (this) {
 @Composable
 fun TemplateRenderer(
     template: StandbyTemplate,
+    timeMillis: Long,
     todayEvents: List<CalendarEvent> = emptyList(),
     calendarPermissionState: CalendarPermissionUiState = CalendarPermissionUiState.DENIED,
     importantNotifications: List<NotificationItem> = emptyList(),
@@ -73,6 +74,7 @@ fun TemplateRenderer(
                     contentAlignment = Alignment.Center
                 ) {
                     RenderWidget(
+                        timeMillis = timeMillis,
                         widget = renderPlan.widgets.firstOrNull(),
                         todayEvents = todayEvents,
                         calendarPermissionState = calendarPermissionState,
@@ -91,6 +93,7 @@ fun TemplateRenderer(
                     horizontalArrangement = Arrangement.spacedBy(spacing.md)
                 ) {
                     RenderWidget(
+                        timeMillis = timeMillis,
                         widget = renderPlan.widgets.getOrNull(0),
                         todayEvents = todayEvents,
                         calendarPermissionState = calendarPermissionState,
@@ -101,6 +104,7 @@ fun TemplateRenderer(
                         modifier = Modifier.weight(1f)
                     )
                     RenderWidget(
+                        timeMillis = timeMillis,
                         widget = renderPlan.widgets.getOrNull(1),
                         todayEvents = todayEvents,
                         calendarPermissionState = calendarPermissionState,
@@ -116,6 +120,7 @@ fun TemplateRenderer(
             LayoutType.FOCUS -> {
                 Column(modifier = Modifier.fillMaxSize()) {
                     RenderWidget(
+                        timeMillis = timeMillis,
                         widget = renderPlan.widgets.firstOrNull(),
                         todayEvents = todayEvents,
                         calendarPermissionState = calendarPermissionState,
@@ -135,6 +140,7 @@ fun TemplateRenderer(
                     horizontalArrangement = Arrangement.spacedBy(spacing.md)
                 ) {
                     RenderWidget(
+                        timeMillis = timeMillis,
                         widget = renderPlan.widgets.getOrNull(0),
                         todayEvents = todayEvents,
                         calendarPermissionState = calendarPermissionState,
@@ -145,6 +151,7 @@ fun TemplateRenderer(
                         modifier = Modifier.weight(1f)
                     )
                     RenderWidget(
+                        timeMillis = timeMillis,
                         widget = renderPlan.widgets.getOrNull(1),
                         todayEvents = todayEvents,
                         calendarPermissionState = calendarPermissionState,
@@ -163,6 +170,7 @@ fun TemplateRenderer(
 @Composable
 fun RenderWidget(
     widget: WidgetConfig?,
+    timeMillis: Long,
     todayEvents: List<CalendarEvent>,
     calendarPermissionState: CalendarPermissionUiState,
     importantNotifications: List<NotificationItem>,
@@ -184,7 +192,7 @@ fun RenderWidget(
     ) {
         GlassCard(modifier = modifier.fillMaxSize()) {
             when (widget?.type) {
-                WidgetType.CLOCK -> ClockWidget(timeMillis = System.currentTimeMillis(), modifier = Modifier.fillMaxSize())
+                WidgetType.CLOCK -> ClockWidget(timeMillis = timeMillis, modifier = Modifier.fillMaxSize())
                 WidgetType.WEATHER -> WeatherWidget(state = defaultWeatherState(), modifier = Modifier.fillMaxSize())
                 WidgetType.CALENDAR -> CalendarWidget(
                     todayEvents = todayEvents,
@@ -198,7 +206,7 @@ fun RenderWidget(
                     onOpenNotificationSettings = onOpenNotificationSettings,
                     modifier = Modifier.fillMaxSize()
                 )
-                null -> ClockWidget(timeMillis = System.currentTimeMillis(), modifier = Modifier.fillMaxSize())
+                null -> ClockWidget(timeMillis = timeMillis, modifier = Modifier.fillMaxSize())
             }
         }
     }

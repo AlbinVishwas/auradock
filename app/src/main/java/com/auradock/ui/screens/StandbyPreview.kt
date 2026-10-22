@@ -14,7 +14,7 @@ import com.auradock.ui.theme.AuraDockTheme
 @Composable
 fun StandbyPreview() {
     AuraDockTheme {
-        StandbyScreen(template = TemplateDefaults.Split)
+        StandbyScreen(template = TemplateDefaults.Split, timeMillis = System.currentTimeMillis())
     }
 }
 
@@ -27,6 +27,6 @@ fun StandbyPreview() {
 @Composable
 fun StandbyMinimalPreview() {
     AuraDockTheme {
-        StandbyScreen(template = TemplateDefaults.Minimal)
+        StandbyScreen(template = TemplateDefaults.Minimal, timeMillis = System.currentTimeMillis())
     }
 }
