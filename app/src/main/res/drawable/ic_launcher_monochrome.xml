@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- PLACEHOLDER single-color version for Android 13+ "themed icons"; the system tints it. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <path
+        android:pathData="M38,52 a16,16 0 1,0 32,0 a16,16 0 1,0 -32,0"
+        android:strokeColor="#FFFFFFFF"
+        android:strokeWidth="3.4" />
+    <path
+        android:pathData="M54,52 L54,42 M54,52 L60.5,56"
+        android:strokeColor="#FFFFFFFF"
+        android:strokeWidth="2.6"
+        android:strokeLineCap="round" />
+    <path
+        android:pathData="M42,81 h24 a2,2 0 0 1 2,2 a2,2 0 0 1 -2,2 h-24 a2,2 0 0 1 -2,-2 a2,2 0 0 1 2,-2 z"
+        android:fillColor="#FFFFFFFF" />
+</vector>

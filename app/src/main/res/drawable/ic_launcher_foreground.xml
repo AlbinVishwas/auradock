@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  PLACEHOLDER launcher icon foreground. Everything sits inside the 66dp safe zone (21..87 of the
+  108dp canvas) so no launcher mask can crop it: a glass card holding a glowing "aura" ring with
+  clock hands, resting on a small dock bar.
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- glass card -->
+    <path
+        android:pathData="M36,32 h36 a8,8 0 0 1 8,8 v26 a8,8 0 0 1 -8,8 h-36 a8,8 0 0 1 -8,-8 v-26 a8,8 0 0 1 8,-8 z"
+        android:fillColor="#14FFFFFF"
+        android:strokeColor="#2EFFFFFF"
+        android:strokeWidth="0.8" />
+
+    <!-- soft outer glow of the ring -->
+    <path
+        android:pathData="M36,52 a18,18 0 1,0 36,0 a18,18 0 1,0 -36,0"
+        android:strokeColor="#334FC3F7"
+        android:strokeWidth="6" />
+
+    <!-- the aura ring -->
+    <path
+        android:pathData="M38,52 a16,16 0 1,0 32,0 a16,16 0 1,0 -32,0"
+        android:strokeWidth="3.4">
+        <aapt:attr name="android:strokeColor">
+            <gradient
+                android:type="linear"
+                android:startX="38"
+                android:startY="36"
+                android:endX="70"
+                android:endY="68"
+                android:startColor="#FF4FC3F7"
+                android:endColor="#FF2979FF" />
+        </aapt:attr>
+    </path>
+
+    <!-- clock hands -->
+    <path
+        android:pathData="M54,52 L54,42"
+        android:strokeColor="#FFFFFFFF"
+        android:strokeWidth="2.6"
+        android:strokeLineCap="round" />
+    <path
+        android:pathData="M54,52 L60.5,56"
+        android:strokeColor="#FFFFFFFF"
+        android:strokeWidth="2.6"
+        android:strokeLineCap="round" />
+
+    <!-- dock bar -->
+    <path
+        android:pathData="M42,81 h24 a2,2 0 0 1 2,2 a2,2 0 0 1 -2,2 h-24 a2,2 0 0 1 -2,-2 a2,2 0 0 1 2,-2 z"
+        android:fillColor="#40FFFFFF" />
+</vector>
