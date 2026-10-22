@@ -8,11 +8,14 @@ import com.auradock.data.CalendarRepository
 import com.auradock.data.NotificationItem
 import com.auradock.data.NotificationRepository
 import com.auradock.standby.StandbyState
+import com.auradock.standby.StandbyTriggerManager
 import com.auradock.standby.StandbyTriggerMode
 import com.auradock.ui.template.StandbyTemplate
 import com.auradock.ui.template.TemplateDefaults
 import com.auradock.ui.template.sanitizedForStandby
+import android.content.Context
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.SharedFlow
@@ -27,16 +30,20 @@ import javax.inject.Inject
 
 @HiltViewModel
 class StandbyViewModel @Inject constructor(
+    @ApplicationContext context: Context,
     private val calendarRepository: CalendarRepository,
     private val notificationRepository: NotificationRepository
 ) : ViewModel() {
 
     private val _currentTemplate = MutableStateFlow(TemplateDefaults.Minimal.sanitizedForStandby())
     val currentTemplate: StateFlow<StandbyTemplate> = _currentTemplate.asStateFlow()
-    private val _standbyState = MutableStateFlow(StandbyState.INACTIVE)
-    val standbyState: StateFlow<StandbyState> = _standbyState.asStateFlow()
-    private val _standbyTriggerMode = MutableStateFlow(StandbyTriggerMode.CHARGING_AND_LANDSCAPE)
-    val standbyTriggerMode: StateFlow<StandbyTriggerMode> = _standbyTriggerMode.asStateFlow()
+
+    // Owned by the ViewModel (not the Activity) so a rotation, which destroys and recreates the
+    // Activity, does not stop and restart it. It is stopped in onCleared().
+    private val standbyTriggerManager = StandbyTriggerManager(context).also { it.start() }
+    val standbyState: StateFlow<StandbyState> = standbyTriggerManager.standbyState
+    val standbyTriggerMode: StateFlow<StandbyTriggerMode> = standbyTriggerManager.triggerMode
+
     private val _hasCalendarPermission = MutableStateFlow(calendarRepository.hasCalendarPermission())
     val hasCalendarPermission: StateFlow<Boolean> = _hasCalendarPermission.asStateFlow()
     private val _calendarPermissionState = MutableStateFlow(
@@ -70,12 +77,12 @@ class StandbyViewModel @Inject constructor(
         }
     }
 
-    fun updateStandbyState(state: StandbyState) {
-        _standbyState.value = state
+    fun cycleStandbyTriggerMode() {
+        standbyTriggerManager.cycleTriggerMode()
     }
 
-    fun updateStandbyTriggerMode(mode: StandbyTriggerMode) {
-        _standbyTriggerMode.value = mode
+    override fun onCleared() {
+        standbyTriggerManager.stop()
     }
 
     fun refreshCalendarPermission() {

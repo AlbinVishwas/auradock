@@ -30,7 +30,6 @@ import androidx.lifecycle.repeatOnLifecycle
 import com.auradock.permissions.openAppSettings
 import com.auradock.permissions.openNotificationAccessSettings
 import com.auradock.standby.StandbyState
-import com.auradock.standby.StandbyTriggerManager
 import com.auradock.ui.screens.StandbyScreen
 import com.auradock.ui.screens.TemplateGalleryScreen
 import com.auradock.ui.screens.dashboard.DashboardScreen
@@ -39,20 +38,29 @@ import com.auradock.ui.viewmodel.PermissionAction
 import com.auradock.ui.viewmodel.StandbyViewModel
 import com.auradock.voice.VoiceInputManager
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     private val standbyViewModel: StandbyViewModel by viewModels()
-    private lateinit var standbyTriggerManager: StandbyTriggerManager
-    private var triggerCollectionJob: Job? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        standbyTriggerManager = StandbyTriggerManager(this)
 
+        // Keep the screen on only while standby is active and this Activity is visible.
+        // Collected here in onCreate (the supported place for repeatOnLifecycle). The flag lives on
+        // the window, which is recreated on rotation, so we re-apply it from the ViewModel's state.
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                standbyViewModel.standbyState.collect { state ->
+                    if (state == StandbyState.ACTIVE) {
+                        window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+                    } else {
+                        window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+                    }
+                }
+            }
+        }
         setContent {
             AuraDockTheme {
                 val currentTemplate by standbyViewModel.currentTemplate.collectAsState()
@@ -155,7 +163,7 @@ class MainActivity : ComponentActivity() {
                                 )
                             },
                             onStandbyTriggerModeClick = {
-                                standbyTriggerManager.cycleTriggerMode()
+                                standbyViewModel.cycleStandbyTriggerMode()
                             },
                             onEnableCalendarAccess = { standbyViewModel.requestCalendarPermission() },
                             onOpenNotificationSettings = { standbyViewModel.openNotificationSettings() }
@@ -170,35 +178,10 @@ class MainActivity : ComponentActivity() {
         super.onStart()
         standbyViewModel.refreshCalendarPermission()
         standbyViewModel.updateNotificationAccess(isNotificationAccessEnabled())
-        standbyTriggerManager.start()
-
-        triggerCollectionJob = lifecycleScope.launch {
-            repeatOnLifecycle(Lifecycle.State.STARTED) {
-                launch {
-                    standbyTriggerManager.standbyState.collectLatest { state ->
-                        standbyViewModel.updateStandbyState(state)
-                        if (state == StandbyState.ACTIVE) {
-                            window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
-                        } else {
-                            window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
-                        }
-                    }
-                }
-
-                launch {
-                    standbyTriggerManager.triggerMode.collectLatest { mode ->
-                        standbyViewModel.updateStandbyTriggerMode(mode)
-                    }
-                }
-            }
-        }
     }
 
     override fun onStop() {
         super.onStop()
-        triggerCollectionJob?.cancel()
-        triggerCollectionJob = null
-        standbyTriggerManager.stop()
         window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
     }
 
