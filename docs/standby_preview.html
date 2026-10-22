@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AuraDock Standby UI — Mockup</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    /* ─────── RESET & BASE ─────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      /* AuraDock Color Palette */
+      --clr-bg:            #000000;
+      --clr-surface:       #0d0d0d;
+      --clr-glass:         rgba(255,255,255,0.075);
+      --clr-glass-border:  rgba(255,255,255,0.12);
+      --clr-on-bg:         #ffffff;
+      --clr-muted:         #aaaaaa;
+      --clr-clock-glow:    #4fc3f7;
+      --clr-accent-blue:   #2979ff;
+      --clr-accent-amber:  #ffb300;
+      --clr-divider:       rgba(255,255,255,0.15);
+
+      /* Spacing */
+      --sp-xs: 4px;  --sp-sm: 8px;  --sp-md: 16px;
+      --sp-lg: 24px; --sp-xl: 32px; --sp-xxl: 48px;
+
+      /* Shape */
+      --radius-card: 28px;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      background: #000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Inter', system-ui, sans-serif;
+      overflow: hidden;
+    }
+
+    /* ─────── PHONE VIEWPORT ─────── */
+    /* The #standby element IS the phone screen — it fills the viewport
+       and is capped at a landscape-phone aspect ratio. */
+
+    /* ─────── STANDBY SCREEN ─────── */
+    .standby {
+      /* Fill the browser viewport, capped at a landscape phone size */
+      width: 100vw;
+      height: 100vh;
+      max-width: 900px;
+      max-height: 420px;
+      background: var(--clr-bg);
+      display: flex;
+      flex-direction: column;
+      padding: var(--sp-md) var(--sp-lg);
+      overflow: hidden;
+      position: relative; /* keep charging-indicator anchored inside */
+    }
+
+    /* Ambient radial glow behind clock */
+    .standby::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(
+        circle at 50% 25%,
+        rgba(79,195,247,0.18) 0%,
+        rgba(79,195,247,0.10) 24%,
+        rgba(79,195,247,0.04) 42%,
+        transparent 60%
+      );
+      opacity: 1;
+      pointer-events: none;
+      animation: glowPulse 3s cubic-bezier(0.4, 0, 0.2, 1) infinite alternate;
+    }
+
+    @keyframes glowPulse {
+      from { opacity: 0.82; }
+      to   { opacity: 1; }
+    }
+
+    /* ─────── CLOCK SECTION ─────── */
+    .clock-section {
+      flex: 0.85;
+      max-height: 260px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      opacity: 0;
+      animation: clockEnter 500ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    }
+
+    @keyframes clockEnter {
+      0% {
+        opacity: 0;
+        transform: translateY(-25%);
+      }
+      80% {
+        opacity: 1;
+      }
+      100% {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .clock-row {
+      position: relative;
+      display: flex;
+      align-items: flex-end;
+      gap: 2px;
+    }
+
+    /* Glow layer */
+    .clock-glow {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: flex-end;
+      gap: 2px;
+      pointer-events: none;
+      filter: blur(16px);
+      opacity: 0.45;
+    }
+
+    .clock-digit {
+      font-size: clamp(60px, 9.5vw, 90px);
+      font-weight: 100;
+      letter-spacing: -4px;
+      color: #fff;
+      line-height: 1;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .clock-colon {
+      font-size: clamp(60px, 9.5vw, 90px);
+      font-weight: 100;
+      color: var(--clr-clock-glow);
+      line-height: 1;
+      opacity: 0.85;
+      letter-spacing: 0;
+      animation: colonBlink 1s step-end infinite;
+    }
+
+    @keyframes colonBlink {
+      0%, 49%  { opacity: 0.85; }
+      50%, 100% { opacity: 0.30; }
+    }
+
+    .clock-ampm {
+      font-size: clamp(12px, 1.6vw, 17px);
+      font-weight: 300;
+      color: var(--clr-muted);
+      margin-bottom: clamp(10px, 1.5vw, 15px);
+      margin-left: 6px;
+      letter-spacing: 2px;
+    }
+
+    .clock-date {
+      font-size: clamp(10px, 1.2vw, 13px);
+      font-weight: 400;
+      letter-spacing: 2.5px;
+      color: var(--clr-muted);
+      text-transform: uppercase;
+    }
+
+    /* Minute change animation */
+    .minute-change { animation: minuteFade 0.4s ease; }
+    @keyframes minuteFade {
+      0%   { opacity: 0; transform: translateY(8px); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ─────── DIVIDER ─────── */
+    .divider {
+      width: 60%;
+      height: 1px;
+      background: var(--clr-divider);
+      margin: 0 auto;
+    }
+
+    /* ─────── WIDGET ROW ─────── */
+    .widget-row {
+      flex: 1.15;
+      display: flex;
+      gap: 12px;
+      padding: 0 4px;
+      align-items: center;
+      opacity: 0;
+      animation: widgetEnter 500ms cubic-bezier(0.4, 0, 0.2, 1) 200ms forwards;
+      overflow: hidden;
+    }
+
+    @keyframes widgetEnter {
+      0% {
+        opacity: 0;
+        transform: translateY(25%);
+      }
+      100% {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* ─────── GLASS CARD ─────── */
+    .glass-card {
+      height: 90%;
+      margin: 0;
+      border-radius: var(--radius-card);
+      background: linear-gradient(
+        160deg,
+        rgba(255,255,255,0.09) 0%,
+        rgba(255,255,255,0.04) 100%
+      );
+      border: 1px solid var(--clr-glass-border);
+      padding: var(--sp-lg) var(--sp-lg);
+      display: flex;
+      flex-direction: column;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      transition: background 0.3s;
+    }
+
+    /* ─────── WEATHER WIDGET ─────── */
+    .weather {
+      flex: 0.78;
+      justify-content: space-between;
+    }
+
+    .weather-top-block {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .weather .weather-top {
+      display: flex;
+      align-items: center;
+      gap: var(--sp-md);
+      margin-bottom: 0;
+    }
+
+    .weather-icon-wrap {
+      position: relative;
+      width: clamp(32px, 5vw, 52px);
+      height: clamp(32px, 5vw, 52px);
+      flex-shrink: 0;
+    }
+
+    .weather-icon-glow {
+      position: absolute;
+      inset: -6px;
+      font-size: clamp(34px, 5.5vw, 56px);
+      filter: blur(8px);
+      opacity: 0.5;
+      line-height: 1;
+      pointer-events: none;
+    }
+
+    .weather-icon-fg {
+      position: relative;
+      font-size: clamp(28px, 4.5vw, 46px);
+      line-height: 1;
+    }
+
+    .weather-temp {
+      font-size: clamp(28px, 4.8vw, 50px);
+      font-weight: 200;
+      color: #fff;
+      letter-spacing: -1px;
+      line-height: 1;
+    }
+
+    .weather-condition {
+      font-size: clamp(11px, 1.3vw, 14px);
+      font-weight: 500;
+      color: #fff;
+      margin-top: 4px;
+    }
+
+    .weather-city {
+      font-size: clamp(9px, 1vw, 11px);
+      font-weight: 500;
+      color: var(--clr-muted);
+      letter-spacing: 2.5px;
+      text-transform: uppercase;
+      margin-top: 0;
+    }
+
+    .weather-bottom {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .weather-details {
+      display: flex;
+      gap: 8px;
+      margin-top: 0;
+      justify-content: space-between;
+    }
+
+    .weather-detail-item {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .weather-detail-val {
+      font-size: clamp(10px, 1.2vw, 13px);
+      font-weight: 400;
+      color: rgba(255,255,255,0.75);
+    }
+
+    .weather-detail-lbl {
+      font-size: clamp(8px, 0.9vw, 10px);
+      font-weight: 500;
+      color: var(--clr-muted);
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+    }
+
+    /* ─────── CALENDAR WIDGET ─────── */
+    .calendar {
+      flex: 1.22;
+      justify-content: stretch;
+      min-width: 0;
+      padding: 20px 22px 18px;
+    }
+
+    .calendar .cal-header {
+      font-size: clamp(9px, 0.95vw, 11px);
+      font-weight: 600;
+      color: var(--clr-muted);
+      letter-spacing: 2.5px;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+
+    .cal-day-labels {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      column-gap: 6px;
+      margin-bottom: 8px;
+      padding: 0 1px;
+    }
+
+    .cal-day-lbl {
+      font-size: clamp(8px, 0.9vw, 10px);
+      font-weight: 500;
+      color: var(--clr-muted);
+      text-align: center;
+      line-height: 1;
+    }
+
+    .cal-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      grid-auto-rows: minmax(0, 1fr);
+      column-gap: 6px;
+      row-gap: clamp(4px, 0.75vh, 8px);
+      flex: 1;
+      align-content: stretch;
+      min-height: 0;
+      padding: 0 1px 2px;
+    }
+
+    .cal-cell {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: clamp(10px, 1.2vw, 13px);
+      font-weight: 400;
+      color: rgba(255,255,255,0.8);
+      border-radius: 50%;
+      min-height: 0;
+      line-height: 1;
+      transition: background 0.2s;
+    }
+
+    .cal-cell span {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: clamp(24px, 2.6vw, 30px);
+      width: clamp(24px, 2.6vw, 30px);
+      height: clamp(24px, 2.6vw, 30px);
+      border-radius: 50%;
+      line-height: 1;
+    }
+
+    .cal-cell.empty { opacity: 0; }
+
+    .cal-cell.past {
+      color: rgba(255,255,255,0.25);
+    }
+
+    .cal-cell.today {
+      color: #fff;
+      font-weight: 700;
+    }
+
+    .cal-cell.today span {
+      background: var(--clr-accent-blue);
+      box-shadow:
+        0 0 12px rgba(41,121,255,0.7),
+        0 0 24px rgba(41,121,255,0.35);
+    }
+
+    /* ─────── CHARGING INDICATOR (bottom-right) ─────── */
+    .charging-indicator {
+      position: absolute;
+      bottom: 12px;
+      right: 16px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      opacity: 0.45;
+    }
+
+    .charging-bolt {
+      font-size: 12px;
+      color: var(--clr-accent-amber);
+      animation: chargePulse 2s ease-in-out infinite;
+    }
+
+    @keyframes chargePulse {
+      0%, 100% { opacity: 0.5; transform: scale(1); }
+      50% { opacity: 1; transform: scale(1.15); }
+    }
+
+    .charging-pct {
+      font-size: 10px;
+      font-weight: 500;
+      color: var(--clr-muted);
+      letter-spacing: 1px;
+    }
+
+    /* ─────── TOOLBAR OVERLAY ─────── */
+    /* Floats over the standby screen in the bottom-left corner.
+       Fades in on hover so it doesn't distract during real preview. */
+    .toolbar {
+      position: fixed;
+      bottom: 12px;
+      left: 12px;
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+      z-index: 100;
+      opacity: 0.15;
+      transition: opacity 0.3s ease;
+    }
+
+    .toolbar:hover { opacity: 1; }
+
+    .btn {
+      padding: 6px 14px;
+      border-radius: 999px;
+      border: 1px solid #444;
+      background: rgba(20,20,20,0.85);
+      color: #aaa;
+      font-family: inherit;
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 1px;
+      cursor: pointer;
+      transition: all 0.2s;
+      backdrop-filter: blur(8px);
+    }
+
+    .btn:hover { background: rgba(40,40,40,0.95); color: #fff; border-color: #666; }
+    .btn.active { background: var(--clr-accent-blue); color: #fff; border-color: transparent; }
+  </style>
+</head>
+<body>
+
+  <!-- STANDBY SCREEN — fills the viewport like a real Android phone display -->
+  <div class="standby" id="standby">
+
+    <!-- CLOCK SECTION -->
+    <section class="clock-section">
+      <div class="clock-row">
+        <!-- Glow ghost -->
+        <div class="clock-glow" aria-hidden="true">
+          <span id="glow-hour"  class="clock-digit" style="color: var(--clr-clock-glow);">09</span>
+          <span class="clock-colon">:</span>
+          <span id="glow-min"   class="clock-digit" style="color: var(--clr-clock-glow);">48</span>
+        </div>
+        <!-- Sharp foreground -->
+        <span id="clock-hour"  class="clock-digit">09</span>
+        <span class="clock-colon">:</span>
+        <span id="clock-min"   class="clock-digit">48</span>
+        <span id="clock-ampm"  class="clock-ampm">AM</span>
+      </div>
+      <div id="clock-date" class="clock-date">Wednesday, 11 March</div>
+    </section>
+
+    <!-- DIVIDER -->
+    <div class="divider"></div>
+
+    <!-- WIDGET ROW -->
+    <div class="widget-row">
+
+      <!-- WEATHER WIDGET -->
+      <div class="glass-card weather">
+        <div class="weather-top-block">
+          <div class="weather-top">
+            <div class="weather-icon-wrap">
+              <span class="weather-icon-glow">🌤️</span>
+              <span class="weather-icon-fg">🌤️</span>
+            </div>
+            <div id="weather-temp" class="weather-temp">22°</div>
+          </div>
+          <div class="weather-condition" id="weather-cond">Partly Cloudy</div>
+        </div>
+        <div class="weather-bottom">
+          <div class="weather-details">
+            <div class="weather-detail-item">
+              <span class="weather-detail-val">68%</span>
+              <span class="weather-detail-lbl">Humidity</span>
+            </div>
+            <div class="weather-detail-item">
+              <span class="weather-detail-val">14 km/h</span>
+              <span class="weather-detail-lbl">Wind</span>
+            </div>
+            <div class="weather-detail-item">
+              <span class="weather-detail-val">29°</span>
+              <span class="weather-detail-lbl">Feels</span>
+            </div>
+          </div>
+          <div class="weather-city">Bangalore</div>
+        </div>
+      </div>
+
+      <!-- CALENDAR WIDGET -->
+      <div class="glass-card calendar">
+        <div class="cal-header" id="cal-header">March 2026</div>
+        <div class="cal-day-labels">
+          <span class="cal-day-lbl">S</span>
+          <span class="cal-day-lbl">M</span>
+          <span class="cal-day-lbl">T</span>
+          <span class="cal-day-lbl">W</span>
+          <span class="cal-day-lbl">T</span>
+          <span class="cal-day-lbl">F</span>
+          <span class="cal-day-lbl">S</span>
+        </div>
+        <div class="cal-grid" id="cal-grid"></div>
+      </div>
+
+    </div><!-- / widget-row -->
+
+    <!-- CHARGING INDICATOR -->
+    <div class="charging-indicator">
+      <span class="charging-bolt">⚡</span>
+      <span class="charging-pct">78%</span>
+    </div>
+
+  </div><!-- / standby -->
+
+  <!-- TOOLBAR OVERLAY — hover to reveal, fixed over the standby screen -->
+  <div class="toolbar">
+    <button class="btn" onclick="setTheme('dark')">Dark</button>
+    <button class="btn" onclick="setTheme('deep-blue')">Deep Blue</button>
+    <button class="btn" onclick="setTheme('amoled-rose')">Amoled Rose</button>
+    <button class="btn" onclick="setTheme('forest')">Forest</button>
+    <button class="btn" onclick="toggleClock()">Toggle 12/24h</button>
+  </div>
+
+  <script>
+    // ── Live Clock ───────────────────────────────────────────────────────────
+    let use24h = false;
+    let lastMin = -1;
+
+    function padZ(n) { return String(n).padStart(2, '0'); }
+
+    function updateClock() {
+      const now = new Date();
+      const h24 = now.getHours();
+      const min = now.getMinutes();
+      const ampm = h24 < 12 ? 'AM' : 'PM';
+      const h = use24h ? h24 : (h24 % 12 || 12);
+
+      const hourStr = padZ(h);
+      const minStr  = padZ(min);
+
+      document.getElementById('clock-hour').textContent = hourStr;
+      document.getElementById('glow-hour').textContent  = hourStr;
+      document.getElementById('clock-ampm').textContent = use24h ? '' : ampm;
+
+      if (min !== lastMin) {
+        const minEl = document.getElementById('clock-min');
+        const glEl  = document.getElementById('glow-min');
+        minEl.classList.remove('minute-change');
+        void minEl.offsetWidth; // reflow
+        minEl.classList.add('minute-change');
+        minEl.textContent = minStr;
+        glEl.textContent  = minStr;
+        lastMin = min;
+      }
+
+      // Date
+      const opts = { weekday:'long', day:'numeric', month:'long' };
+      document.getElementById('clock-date').textContent =
+        now.toLocaleDateString('en-GB', opts);
+    }
+
+    // ── Calendar Grid ────────────────────────────────────────────────────────
+    function buildCalendar() {
+      const today  = new Date();
+      const year   = today.getFullYear();
+      const month  = today.getMonth();
+      const todayD = today.getDate();
+
+      const firstDay  = new Date(year, month, 1).getDay(); // 0=Sun
+      const daysTotal = new Date(year, month + 1, 0).getDate();
+
+      const monthNames = ['January','February','March','April','May','June',
+                          'July','August','September','October','November','December'];
+      document.getElementById('cal-header').textContent = `${monthNames[month]} ${year}`;
+
+      const grid = document.getElementById('cal-grid');
+      grid.innerHTML = '';
+
+      // Empty cells
+      for (let i = 0; i < firstDay; i++) {
+        const empty = document.createElement('div');
+        empty.className = 'cal-cell empty';
+        grid.appendChild(empty);
+      }
+
+      for (let d = 1; d <= daysTotal; d++) {
+        const cell = document.createElement('div');
+        cell.className = 'cal-cell' +
+          (d === todayD ? ' today' : (d < todayD ? ' past' : ''));
+        const label = document.createElement('span');
+        label.textContent = d;
+        cell.appendChild(label);
+        grid.appendChild(cell);
+      }
+    }
+
+    // ── Theme Switcher ───────────────────────────────────────────────────────
+    const themes = {
+      'dark':       { '--clr-clock-glow':'#4fc3f7', '--clr-accent-blue':'#2979ff', '--clr-bg':'#000000' },
+      'deep-blue':  { '--clr-clock-glow':'#80d8ff', '--clr-accent-blue':'#448aff', '--clr-bg':'#020c18' },
+      'amoled-rose':{ '--clr-clock-glow':'#f48fb1', '--clr-accent-blue':'#e91e63', '--clr-bg':'#000000' },
+      'forest':     { '--clr-clock-glow':'#a5d6a7', '--clr-accent-blue':'#43a047', '--clr-bg':'#010e08' },
+    };
+
+    function setTheme(name) {
+      const t = themes[name];
+      if (!t) return;
+      const root = document.documentElement;
+      Object.entries(t).forEach(([k, v]) => root.style.setProperty(k, v));
+      document.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+      event.target.classList.add('active');
+    }
+
+    function toggleClock() {
+      use24h = !use24h;
+      event.target.textContent = use24h ? 'Switch to 12h' : 'Toggle 12/24h';
+      updateClock();
+    }
+
+    // ── Init ─────────────────────────────────────────────────────────────────
+    buildCalendar();
+    updateClock();
+    setInterval(updateClock, 1000);
+  </script>
+</body>
+</html>

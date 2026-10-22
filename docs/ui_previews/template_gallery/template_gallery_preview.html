@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AuraDock — Template Gallery</title>
+  <link rel="stylesheet" href="../styles/global.css" />
+  <style>
+    /* ── Gallery fills phone-screen ── */
+    .gallery-screen {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      background: var(--clr-bg);
+      position: relative;
+    }
+
+    /* Ambient orb — absolute inside phone-screen */
+    .gallery-orb {
+      position: absolute;
+      top: 20%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 300px; height: 300px;
+      background: radial-gradient(circle, rgba(139,92,246,0.10) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ── Top bar ── */
+    .gallery-topbar {
+      padding: 16px 16px 0;
+      display: flex;
+      align-items: center;
+      gap: var(--sp-2);
+      flex-shrink: 0;
+      position: relative;
+      z-index: 1;
+    }
+
+    .back-btn {
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      background: var(--clr-glass);
+      border: 1px solid var(--clr-glass-border);
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+      font-size: 0.85rem;
+      flex-shrink: 0;
+      text-decoration: none;
+      color: var(--clr-text-primary);
+    }
+    .back-btn:hover { background: var(--clr-glass-hover); }
+
+    .gallery-topbar .title-col { flex: 1; }
+    .gallery-topbar h2 { font-size: 1.05rem; }
+    .gallery-topbar p  { font-size: 0.68rem; margin-top: 1px; }
+
+    /* ── Filter chips ── */
+    .filter-row {
+      padding: var(--sp-2) var(--sp-3) 0;
+      display: flex;
+      gap: var(--sp-1);
+      overflow-x: auto;
+      flex-shrink: 0;
+      position: relative;
+      z-index: 1;
+    }
+    .filter-row::-webkit-scrollbar { display: none; }
+
+    .filter-chip {
+      padding: 4px 12px;
+      border-radius: var(--radius-pill);
+      font-size: 0.68rem;
+      font-weight: 500;
+      white-space: nowrap;
+      cursor: pointer;
+      border: 1px solid var(--clr-glass-border);
+      background: var(--clr-glass);
+      color: var(--clr-text-secondary);
+      transition: all var(--transition-fast);
+    }
+    .filter-chip.active {
+      background: var(--clr-accent-blue);
+      border-color: var(--clr-accent-blue);
+      color: #fff;
+      box-shadow: 0 4px 16px rgba(58,134,255,0.35);
+    }
+    .filter-chip:hover:not(.active) { background: var(--clr-glass-hover); color: var(--clr-text-primary); }
+
+    /* ── Carousel ── */
+    .carousel-section {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      overflow: hidden;
+      padding: var(--sp-2) 0 var(--sp-2);
+      position: relative;
+      z-index: 1;
+    }
+
+    .carousel-track {
+      display: flex;
+      gap: 12px;
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      -webkit-overflow-scrolling: touch;
+      padding: 16px 0;
+      align-items: center;
+      scrollbar-width: none;
+    }
+    .carousel-track::-webkit-scrollbar { display: none; }
+
+    .carousel-track::before,
+    .carousel-track::after {
+      content: '';
+      flex-shrink: 0;
+    }
+
+    .template-card {
+      flex-shrink: 0;
+      width: 150px;
+      height: 240px;
+      border-radius: var(--radius-lg);
+      scroll-snap-align: center;
+      position: relative;
+      overflow: hidden;
+      cursor: pointer;
+      transform: scale(0.88);
+      transition: transform var(--transition-slow), box-shadow var(--transition-slow);
+      border: 2px solid transparent;
+    }
+
+    .template-card.active {
+      transform: scale(1);
+      box-shadow: 0 16px 48px rgba(0,0,0,0.70);
+      border-color: rgba(255,255,255,0.20);
+    }
+
+    .template-card__bg {
+      position: absolute;
+      inset: 0;
+      background-size: cover;
+      background-position: center;
+    }
+
+    .template-card__overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to top, rgba(0,0,0,0.80) 0%, transparent 50%);
+    }
+
+    .template-card__content {
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      padding: var(--sp-2);
+    }
+
+    .template-card__name  { font-size: 0.82rem; font-weight: 600; }
+    .template-card__style { font-size: 0.62rem; color: rgba(255,255,255,0.60); margin-top: 1px; }
+
+    .template-card__clock {
+      font-size: 1.8rem;
+      font-weight: 700;
+      letter-spacing: -0.04em;
+      color: #fff;
+      text-align: center;
+      margin-bottom: var(--sp-3);
+      padding-top: var(--sp-4);
+    }
+
+    .selected-badge {
+      position: absolute;
+      top: var(--sp-2); right: var(--sp-2);
+      padding: 2px 7px;
+      border-radius: var(--radius-pill);
+      background: var(--clr-accent-blue);
+      font-size: 0.55rem;
+      font-weight: 700;
+      color: #fff;
+      display: none;
+    }
+    .template-card.active .selected-badge { display: block; }
+
+    /* ── Dot indicators ── */
+    .dots-row {
+      display: flex;
+      justify-content: center;
+      gap: 5px;
+      padding: 0 0 var(--sp-2);
+      flex-shrink: 0;
+    }
+
+    /* ── Bottom actions ── */
+    .gallery-actions {
+      padding: var(--sp-2) var(--sp-3);
+      display: flex;
+      gap: var(--sp-2);
+      flex-shrink: 0;
+      border-top: 1px solid var(--clr-divider);
+      position: relative;
+      z-index: 1;
+    }
+
+    .gallery-actions .btn {
+      padding: 9px 16px;
+      font-size: 0.78rem;
+    }
+
+    .btn-preview { flex: 1; }
+    .btn-apply   { flex: 1; }
+  </style>
+</head>
+<body class="preview-page">
+
+  <!-- Hub navigation bar -->
+  <div class="preview-hub-bar">
+    <a href="../index.html">← Hub</a>
+    <span class="screen-label">Template Gallery Screen</span>
+  </div>
+
+  <!-- Phone Frame -->
+  <div class="phone-frame">
+    <div class="phone-screen">
+
+      <div class="gallery-screen">
+        <!-- Ambient orb (absolute within phone-screen) -->
+        <div class="gallery-orb"></div>
+
+        <!-- Top bar -->
+        <div class="gallery-topbar">
+          <a class="back-btn" href="../index.html">←</a>
+          <div class="title-col">
+            <h2>Templates</h2>
+            <p>Choose your standby style</p>
+          </div>
+        </div>
+
+        <!-- Filter chips -->
+        <div class="filter-row">
+          <div class="filter-chip active" onclick="setFilter(this)">All</div>
+          <div class="filter-chip" onclick="setFilter(this)">Dark</div>
+          <div class="filter-chip" onclick="setFilter(this)">Minimal</div>
+          <div class="filter-chip" onclick="setFilter(this)">Vibrant</div>
+          <div class="filter-chip" onclick="setFilter(this)">Nature</div>
+          <div class="filter-chip" onclick="setFilter(this)">Gradient</div>
+        </div>
+
+        <!-- Carousel -->
+        <div class="carousel-section">
+          <div class="carousel-track" id="gallery-track">
+
+            <div class="template-card active" id="tpl-0" onclick="selectCard(0)">
+              <div class="template-card__bg" style="background:linear-gradient(160deg,#0f0c1a,#1a0f3c,#0a0a12)"></div>
+              <div class="template-card__overlay"></div>
+              <div class="template-card__clock">22:14</div>
+              <div class="template-card__content">
+                <div class="template-card__name">Midnight</div>
+                <div class="template-card__style">Dark · Minimal</div>
+              </div>
+              <div class="selected-badge">Active</div>
+            </div>
+
+            <div class="template-card" id="tpl-1" onclick="selectCard(1)">
+              <div class="template-card__bg" style="background:linear-gradient(160deg,#2d0b00,#8B2500,#c44b00)"></div>
+              <div class="template-card__overlay"></div>
+              <div class="template-card__clock">22:14</div>
+              <div class="template-card__content">
+                <div class="template-card__name">Sunset Warm</div>
+                <div class="template-card__style">Vibrant · Bold</div>
+              </div>
+              <div class="selected-badge">Active</div>
+            </div>
+
+            <div class="template-card" id="tpl-2" onclick="selectCard(2)">
+              <div class="template-card__bg" style="background:linear-gradient(160deg,#001a2a,#003c5a,#005780)"></div>
+              <div class="template-card__overlay"></div>
+              <div class="template-card__clock">22:14</div>
+              <div class="template-card__content">
+                <div class="template-card__name">Ocean Breeze</div>
+                <div class="template-card__style">Cool · Calm</div>
+              </div>
+              <div class="selected-badge">Active</div>
+            </div>
+
+            <div class="template-card" id="tpl-3" onclick="selectCard(3)">
+              <div class="template-card__bg" style="background:linear-gradient(160deg,#051a15,#0a4030,#1a7560)"></div>
+              <div class="template-card__overlay"></div>
+              <div class="template-card__clock">22:14</div>
+              <div class="template-card__content">
+                <div class="template-card__name">Aurora</div>
+                <div class="template-card__style">Nature · Dark</div>
+              </div>
+              <div class="selected-badge">Active</div>
+            </div>
+
+            <div class="template-card" id="tpl-4" onclick="selectCard(4)">
+              <div class="template-card__bg" style="background:linear-gradient(160deg,#0a0015,#1a0040,#38006b)"></div>
+              <div class="template-card__overlay"></div>
+              <div class="template-card__clock">22:14</div>
+              <div class="template-card__content">
+                <div class="template-card__name">Galaxy</div>
+                <div class="template-card__style">Dark · Gradient</div>
+              </div>
+              <div class="selected-badge">Active</div>
+            </div>
+
+          </div>
+
+          <!-- Dot indicators -->
+          <div class="dots-row" id="gallery-dots"></div>
+        </div>
+
+        <!-- Actions -->
+        <div class="gallery-actions">
+          <button class="btn btn--ghost btn-preview" onclick="window.location.href='../template_preview/template_preview.html'">Preview</button>
+          <button class="btn btn--primary btn-apply" onclick="mockInteraction(this)">Apply Template</button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <script src="../scripts/utils.js"></script>
+  <script>
+    let activeIndex = 0;
+
+    function selectCard(index) {
+      document.querySelectorAll('.template-card').forEach((c, i) => {
+        c.classList.toggle('active', i === index);
+      });
+      activeIndex = index;
+    }
+
+    function setFilter(el) {
+      document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+      el.classList.add('active');
+    }
+
+    const snap = initScrollSnap({
+      trackSelector: '#gallery-track',
+      itemSelector: '.template-card',
+      dotsContainer: '#gallery-dots'
+    });
+
+    const track = document.getElementById('gallery-track');
+    const cards = document.querySelectorAll('.template-card');
+
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting && entry.intersectionRatio > 0.6) {
+          const idx = Array.from(cards).indexOf(entry.target);
+          selectCard(idx);
+        }
+      });
+    }, { root: track, threshold: 0.6 });
+    cards.forEach(c => observer.observe(c));
+
+    // Use track width (not window.innerWidth) for frame-relative centering
+    setTimeout(() => {
+      const firstCard = cards[0];
+      const trackRect = track.getBoundingClientRect();
+      const offset = firstCard.offsetLeft - (trackRect.width / 2) + (firstCard.offsetWidth / 2);
+      track.scrollLeft = offset;
+    }, 50);
+  </script>
+</body>
+</html>

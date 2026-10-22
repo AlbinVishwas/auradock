@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AuraDock — Dashboard Preview</title>
+  <link rel="stylesheet" href="../styles/global.css" />
+  <style>
+    /* ── Screen fills phone-screen ── */
+    .dashboard {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      background: var(--clr-bg);
+      overflow-y: auto;
+      overflow-x: hidden;
+      -webkit-overflow-scrolling: touch;
+      position: relative;
+    }
+
+    /* ── Top bar ── */
+    .top-bar {
+      padding: 18px 16px 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+    }
+
+    .avatar {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: var(--gradient-accent);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: #fff;
+      flex-shrink: 0;
+    }
+
+    .greeting-block { flex: 1; padding-left: var(--sp-2); }
+    .greeting-block .label { font-size: 0.62rem; color: var(--clr-text-muted); text-transform: uppercase; letter-spacing: 0.08em; }
+    .greeting-block h2 { font-size: 1rem; margin-top: 1px; }
+
+    .top-bar__actions { display: flex; gap: var(--sp-2); }
+
+    .icon-btn {
+      width: 34px; height: 34px;
+      border-radius: 50%;
+      background: var(--clr-glass);
+      border: 1px solid var(--clr-glass-border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: background var(--transition-fast);
+      font-size: 0.85rem;
+    }
+    .icon-btn:hover { background: var(--clr-glass-hover); }
+
+    /* ── Section label ── */
+    .section-label {
+      padding: 0 16px;
+      font-size: 0.60rem;
+      font-weight: 600;
+      color: var(--clr-text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.10em;
+      margin-bottom: var(--sp-1);
+    }
+
+    /* ── Today snapshot card ── */
+    .snapshot-card {
+      margin: var(--sp-1) var(--sp-3) var(--sp-3);
+      padding: var(--sp-3);
+      border-radius: var(--radius-lg);
+      background: var(--gradient-accent);
+      position: relative;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+
+    .snapshot-card::after {
+      content: '';
+      position: absolute;
+      top: -30px; right: -30px;
+      width: 140px; height: 140px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.08);
+    }
+
+    .snapshot-card__header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: var(--sp-2);
+    }
+
+    .snapshot-card__title { font-size: 0.60rem; color: rgba(255,255,255,0.65); text-transform: uppercase; letter-spacing: 0.08em; }
+    .snapshot-card .big-time { font-size: 1.8rem; font-weight: 700; letter-spacing: -0.03em; line-height: 1.1; }
+    .snapshot-card .big-date { font-size: 0.72rem; color: rgba(255,255,255,0.70); margin-top: 1px; }
+
+    .snapshot-stats {
+      display: flex;
+      gap: var(--sp-3);
+      margin-top: var(--sp-2);
+      padding-top: var(--sp-2);
+      border-top: 1px solid rgba(255,255,255,0.15);
+    }
+
+    .stat-item { display: flex; flex-direction: column; gap: 1px; }
+    .stat-item__label { font-size: 0.58rem; color: rgba(255,255,255,0.55); }
+    .stat-item__value { font-size: 0.82rem; font-weight: 600; }
+
+    /* ── Quick actions ── */
+    .quick-actions {
+      padding: 0 var(--sp-3);
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--sp-2);
+      margin-bottom: var(--sp-3);
+    }
+
+    .action-card {
+      padding: var(--sp-2);
+      border-radius: var(--radius-md);
+      background: var(--clr-glass);
+      border: 1px solid var(--clr-glass-border);
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      gap: var(--sp-1);
+      transition: all var(--transition-base);
+    }
+    .action-card:hover {
+      background: var(--clr-glass-hover);
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-card);
+    }
+
+    .action-card__icon-wrap {
+      width: 30px; height: 30px;
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.9rem;
+    }
+
+    .action-card h4 { font-size: 0.75rem; }
+    .action-card p  { font-size: 0.62rem; margin-top: 0; }
+
+    /* ── Recent templates ── */
+    .recent-list {
+      padding: 0 var(--sp-3);
+      display: flex;
+      flex-direction: column;
+      gap: var(--sp-2);
+      margin-bottom: var(--sp-3);
+    }
+
+    .template-row {
+      display: flex;
+      align-items: center;
+      gap: var(--sp-2);
+      padding: var(--sp-2);
+      border-radius: var(--radius-md);
+      background: var(--clr-glass);
+      border: 1px solid var(--clr-glass-border);
+      cursor: pointer;
+      transition: all var(--transition-base);
+    }
+    .template-row:hover { background: var(--clr-glass-hover); }
+
+    .template-thumb {
+      width: 34px; height: 34px;
+      border-radius: var(--radius-sm);
+      flex-shrink: 0;
+    }
+
+    .template-info { flex: 1; display: flex; flex-direction: column; gap: 1px; }
+    .template-info h4 { font-size: 0.75rem; }
+    .template-info small { font-size: 0.62rem; color: var(--clr-text-muted); }
+
+    .template-badge {
+      font-size: 0.58rem;
+      font-weight: 600;
+      padding: 2px 6px;
+      border-radius: var(--radius-pill);
+      background: var(--clr-accent-blue-dim);
+      color: var(--clr-accent-blue);
+      border: 1px solid rgba(58,134,255,0.20);
+    }
+
+    /* ── CTA ── */
+    .cta-section {
+      padding: 0 var(--sp-3) var(--sp-3);
+    }
+
+    .cta-banner {
+      padding: var(--sp-2) var(--sp-3);
+      border-radius: var(--radius-lg);
+      background: #111;
+      border: 1px solid var(--clr-glass-border);
+      display: flex;
+      align-items: center;
+      gap: var(--sp-2);
+      cursor: pointer;
+      transition: all var(--transition-base);
+    }
+    .cta-banner:hover {
+      border-color: rgba(58,134,255,0.40);
+      background: rgba(58,134,255,0.07);
+    }
+
+    .cta-icon {
+      width: 38px; height: 38px;
+      border-radius: var(--radius-md);
+      background: var(--gradient-accent);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.1rem;
+      flex-shrink: 0;
+    }
+
+    .cta-text { flex: 1; }
+    .cta-text h3 { font-size: 0.80rem; }
+    .cta-text p  { font-size: 0.65rem; margin-top: 1px; }
+    .cta-arrow   { font-size: 1rem; color: var(--clr-text-muted); }
+
+    /* ── Bottom nav — position:absolute inside phone-screen ── */
+    .bottom-nav {
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      height: 56px;
+      background: rgba(0,0,0,0.88);
+      backdrop-filter: blur(20px);
+      border-top: 1px solid var(--clr-divider);
+      display: flex;
+      align-items: center;
+      justify-content: space-around;
+      padding-bottom: 4px;
+      z-index: 50;
+    }
+
+    .nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+      cursor: pointer;
+      opacity: 0.45;
+      transition: opacity var(--transition-fast);
+      padding: 6px 12px;
+    }
+    .nav-item.active { opacity: 1; }
+    .nav-item:hover   { opacity: 0.75; }
+
+    .nav-item__icon { font-size: 1rem; }
+    .nav-item__label { font-size: 0.55rem; font-weight: 500; color: var(--clr-text-secondary); }
+    .nav-item.active .nav-item__label { color: var(--clr-accent-blue); }
+
+    /* push content above fixed nav */
+    .dashboard-scroll-content { padding-bottom: 64px; }
+  </style>
+</head>
+<body class="preview-page">
+
+  <!-- Hub navigation bar -->
+  <div class="preview-hub-bar">
+    <a href="../index.html">← Hub</a>
+    <span class="screen-label">Dashboard Screen</span>
+  </div>
+
+  <!-- Phone Frame -->
+  <div class="phone-frame">
+    <div class="phone-screen">
+
+      <div class="dashboard">
+        <div class="dashboard-scroll-content">
+
+          <!-- Top bar -->
+          <div class="top-bar">
+            <div class="avatar">A</div>
+            <div class="greeting-block">
+              <div class="label">Good evening</div>
+              <h2>Albin 👋</h2>
+            </div>
+            <div class="top-bar__actions">
+              <div class="icon-btn" title="Search" onclick="mockInteraction(this)">🔍</div>
+              <div class="icon-btn" title="Settings" onclick="mockInteraction(this)">⚙️</div>
+            </div>
+          </div>
+
+          <!-- Today Snapshot Card -->
+          <div class="section-label">Today's Snapshot</div>
+          <div class="snapshot-card">
+            <div class="snapshot-card__header">
+              <div>
+                <div class="snapshot-card__title">Current Standby</div>
+                <div class="big-time" id="dash-clock">22:14</div>
+                <div class="big-date" id="dash-date">Tuesday, 25 Mar</div>
+              </div>
+              <span style="font-size:1.5rem">🌙</span>
+            </div>
+            <div class="snapshot-stats">
+              <div class="stat-item">
+                <span class="stat-item__label">Template</span>
+                <span class="stat-item__value">Midnight</span>
+              </div>
+              <div class="stat-item">
+                <span class="stat-item__label">Active Since</span>
+                <span class="stat-item__value">3 days</span>
+              </div>
+              <div class="stat-item">
+                <span class="stat-item__label">Widgets</span>
+                <span class="stat-item__value">3 active</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Quick Actions -->
+          <div class="section-label">Quick Actions</div>
+          <div class="quick-actions">
+
+            <div class="action-card" onclick="mockInteraction(this)">
+              <div class="action-card__icon-wrap" style="background:rgba(139,92,246,0.15)">🎨</div>
+              <h4>Gallery</h4>
+              <p>Browse templates</p>
+            </div>
+
+            <div class="action-card" onclick="mockInteraction(this)">
+              <div class="action-card__icon-wrap" style="background:rgba(58,134,255,0.15)">🔧</div>
+              <h4>Customize</h4>
+              <p>Edit widgets</p>
+            </div>
+
+            <div class="action-card" onclick="mockInteraction(this)">
+              <div class="action-card__icon-wrap" style="background:rgba(45,212,191,0.15)">👁</div>
+              <h4>Preview</h4>
+              <p>Standby preview</p>
+            </div>
+
+            <div class="action-card" onclick="mockInteraction(this)">
+              <div class="action-card__icon-wrap" style="background:rgba(245,158,11,0.15)">📊</div>
+              <h4>Stats</h4>
+              <p>Usage insights</p>
+            </div>
+
+          </div>
+
+          <!-- Recent Templates -->
+          <div class="section-label">Recent Templates</div>
+          <div class="recent-list">
+
+            <div class="template-row">
+              <div class="template-thumb" style="background:linear-gradient(135deg,#3A86FF,#8B5CF6)"></div>
+              <div class="template-info">
+                <h4>Midnight</h4>
+                <small>Last used · Today</small>
+              </div>
+              <span class="template-badge">Active</span>
+            </div>
+
+            <div class="template-row">
+              <div class="template-thumb" style="background:linear-gradient(135deg,#F59E0B,#EF4444)"></div>
+              <div class="template-info">
+                <h4>Sunset Warm</h4>
+                <small>Last used · Yesterday</small>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- CTA -->
+          <div class="cta-section">
+            <div class="cta-banner" onclick="window.location.href='../standby/standby_preview.html'">
+              <div class="cta-icon">🌙</div>
+              <div class="cta-text">
+                <h3>Customize Standby</h3>
+                <p>Personalize your always-on display</p>
+              </div>
+              <span class="cta-arrow">›</span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Bottom navigation — absolute inside phone-screen -->
+      <nav class="bottom-nav">
+        <div class="nav-item active">
+          <div class="nav-item__icon">🏠</div>
+          <div class="nav-item__label">Home</div>
+        </div>
+        <div class="nav-item" onclick="window.location.href='../template_gallery/template_gallery_preview.html'">
+          <div class="nav-item__icon">🎨</div>
+          <div class="nav-item__label">Gallery</div>
+        </div>
+        <div class="nav-item" onclick="window.location.href='../widget_customization/widget_customization.html'">
+          <div class="nav-item__icon">🔧</div>
+          <div class="nav-item__label">Widgets</div>
+        </div>
+        <div class="nav-item">
+          <div class="nav-item__icon">👤</div>
+          <div class="nav-item__label">Profile</div>
+        </div>
+      </nav>
+
+    </div>
+  </div>
+
+  <script src="../scripts/utils.js"></script>
+  <script>
+    updateClock('#dash-clock');
+    document.getElementById('dash-date').textContent = new Date().toLocaleDateString('en-US',{weekday:'long',day:'numeric',month:'short'});
+
+    document.querySelectorAll('.nav-item').forEach(item => {
+      item.addEventListener('click', () => toggleState(item, { className: 'active', group: '.nav-item' }));
+    });
+  </script>
+</body>
+</html>

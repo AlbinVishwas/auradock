@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AuraDock — Template Preview</title>
+  <link rel="stylesheet" href="../styles/global.css" />
+  <style>
+    /* ── Preview canvas fills phone-screen ── */
+    .preview-screen {
+      width: 100%;
+      height: 100%;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      overflow: hidden;
+    }
+
+    /* ── Wallpaper layer ── */
+    .preview-bg {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(160deg, #0f0c1a 0%, #1a0f3c 50%, #0a0a12 100%);
+      transition: background 0.6s ease;
+      z-index: 0;
+    }
+
+    /* Decorative stars */
+    .stars {
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      pointer-events: none;
+    }
+    .star {
+      position: absolute;
+      width: 2px;
+      height: 2px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.6);
+      animation: twinkle var(--d, 3s) ease-in-out infinite;
+    }
+    @keyframes twinkle {
+      0%, 100% { opacity: 0.2; }
+      50%       { opacity: 1; }
+    }
+
+    /* ── Top overlay ── */
+    .preview-topbar {
+      width: 100%;
+      padding: 14px 16px 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: relative;
+      z-index: 10;
+    }
+
+    .preview-badge {
+      padding: 4px 10px;
+      border-radius: var(--radius-pill);
+      background: rgba(0,0,0,0.45);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255,255,255,0.12);
+      font-size: 0.62rem;
+      font-weight: 600;
+      color: rgba(255,255,255,0.80);
+    }
+
+    .theme-switcher {
+      display: flex;
+      gap: var(--sp-2);
+    }
+
+    .theme-dot {
+      width: 18px; height: 18px;
+      border-radius: 50%;
+      cursor: pointer;
+      border: 2px solid transparent;
+      transition: all var(--transition-fast);
+      flex-shrink: 0;
+    }
+    .theme-dot.active  { border-color: rgba(255,255,255,0.80); transform: scale(1.15); }
+    .theme-dot:hover:not(.active) { transform: scale(1.08); }
+
+    /* ── Center Clock ── */
+    .preview-center {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      z-index: 5;
+      gap: var(--sp-1);
+    }
+
+    .preview-clock {
+      font-size: clamp(2.8rem, 7vw, 4.5rem);
+      font-weight: 700;
+      letter-spacing: -0.04em;
+      color: #fff;
+      font-variant-numeric: tabular-nums;
+      line-height: 1;
+    }
+
+    .preview-date {
+      font-size: clamp(0.68rem, 2vw, 0.85rem);
+      color: rgba(255,255,255,0.55);
+      letter-spacing: 0.10em;
+      text-transform: uppercase;
+    }
+
+    /* ── Widget preview row ── */
+    .preview-widgets {
+      display: flex;
+      gap: var(--sp-2);
+      margin-top: var(--sp-3);
+    }
+
+    .prev-widget {
+      padding: 8px 12px;
+      border-radius: var(--radius-md);
+      background: rgba(255,255,255,0.09);
+      border: 1px solid rgba(255,255,255,0.12);
+      backdrop-filter: blur(16px);
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      min-width: 70px;
+    }
+
+    .prev-widget__icon  { font-size: 0.9rem; }
+    .prev-widget__label { font-size: 0.55rem; color: rgba(255,255,255,0.40); text-transform: uppercase; letter-spacing: 0.06em; }
+    .prev-widget__value { font-size: 0.82rem; font-weight: 600; color: #fff; }
+
+    /* ── Bottom Apply panel ── */
+    .apply-panel {
+      width: 100%;
+      padding: var(--sp-3) var(--sp-3) var(--sp-3);
+      background: linear-gradient(to top, rgba(0,0,0,0.95) 0%, transparent 100%);
+      display: flex;
+      flex-direction: column;
+      gap: var(--sp-2);
+      position: relative;
+      z-index: 10;
+    }
+
+    .apply-panel__info {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .template-name  { font-size: 0.9rem; font-weight: 600; }
+    .template-style { font-size: 0.65rem; color: rgba(255,255,255,0.45); margin-top: 1px; }
+
+    .action-row {
+      display: flex;
+      gap: var(--sp-2);
+    }
+
+    .btn-back-gallery {
+      width: 40px; height: 40px;
+      padding: 0;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .apply-panel .btn--primary {
+      padding: 10px 16px;
+      font-size: 0.78rem;
+    }
+
+    .home-indicator {
+      width: 80px;
+      height: 4px;
+      background: rgba(255,255,255,0.25);
+      border-radius: 9999px;
+      margin: 2px auto 0;
+    }
+  </style>
+</head>
+<body class="preview-page">
+
+  <!-- Hub navigation bar -->
+  <div class="preview-hub-bar">
+    <a href="../index.html">← Hub</a>
+    <span class="screen-label">Template Preview Screen</span>
+  </div>
+
+  <!-- Phone Frame -->
+  <div class="phone-frame">
+    <div class="phone-screen">
+
+      <div class="preview-screen" id="preview-screen">
+
+        <!-- Wallpaper layer -->
+        <div class="preview-bg" id="preview-bg"></div>
+
+        <!-- Stars -->
+        <div class="stars" id="stars"></div>
+
+        <!-- Top bar -->
+        <div class="preview-topbar">
+          <span class="preview-badge">📱 Standby Preview</span>
+          <div class="theme-switcher" id="theme-switcher">
+            <div class="theme-dot active" style="background:linear-gradient(135deg,#1a0f3c,#0f0c1a)" data-theme="midnight"  onclick="switchTheme(this)"></div>
+            <div class="theme-dot" style="background:linear-gradient(135deg,#8B2500,#c44b00)" data-theme="sunset" onclick="switchTheme(this)"></div>
+            <div class="theme-dot" style="background:linear-gradient(135deg,#003c5a,#005780)" data-theme="ocean" onclick="switchTheme(this)"></div>
+            <div class="theme-dot" style="background:linear-gradient(135deg,#0a4030,#1a7560)" data-theme="aurora" onclick="switchTheme(this)"></div>
+          </div>
+        </div>
+
+        <!-- Center content -->
+        <div class="preview-center">
+          <div class="preview-clock" id="prev-clock">22:14</div>
+          <div class="preview-date"  id="prev-date">Tuesday, 25 March</div>
+
+          <div class="preview-widgets float-anim">
+            <div class="prev-widget">
+              <div class="prev-widget__icon">🌤</div>
+              <div class="prev-widget__label">Weather</div>
+              <div class="prev-widget__value">24°C</div>
+            </div>
+            <div class="prev-widget">
+              <div class="prev-widget__icon">📅</div>
+              <div class="prev-widget__label">Next</div>
+              <div class="prev-widget__value">10:00</div>
+            </div>
+            <div class="prev-widget">
+              <div class="prev-widget__icon">🔋</div>
+              <div class="prev-widget__label">Battery</div>
+              <div class="prev-widget__value">87%</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Apply panel -->
+        <div class="apply-panel">
+          <div class="apply-panel__info">
+            <div>
+              <div class="template-name" id="prev-name">Midnight</div>
+              <div class="template-style" id="prev-style">Dark · Minimal</div>
+            </div>
+            <span class="chip chip--accent">Preview</span>
+          </div>
+
+          <div class="action-row">
+            <button class="btn btn--ghost btn-back-gallery" title="Back" onclick="window.history.back()">←</button>
+            <button class="btn btn--primary" style="flex:1" onclick="mockInteraction(this); confirmApply()">
+              ✓ &nbsp;Apply Template
+            </button>
+          </div>
+          <div class="home-indicator"></div>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
+  <script src="../scripts/utils.js"></script>
+  <script>
+    updateClock('#prev-clock');
+    document.getElementById('prev-date').textContent = new Date().toLocaleDateString('en-US',{
+      weekday:'long', day:'numeric', month:'long'
+    });
+
+    /* ── Stars ── */
+    const starsEl = document.getElementById('stars');
+    for (let i = 0; i < 50; i++) {
+      const s = document.createElement('div');
+      s.className = 'star';
+      s.style.cssText = `
+        left: ${Math.random()*100}%;
+        top:  ${Math.random()*70}%;
+        width:  ${Math.random() > 0.7 ? 3 : 2}px;
+        height: ${Math.random() > 0.7 ? 3 : 2}px;
+        --d: ${(2 + Math.random()*4).toFixed(1)}s;
+        animation-delay: ${(Math.random()*3).toFixed(1)}s;
+      `;
+      starsEl.appendChild(s);
+    }
+
+    const themes = {
+      midnight: { bg: 'linear-gradient(160deg,#0f0c1a 0%,#1a0f3c 50%,#0a0a12 100%)', name: 'Midnight', style: 'Dark · Minimal', stars: true },
+      sunset:   { bg: 'linear-gradient(160deg,#2d0b00 0%,#8B2500 50%,#c44b00 100%)',   name: 'Sunset Warm', style: 'Vibrant · Bold', stars: false },
+      ocean:    { bg: 'linear-gradient(160deg,#001a2a 0%,#003c5a 50%,#005780 100%)',   name: 'Ocean Breeze', style: 'Cool · Calm', stars: false },
+      aurora:   { bg: 'linear-gradient(160deg,#051a15 0%,#0a4030 50%,#1a7560 100%)',   name: 'Aurora', style: 'Nature · Dark', stars: false }
+    };
+
+    function switchTheme(dot) {
+      document.querySelectorAll('.theme-dot').forEach(d => d.classList.remove('active'));
+      dot.classList.add('active');
+      const t = themes[dot.dataset.theme];
+      document.getElementById('preview-bg').style.background = t.bg;
+      document.getElementById('prev-name').textContent  = t.name;
+      document.getElementById('prev-style').textContent = t.style;
+      starsEl.style.opacity = t.stars ? '1' : '0';
+    }
+
+    function confirmApply() {
+      setTimeout(() => {
+        const btn = document.querySelector('.btn--primary');
+        btn.textContent = '✓  Applied!';
+        btn.style.background = 'linear-gradient(135deg,#2DD4BF,#22c55e)';
+        setTimeout(() => {
+          btn.textContent = '✓  Apply Template';
+          btn.style.background = '';
+        }, 2000);
+      }, 300);
+    }
+  </script>
+</body>
+</html>

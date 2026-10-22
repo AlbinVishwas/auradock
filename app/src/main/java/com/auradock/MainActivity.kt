@@ -1,0 +1,218 @@
+package com.auradock
+
+import android.Manifest
+import android.os.Bundle
+import android.provider.Settings
+import android.view.WindowManager
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.viewModels
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.app.ActivityCompat
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
+import androidx.compose.animation.togetherWith
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.collectAsState
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
+import com.auradock.permissions.openAppSettings
+import com.auradock.permissions.openNotificationAccessSettings
+import com.auradock.standby.StandbyState
+import com.auradock.standby.StandbyTriggerManager
+import com.auradock.ui.screens.StandbyScreen
+import com.auradock.ui.screens.TemplateGalleryScreen
+import com.auradock.ui.screens.dashboard.DashboardScreen
+import com.auradock.ui.theme.AuraDockTheme
+import com.auradock.ui.viewmodel.PermissionAction
+import com.auradock.ui.viewmodel.StandbyViewModel
+import com.auradock.voice.VoiceInputManager
+import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
+
+@AndroidEntryPoint
+class MainActivity : ComponentActivity() {
+    private val standbyViewModel: StandbyViewModel by viewModels()
+    private lateinit var standbyTriggerManager: StandbyTriggerManager
+    private var triggerCollectionJob: Job? = null
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        standbyTriggerManager = StandbyTriggerManager(this)
+
+        setContent {
+            AuraDockTheme {
+                val currentTemplate by standbyViewModel.currentTemplate.collectAsState()
+                val standbyState by standbyViewModel.standbyState.collectAsState()
+                val triggerMode by standbyViewModel.standbyTriggerMode.collectAsState()
+                val todayEvents by standbyViewModel.todayEvents.collectAsState()
+                val calendarPermissionState by standbyViewModel.calendarPermissionState.collectAsState()
+                val importantNotifications by standbyViewModel.importantNotifications.collectAsState()
+                val hasNotificationAccess by standbyViewModel.hasNotificationAccess.collectAsState()
+                val isGenerating by standbyViewModel.isGenerating.collectAsState()
+                val voiceState by standbyViewModel.voiceState.collectAsState()
+                val voiceFeedbackText by standbyViewModel.voiceFeedbackText.collectAsState()
+                val partialTranscript by standbyViewModel.partialTranscript.collectAsState()
+                var showGallery by remember { mutableStateOf(false) }
+                val voiceInputManager = remember { VoiceInputManager(this) }
+                val calendarPermissionLauncher = rememberLauncherForActivityResult(
+                    contract = ActivityResultContracts.RequestPermission()
+                ) { granted ->
+                    val permanentlyDenied = !granted &&
+                        !ActivityCompat.shouldShowRequestPermissionRationale(
+                            this@MainActivity,
+                            Manifest.permission.READ_CALENDAR
+                        )
+                    standbyViewModel.onCalendarPermissionResult(granted, permanentlyDenied)
+                }
+
+                DisposableEffect(Unit) {
+                    onDispose { voiceInputManager.release() }
+                }
+
+                LaunchedEffect(Unit) {
+                    standbyViewModel.permissionActions.collect { action ->
+                        when (action) {
+                            PermissionAction.RequestCalendarPermission -> {
+                                calendarPermissionLauncher.launch(Manifest.permission.READ_CALENDAR)
+                            }
+
+                            PermissionAction.OpenNotificationSettings -> {
+                                openNotificationAccessSettings(this@MainActivity)
+                            }
+
+                            PermissionAction.OpenAppSettings -> {
+                                openAppSettings(this@MainActivity)
+                            }
+                        }
+                    }
+                }
+
+                val targetState = when {
+                    standbyState == StandbyState.ACTIVE -> "standby"
+                    showGallery -> "gallery"
+                    else -> "dashboard"
+                }
+
+                AnimatedContent(
+                    targetState = targetState,
+                    transitionSpec = {
+                        (fadeIn(animationSpec = tween(260)) + scaleIn(initialScale = 0.985f, animationSpec = tween(260)))
+                            .togetherWith(
+                                fadeOut(animationSpec = tween(200)) + scaleOut(targetScale = 0.99f, animationSpec = tween(200))
+                            )
+                    },
+                    label = "rootModeTransition"
+                ) { mode ->
+                    when (mode) {
+                        "standby" -> StandbyScreen(
+                            template = currentTemplate,
+                            todayEvents = todayEvents,
+                            calendarPermissionState = calendarPermissionState,
+                            importantNotifications = importantNotifications,
+                            hasNotificationAccess = hasNotificationAccess,
+                            onEnableCalendarAccess = { standbyViewModel.requestCalendarPermission() },
+                            onOpenNotificationSettings = { standbyViewModel.openNotificationSettings() }
+                        )
+
+                        "gallery" -> TemplateGalleryScreen(
+                            onPreviewClick = { standbyViewModel.setTemplate(it) },
+                            onApplyClick = {
+                                standbyViewModel.setTemplate(it)
+                                showGallery = false
+                            }
+                        )
+
+                        else -> DashboardScreen(
+                            currentTemplate = currentTemplate,
+                            todayEvents = todayEvents,
+                            calendarPermissionState = calendarPermissionState,
+                            importantNotifications = importantNotifications,
+                            hasNotificationAccess = hasNotificationAccess,
+                            standbyTriggerMode = triggerMode,
+                            isGenerating = isGenerating,
+                            voiceState = voiceState,
+                            voiceFeedbackText = voiceFeedbackText,
+                            partialTranscript = partialTranscript,
+                            onCustomizeStandby = { showGallery = true },
+                            onVoiceCommand = {
+                                voiceInputManager.startSpeechToTemplateGeneration(
+                                    viewModel = standbyViewModel,
+                                    onError = { standbyViewModel.onVoiceInputError() }
+                                )
+                            },
+                            onStandbyTriggerModeClick = {
+                                standbyTriggerManager.cycleTriggerMode()
+                            },
+                            onEnableCalendarAccess = { standbyViewModel.requestCalendarPermission() },
+                            onOpenNotificationSettings = { standbyViewModel.openNotificationSettings() }
+                        )
+                    }
+                }
+            }
+        }
+    }
+
+    override fun onStart() {
+        super.onStart()
+        standbyViewModel.refreshCalendarPermission()
+        standbyViewModel.updateNotificationAccess(isNotificationAccessEnabled())
+        standbyTriggerManager.start()
+
+        triggerCollectionJob = lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                launch {
+                    standbyTriggerManager.standbyState.collectLatest { state ->
+                        standbyViewModel.updateStandbyState(state)
+                        if (state == StandbyState.ACTIVE) {
+                            window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+                        } else {
+                            window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+                        }
+                    }
+                }
+
+                launch {
+                    standbyTriggerManager.triggerMode.collectLatest { mode ->
+                        standbyViewModel.updateStandbyTriggerMode(mode)
+                    }
+                }
+            }
+        }
+    }
+
+    override fun onStop() {
+        super.onStop()
+        triggerCollectionJob?.cancel()
+        triggerCollectionJob = null
+        standbyTriggerManager.stop()
+        window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+    }
+
+    override fun onResume() {
+        super.onResume()
+        standbyViewModel.refreshCalendarPermission()
+        standbyViewModel.updateNotificationAccess(isNotificationAccessEnabled())
+    }
+
+    private fun isNotificationAccessEnabled(): Boolean {
+        val enabledListeners = Settings.Secure.getString(
+            contentResolver,
+            "enabled_notification_listeners"
+        ) ?: return false
+        return enabledListeners.contains(packageName)
+    }
+}

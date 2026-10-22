@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AuraDock — Standby Preview</title>
+  <link rel="stylesheet" href="../styles/global.css" />
+  <style>
+    /* ── Standby Canvas fills phone-screen ─────────────────── */
+    .standby {
+      width: 100%;
+      height: 100%;
+      background: #000;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 20px 14px;
+      position: relative;
+      overflow: hidden;
+      user-select: none;
+    }
+
+    /* Animated ambient gradient orbs */
+    .standby__bg {
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+    }
+
+    .orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(60px);
+      opacity: 0.25;
+    }
+
+    .orb--purple {
+      width: 280px; height: 280px;
+      top: -60px; left: -60px;
+      background: var(--clr-accent-purple);
+      animation: float 7s ease-in-out infinite;
+    }
+
+    .orb--blue {
+      width: 220px; height: 220px;
+      bottom: 40px; right: -30px;
+      background: var(--clr-accent-blue);
+      animation: float 9s ease-in-out infinite reverse;
+    }
+
+    .standby > * { position: relative; z-index: 1; }
+
+    /* ── Status bar ── */
+    .status-bar {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 0.68rem;
+      color: rgba(255,255,255,0.45);
+    }
+
+    .status-bar__icons {
+      display: flex;
+      gap: 5px;
+      align-items: center;
+    }
+
+    /* ── Central time block ── */
+    .time-block {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+      flex: 1;
+      justify-content: center;
+    }
+
+    .time-display {
+      font-size: clamp(3rem, 8vw, 5.5rem);
+      font-weight: 700;
+      letter-spacing: -0.04em;
+      line-height: 1;
+      color: #fff;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .date-display {
+      font-size: 0.78rem;
+      font-weight: 400;
+      color: rgba(255,255,255,0.55);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    /* ── Pulse ring decorations ── */
+    .pulse-rings {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .pulse-ring {
+      position: absolute;
+      border-radius: 50%;
+      border: 1px solid rgba(255,255,255,0.05);
+    }
+
+    .pulse-ring:nth-child(1) { width: 180px; height: 180px; margin: -90px 0 0 -90px; }
+    .pulse-ring:nth-child(2) { width: 280px; height: 280px; margin: -140px 0 0 -140px; }
+    .pulse-ring:nth-child(3) { width: 380px; height: 380px; margin: -190px 0 0 -190px; }
+
+    /* ── Widget row ── */
+    .widget-row {
+      width: 100%;
+      display: flex;
+      gap: var(--sp-2);
+      justify-content: center;
+    }
+
+    .widget {
+      flex: 1;
+      max-width: 130px;
+      padding: 10px 12px;
+      border-radius: var(--radius-md);
+      background: rgba(255,255,255,0.07);
+      border: 1px solid rgba(255,255,255,0.10);
+      backdrop-filter: blur(12px);
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .widget__icon  { font-size: 1rem; margin-bottom: 1px; }
+    .widget__label { font-size: 0.60rem; color: rgba(255,255,255,0.40); text-transform: uppercase; letter-spacing: 0.05em; }
+    .widget__value { font-size: 0.95rem; font-weight: 600; color: #fff; }
+    .widget__sub   { font-size: 0.65rem; color: rgba(255,255,255,0.45); }
+
+    /* ── Bottom row ── */
+    .bottom-row {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .nav-hint {
+      font-size: 0.62rem;
+      color: rgba(255,255,255,0.30);
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .home-indicator {
+      width: 80px;
+      height: 4px;
+      background: rgba(255,255,255,0.25);
+      border-radius: 9999px;
+    }
+  </style>
+</head>
+<body class="preview-page">
+
+  <!-- Hub navigation bar above frame -->
+  <div class="preview-hub-bar">
+    <a href="../index.html">← Hub</a>
+    <span class="screen-label">Standby Screen</span>
+  </div>
+
+  <!-- Phone Frame -->
+  <div class="phone-frame">
+    <div class="phone-screen">
+
+      <main class="standby" id="standby-screen">
+
+        <!-- Background orbs -->
+        <div class="standby__bg">
+          <div class="orb orb--purple"></div>
+          <div class="orb orb--blue"></div>
+        </div>
+
+        <!-- Pulse rings (decorative) -->
+        <div class="pulse-rings">
+          <div class="pulse-ring"></div>
+          <div class="pulse-ring"></div>
+          <div class="pulse-ring"></div>
+        </div>
+
+        <!-- Status Bar -->
+        <div class="status-bar">
+          <span id="standby-status-time">22:14</span>
+          <div class="status-bar__icons">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="rgba(255,255,255,0.45)"><path d="M1.5 8.5A13.5 13.5 0 0 1 22.5 8.5"/><path d="M5 12a9 9 0 0 1 14 0"/><path d="M8.5 15.5a4.5 4.5 0 0 1 7 0"/><circle cx="12" cy="19" r="1"/></svg>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="rgba(255,255,255,0.45)"><rect x="2" y="7" width="16" height="10" rx="2"/><path d="M20 11v2a2 2 0 0 0 0-2z"/></svg>
+          </div>
+        </div>
+
+        <!-- Time Block -->
+        <div class="time-block">
+          <div class="time-display" id="standby-clock">22:14</div>
+          <div class="date-display" id="standby-date">Tuesday, March 25</div>
+        </div>
+
+        <!-- Widget Row -->
+        <div class="widget-row">
+          <div class="widget">
+            <div class="widget__icon">🌤</div>
+            <div class="widget__label">Weather</div>
+            <div class="widget__value">24°C</div>
+            <div class="widget__sub">Clear skies</div>
+          </div>
+
+          <div class="widget">
+            <div class="widget__icon">📅</div>
+            <div class="widget__label">Next Event</div>
+            <div class="widget__value">10:00</div>
+            <div class="widget__sub">Team standup</div>
+          </div>
+
+          <div class="widget">
+            <div class="widget__icon">🎵</div>
+            <div class="widget__label">Now Playing</div>
+            <div class="widget__value">Daft Punk</div>
+            <div class="widget__sub">Get Lucky</div>
+          </div>
+        </div>
+
+        <!-- Bottom row -->
+        <div class="bottom-row">
+          <span class="nav-hint">Swipe up to unlock</span>
+          <div class="home-indicator"></div>
+          <span class="nav-hint" style="opacity:0">pad</span>
+        </div>
+
+      </main>
+
+    </div>
+  </div>
+
+  <script src="../scripts/utils.js"></script>
+  <script>
+    updateClock('#standby-clock');
+    updateClock('#standby-status-time');
+
+    (function() {
+      const el = document.getElementById('standby-date');
+      const now = new Date();
+      el.textContent = now.toLocaleDateString('en-US', {
+        weekday: 'long', month: 'long', day: 'numeric'
+      });
+    })();
+  </script>
+</body>
+</html>

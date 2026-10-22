@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AuraDock — UI Previews</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="stylesheet" href="styles/global.css" />
+  <style>
+    body { overflow: auto; }
+
+    .hub {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: var(--sp-6) var(--sp-5);
+      gap: var(--sp-6);
+    }
+
+    /* ── Header ── */
+    .hub-header {
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      gap: var(--sp-3);
+    }
+
+    .hub-logo {
+      width: 56px;
+      height: 56px;
+      border-radius: var(--radius-lg);
+      background: var(--gradient-accent);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto var(--sp-3);
+      box-shadow: var(--shadow-glow);
+    }
+
+    .hub-logo svg { width: 28px; height: 28px; fill: #fff; }
+
+    .hub-header h1 { font-size: 2.25rem; }
+
+    .hub-header p {
+      color: var(--clr-text-secondary);
+      font-size: 0.95rem;
+      max-width: 380px;
+      margin: 0 auto;
+    }
+
+    /* ── Screen Grid ── */
+    .screen-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 300px));
+      gap: var(--sp-4);
+      width: 100%;
+      max-width: 960px;
+    }
+
+    .screen-card {
+      display: flex;
+      flex-direction: column;
+      gap: var(--sp-3);
+      padding: var(--sp-4);
+      border-radius: var(--radius-xl);
+      background: var(--clr-glass);
+      border: 1px solid var(--clr-glass-border);
+      text-decoration: none;
+      color: inherit;
+      cursor: pointer;
+      transition: transform var(--transition-base), background var(--transition-base), box-shadow var(--transition-base);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .screen-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: var(--gradient-accent);
+      opacity: 0;
+      transition: opacity var(--transition-base);
+      z-index: 0;
+    }
+
+    .screen-card:hover {
+      transform: translateY(-4px);
+      background: var(--clr-glass-hover);
+      box-shadow: 0 12px 40px rgba(58, 134, 255, 0.20);
+    }
+
+    .screen-card:hover::before { opacity: 0.05; }
+
+    .screen-card > * { position: relative; z-index: 1; }
+
+    .screen-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.35rem;
+    }
+
+    .screen-card__meta {
+      display: flex;
+      flex-direction: column;
+      gap: var(--sp-1);
+    }
+
+    .screen-card h3 { font-size: 1rem; }
+
+    .screen-card p {
+      font-size: 0.8rem;
+      color: var(--clr-text-muted);
+      line-height: 1.5;
+    }
+
+    .screen-card__cta {
+      display: flex;
+      align-items: center;
+      gap: var(--sp-1);
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--clr-accent-blue);
+      margin-top: var(--sp-1);
+    }
+
+    .screen-card__cta::after {
+      content: '→';
+      transition: transform var(--transition-fast);
+    }
+
+    .screen-card:hover .screen-card__cta::after { transform: translateX(4px); }
+
+    /* ── Screen icon colors ── */
+    .icon-standby        { background: rgba(139, 92, 246, 0.18); }
+    .icon-dashboard      { background: rgba(58, 134, 255, 0.18); }
+    .icon-gallery        { background: rgba(45, 212, 191, 0.18); }
+    .icon-tpreview       { background: rgba(245, 158, 11, 0.18); }
+    .icon-widget         { background: rgba(239, 68, 68, 0.18); }
+
+    /* ── Footer ── */
+    .hub-footer {
+      font-size: 0.75rem;
+      color: var(--clr-text-muted);
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <main class="hub ambient-glow">
+
+    <!-- Header -->
+    <header class="hub-header fade-in">
+      <div class="hub-logo">
+        <!-- AuraDock icon (anchor/dock symbol) -->
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 2a2 2 0 110 4 2 2 0 010-4zm0 5c-1.1 0-2 .9-2 2v4H8l4 4 4-4h-2V9c0-1.1-.9-2-2-2zM6 19h12v2H6v-2z"/>
+        </svg>
+      </div>
+      <h1>AuraDock</h1>
+      <p>UI Preview Hub — visual prototypes for all app screens before Compose implementation.</p>
+    </header>
+
+    <!-- Screen Cards -->
+    <section class="screen-grid fade-in" style="animation-delay:100ms">
+
+      <a class="screen-card" href="standby/standby_preview.html" id="card-standby">
+        <div class="screen-icon icon-standby">🌙</div>
+        <div class="screen-card__meta">
+          <h3>Standby</h3>
+          <p>Ambient always-on display with clock, date, and live widget overlay.</p>
+        </div>
+        <span class="screen-card__cta">Open preview</span>
+      </a>
+
+      <a class="screen-card" href="dashboard/dashboard_preview.html" id="card-dashboard">
+        <div class="screen-icon icon-dashboard">🏠</div>
+        <div class="screen-card__meta">
+          <h3>Dashboard</h3>
+          <p>Home screen with greeting, today's snapshot card, and quick actions.</p>
+        </div>
+        <span class="screen-card__cta">Open preview</span>
+      </a>
+
+      <a class="screen-card" href="template_gallery/template_gallery_preview.html" id="card-gallery">
+        <div class="screen-icon icon-gallery">🎨</div>
+        <div class="screen-card__meta">
+          <h3>Template Gallery</h3>
+          <p>Center-focused carousel for browsing and selecting standby templates.</p>
+        </div>
+        <span class="screen-card__cta">Open preview</span>
+      </a>
+
+      <a class="screen-card" href="template_preview/template_preview.html" id="card-tpreview">
+        <div class="screen-icon icon-tpreview">👁</div>
+        <div class="screen-card__meta">
+          <h3>Template Preview</h3>
+          <p>Full-screen template review before applying to the standby display.</p>
+        </div>
+        <span class="screen-card__cta">Open preview</span>
+      </a>
+
+      <a class="screen-card" href="widget_customization/widget_customization.html" id="card-widget">
+        <div class="screen-icon icon-widget">🔧</div>
+        <div class="screen-card__meta">
+          <h3>Widget Customization</h3>
+          <p>Configure widget slots, sizes, and positions on the standby canvas.</p>
+        </div>
+        <span class="screen-card__cta">Open preview</span>
+      </a>
+
+    </section>
+
+    <!-- Footer -->
+    <footer class="hub-footer fade-in" style="animation-delay:200ms">
+      AuraDock · UI prototyping layer · v1.0
+    </footer>
+
+  </main>
+
+  <script src="scripts/utils.js"></script>
+</body>
+</html>

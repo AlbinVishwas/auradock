@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AuraDock — Widget Customization</title>
+  <link rel="stylesheet" href="../styles/global.css" />
+  <style>
+    /* ── Screen fills phone-screen ── */
+    .customize-screen {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      background: var(--clr-bg);
+    }
+
+    /* ── Top bar ── */
+    .cust-topbar {
+      padding: 14px 16px 0;
+      display: flex;
+      align-items: center;
+      gap: var(--sp-2);
+      flex-shrink: 0;
+    }
+
+    .back-btn {
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      background: var(--clr-glass);
+      border: 1px solid var(--clr-glass-border);
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+      font-size: 0.85rem;
+      flex-shrink: 0;
+      text-decoration: none;
+      color: var(--clr-text-primary);
+    }
+    .back-btn:hover { background: var(--clr-glass-hover); }
+
+    .cust-topbar .title-block { flex: 1; }
+    .cust-topbar h2 { font-size: 1.05rem; }
+    .cust-topbar p  { font-size: 0.68rem; margin-top: 1px; }
+
+    /* ── Standby preview canvas (mini) ── */
+    .standby-canvas-wrap {
+      padding: var(--sp-2) var(--sp-3) var(--sp-2);
+      flex-shrink: 0;
+    }
+
+    .standby-canvas {
+      width: 100%;
+      aspect-ratio: 16 / 5;
+      border-radius: var(--radius-lg);
+      background: linear-gradient(160deg, #0f0c1a, #1a0f3c, #0a0a12);
+      position: relative;
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,0.12);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 2px;
+    }
+
+    .canvas-clock {
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: #fff;
+      letter-spacing: -0.04em;
+      line-height: 1;
+    }
+
+    .canvas-date {
+      font-size: 0.58rem;
+      color: rgba(255,255,255,0.45);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .canvas-widgets {
+      position: absolute;
+      bottom: 8px;
+      left: 0; right: 0;
+      display: flex;
+      justify-content: center;
+      gap: 6px;
+      padding: 0 12px;
+    }
+
+    .canvas-widget {
+      padding: 4px 8px;
+      border-radius: 6px;
+      background: rgba(255,255,255,0.09);
+      border: 1px solid rgba(255,255,255,0.12);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      cursor: grab;
+      transition: all var(--transition-fast);
+    }
+    .canvas-widget.dragging { opacity: 0.4; cursor: grabbing; }
+    .canvas-widget .cw-icon  { font-size: 0.72rem; }
+    .canvas-widget .cw-val   { font-size: 0.60rem; font-weight: 600; color: #fff; }
+
+    /* ── Section scroll ── */
+    .section-scroll {
+      flex: 1;
+      overflow-y: auto;
+      padding: 0 var(--sp-3) var(--sp-2);
+    }
+    .section-scroll::-webkit-scrollbar { display: none; }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: var(--sp-2);
+    }
+
+    .section-header h3 { font-size: 0.80rem; }
+    .section-header a  { font-size: 0.65rem; color: var(--clr-accent-blue); text-decoration: none; }
+    .section-header a:hover { text-decoration: underline; }
+
+    /* ── Widget Slots ── */
+    .slot-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: var(--sp-1);
+      margin-bottom: var(--sp-3);
+    }
+
+    .slot-card {
+      padding: 10px;
+      border-radius: var(--radius-md);
+      background: var(--clr-glass);
+      border: 1px solid var(--clr-glass-border);
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      cursor: pointer;
+      transition: all var(--transition-base);
+      position: relative;
+    }
+    .slot-card:hover { background: var(--clr-glass-hover); transform: translateY(-2px); }
+
+    .slot-card.occupied { border-color: rgba(58,134,255,0.30); background: var(--clr-accent-blue-dim); }
+    .slot-card.empty    { border-style: dashed; opacity: 0.55; }
+    .slot-card.empty:hover { opacity: 1; border-style: solid; }
+
+    .slot-icon  { font-size: 0.95rem; }
+    .slot-label { font-size: 0.55rem; color: var(--clr-text-muted); text-transform: uppercase; letter-spacing: 0.06em; }
+    .slot-value { font-size: 0.68rem; font-weight: 600; }
+
+    .slot-remove {
+      position: absolute;
+      top: 4px; right: 4px;
+      width: 14px; height: 14px;
+      border-radius: 50%;
+      background: rgba(239,68,68,0.20);
+      border: none;
+      cursor: pointer;
+      font-size: 0.55rem;
+      color: #EF4444;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transition: opacity var(--transition-fast);
+    }
+    .slot-card:hover .slot-remove { opacity: 1; }
+
+    /* ── Widget Library ── */
+    .widget-library { margin-bottom: var(--sp-3); }
+
+    .library-grid {
+      display: flex;
+      gap: var(--sp-1);
+      overflow-x: auto;
+      padding-bottom: var(--sp-1);
+    }
+    .library-grid::-webkit-scrollbar { display: none; }
+
+    .lib-widget {
+      flex-shrink: 0;
+      padding: 8px 10px;
+      border-radius: var(--radius-md);
+      background: var(--clr-glass);
+      border: 1px solid var(--clr-glass-border);
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      min-width: 70px;
+      cursor: pointer;
+      transition: all var(--transition-base);
+    }
+    .lib-widget:hover {
+      background: var(--clr-glass-hover);
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-card);
+    }
+    .lib-widget.in-use {
+      border-color: rgba(58,134,255,0.30);
+      opacity: 0.50;
+      cursor: default;
+      pointer-events: none;
+    }
+
+    .lib-widget__icon  { font-size: 1rem; }
+    .lib-widget__name  { font-size: 0.62rem; font-weight: 600; }
+    .lib-widget__type  { font-size: 0.55rem; color: var(--clr-text-muted); }
+
+    /* ── Layout toggle ── */
+    .layout-section { margin-bottom: var(--sp-2); }
+
+    .layout-options {
+      display: flex;
+      gap: var(--sp-1);
+    }
+
+    .layout-opt {
+      flex: 1;
+      padding: 8px;
+      border-radius: var(--radius-md);
+      background: var(--clr-glass);
+      border: 1px solid var(--clr-glass-border);
+      cursor: pointer;
+      text-align: center;
+      transition: all var(--transition-base);
+    }
+    .layout-opt.active {
+      background: var(--clr-accent-blue-dim);
+      border-color: rgba(58,134,255,0.40);
+    }
+    .layout-opt:hover:not(.active) { background: var(--clr-glass-hover); }
+
+    .layout-opt__icon  { font-size: 0.95rem; display: block; margin-bottom: 2px; }
+    .layout-opt__label { font-size: 0.60rem; font-weight: 500; }
+
+    /* ── Save bar ── */
+    .save-bar {
+      padding: var(--sp-2) var(--sp-3) var(--sp-2);
+      display: flex;
+      gap: var(--sp-2);
+      border-top: 1px solid var(--clr-divider);
+      flex-shrink: 0;
+    }
+
+    .save-bar .btn {
+      padding: 9px 14px;
+      font-size: 0.75rem;
+    }
+  </style>
+</head>
+<body class="preview-page">
+
+  <!-- Hub navigation bar -->
+  <div class="preview-hub-bar">
+    <a href="../index.html">← Hub</a>
+    <span class="screen-label">Widget Customization Screen</span>
+  </div>
+
+  <!-- Phone Frame -->
+  <div class="phone-frame">
+    <div class="phone-screen">
+
+      <div class="customize-screen">
+
+        <!-- Top bar -->
+        <div class="cust-topbar">
+          <a class="back-btn" href="../index.html">←</a>
+          <div class="title-block">
+            <h2>Widget Setup</h2>
+            <p>Arrange and configure standby widgets</p>
+          </div>
+        </div>
+
+        <!-- Standby mini canvas -->
+        <div class="standby-canvas-wrap">
+          <div class="standby-canvas">
+            <div class="canvas-clock" id="cust-clock">22:14</div>
+            <div class="canvas-date">Tuesday · March 25</div>
+            <div class="canvas-widgets">
+              <div class="canvas-widget" id="cw-weather" draggable="true">
+                <span class="cw-icon">🌤</span>
+                <span class="cw-val">24°C</span>
+              </div>
+              <div class="canvas-widget" id="cw-calendar" draggable="true">
+                <span class="cw-icon">📅</span>
+                <span class="cw-val">10:00</span>
+              </div>
+              <div class="canvas-widget" id="cw-battery" draggable="true">
+                <span class="cw-icon">🔋</span>
+                <span class="cw-val">87%</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Scrollable content -->
+        <div class="section-scroll">
+
+          <!-- Active Slots -->
+          <div class="section-header">
+            <h3>Active Slots</h3>
+            <a href="#" onclick="return false">+ Add Slot</a>
+          </div>
+
+          <div class="slot-grid" id="slot-grid">
+
+            <div class="slot-card occupied" onclick="mockInteraction(this)">
+              <button class="slot-remove" onclick="removeSlot(this); event.stopPropagation()">×</button>
+              <span class="slot-icon">🌤</span>
+              <span class="slot-label">Slot 1</span>
+              <span class="slot-value">Weather</span>
+            </div>
+
+            <div class="slot-card occupied" onclick="mockInteraction(this)">
+              <button class="slot-remove" onclick="removeSlot(this); event.stopPropagation()">×</button>
+              <span class="slot-icon">📅</span>
+              <span class="slot-label">Slot 2</span>
+              <span class="slot-value">Calendar</span>
+            </div>
+
+            <div class="slot-card occupied" onclick="mockInteraction(this)">
+              <button class="slot-remove" onclick="removeSlot(this); event.stopPropagation()">×</button>
+              <span class="slot-icon">🔋</span>
+              <span class="slot-label">Slot 3</span>
+              <span class="slot-value">Battery</span>
+            </div>
+
+            <div class="slot-card empty" onclick="addSlot(this)">
+              <span class="slot-icon">＋</span>
+              <span class="slot-label">Slot 4</span>
+              <span class="slot-value">Empty</span>
+            </div>
+
+            <div class="slot-card empty" onclick="addSlot(this)">
+              <span class="slot-icon">＋</span>
+              <span class="slot-label">Slot 5</span>
+              <span class="slot-value">Empty</span>
+            </div>
+
+            <div class="slot-card empty" onclick="addSlot(this)">
+              <span class="slot-icon">＋</span>
+              <span class="slot-label">Slot 6</span>
+              <span class="slot-value">Empty</span>
+            </div>
+
+          </div>
+
+          <!-- Widget Library -->
+          <div class="widget-library">
+            <div class="section-header">
+              <h3>Widget Library</h3>
+            </div>
+            <div class="library-grid">
+              <div class="lib-widget in-use">
+                <span class="lib-widget__icon">🌤</span>
+                <span class="lib-widget__name">Weather</span>
+                <span class="lib-widget__type">System</span>
+              </div>
+              <div class="lib-widget in-use">
+                <span class="lib-widget__icon">📅</span>
+                <span class="lib-widget__name">Calendar</span>
+                <span class="lib-widget__type">System</span>
+              </div>
+              <div class="lib-widget in-use">
+                <span class="lib-widget__icon">🔋</span>
+                <span class="lib-widget__name">Battery</span>
+                <span class="lib-widget__type">System</span>
+              </div>
+              <div class="lib-widget" onclick="mockInteraction(this)">
+                <span class="lib-widget__icon">🎵</span>
+                <span class="lib-widget__name">Music</span>
+                <span class="lib-widget__type">Media</span>
+              </div>
+              <div class="lib-widget" onclick="mockInteraction(this)">
+                <span class="lib-widget__icon">📍</span>
+                <span class="lib-widget__name">Location</span>
+                <span class="lib-widget__type">Maps</span>
+              </div>
+              <div class="lib-widget" onclick="mockInteraction(this)">
+                <span class="lib-widget__icon">💤</span>
+                <span class="lib-widget__name">Sleep</span>
+                <span class="lib-widget__type">Health</span>
+              </div>
+              <div class="lib-widget" onclick="mockInteraction(this)">
+                <span class="lib-widget__icon">🔔</span>
+                <span class="lib-widget__name">Alerts</span>
+                <span class="lib-widget__type">System</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Layout options -->
+          <div class="layout-section">
+            <div class="section-header" style="margin-bottom:var(--sp-1)">
+              <h3>Layout</h3>
+            </div>
+            <div class="layout-options">
+              <div class="layout-opt active" onclick="setLayout(this)">
+                <span class="layout-opt__icon">⬜⬜⬜</span>
+                <span class="layout-opt__label">Row</span>
+              </div>
+              <div class="layout-opt" onclick="setLayout(this)">
+                <span class="layout-opt__icon">▪▪▪▪</span>
+                <span class="layout-opt__label">Grid 2×2</span>
+              </div>
+              <div class="layout-opt" onclick="setLayout(this)">
+                <span class="layout-opt__icon">▪▪▬</span>
+                <span class="layout-opt__label">Featured</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Save bar -->
+        <div class="save-bar">
+          <button class="btn btn--ghost" style="flex:1" onclick="mockInteraction(this)">Reset</button>
+          <button class="btn btn--primary" style="flex:2" onclick="saveLayout(this)">Save &amp; Apply</button>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
+  <script src="../scripts/utils.js"></script>
+  <script>
+    updateClock('#cust-clock');
+
+    function setLayout(el) {
+      toggleState(el, { className: 'active', group: '.layout-opt' });
+    }
+
+    function removeSlot(removeBtn) {
+      const card = removeBtn.closest('.slot-card');
+      card.classList.remove('occupied');
+      card.classList.add('empty');
+      card.querySelector('.slot-icon').textContent  = '＋';
+      card.querySelector('.slot-value').textContent = 'Empty';
+      card.querySelector('.slot-remove').style.display = 'none';
+    }
+
+    function addSlot(card) {
+      if (!card.classList.contains('empty')) return;
+      card.classList.remove('empty');
+      card.classList.add('occupied');
+      card.querySelector('.slot-icon').textContent  = '🎵';
+      card.querySelector('.slot-value').textContent = 'Music';
+      setTimeout(() => card.querySelector('.slot-remove').style.display = '', 10);
+      mockInteraction(card);
+    }
+
+    function saveLayout(btn) {
+      mockInteraction(btn);
+      setTimeout(() => {
+        const orig = btn.textContent;
+        btn.textContent = '✓ Saved!';
+        btn.style.background = 'linear-gradient(135deg,#2DD4BF,#22c55e)';
+        setTimeout(() => {
+          btn.textContent = orig;
+          btn.style.background = '';
+        }, 2000);
+      }, 250);
+    }
+  </script>
+</body>
+</html>
