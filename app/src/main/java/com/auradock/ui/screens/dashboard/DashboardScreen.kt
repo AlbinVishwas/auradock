@@ -38,6 +38,7 @@ import com.auradock.data.NotificationItem
 import com.auradock.standby.StandbyTriggerMode
 import com.auradock.ui.components.QuickActionButton
 import com.auradock.time.formatDashboardDate
+import com.auradock.time.greetingFor
 import com.auradock.ui.components.ScaledPreview
 import com.auradock.ui.components.StandbyPreviewCard
 import com.auradock.ui.components.TodaySnapshotCard
@@ -100,7 +101,7 @@ fun DashboardScreen(
         verticalArrangement = Arrangement.Top
     ) {
         Text(
-            text = "Good Morning, Albin",
+            text = greetingFor(timeMillis),
             modifier = Modifier.padding(top = spacing.xl),
             color = Color.White,
             fontSize = 32.sp,
