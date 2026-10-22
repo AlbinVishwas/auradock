@@ -34,7 +34,7 @@ fun buildTodaySummary(
     )
 
     CalendarPermissionUiState.GRANTED -> {
-        val shown = events.take(maxLines).map { "${formatTime(it.startTime)}  ${it.title}" }
+        val shown = events.take(maxLines).map { "${if (it.allDay) "All day" else formatTime(it.startTime)}  ${it.title}" }
         val hidden = events.size - shown.size
         TodaySummary(
             lines = if (hidden > 0) shown + "+$hidden more" else shown,

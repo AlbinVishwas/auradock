@@ -1,12 +1,14 @@
 package com.auradock.data
 
 import android.Manifest
+import android.content.ContentUris
 import android.content.Context
 import android.content.pm.PackageManager
 import android.provider.CalendarContract
 import android.util.Log
 import androidx.core.content.ContextCompat
 import dagger.hilt.android.qualifiers.ApplicationContext
+import java.time.LocalDate
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.Dispatchers
@@ -14,11 +16,12 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
-import java.util.Calendar
 
 data class CalendarEvent(
     val title: String,
-    val startTime: Long
+    /** Start time in epoch millis. For all-day events this is a UTC midnight and must not be shown as a time. */
+    val startTime: Long,
+    val allDay: Boolean = false
 )
 
 @Singleton
@@ -44,52 +47,49 @@ class CalendarRepository @Inject constructor(
         }
     }.flowOn(Dispatchers.IO)
 
+    /**
+     * Reads today's events from CalendarContract.Instances rather than Events.
+     *
+     * Events holds one row per *series*: a daily standup that began last month is a single row
+     * dated last month. Instances holds one row per *occurrence*, with recurrences already expanded,
+     * which is what "what is on today" needs. It also returns events that began earlier and are
+     * still running, and all-day events that cover today.
+     */
     suspend fun fetchTodayEvents(): List<CalendarEvent> {
         if (!hasCalendarPermission()) return emptyList()
 
         return runCatching {
-            val now = Calendar.getInstance()
-            val startOfDay = (now.clone() as Calendar).apply {
-                set(Calendar.HOUR_OF_DAY, 0)
-                set(Calendar.MINUTE, 0)
-                set(Calendar.SECOND, 0)
-                set(Calendar.MILLISECOND, 0)
-            }.timeInMillis
-            val endOfDay = (now.clone() as Calendar).apply {
-                set(Calendar.HOUR_OF_DAY, 23)
-                set(Calendar.MINUTE, 59)
-                set(Calendar.SECOND, 59)
-                set(Calendar.MILLISECOND, 999)
-            }.timeInMillis
+            val (start, endExclusive) = todayRange(System.currentTimeMillis())
+            val uri = CalendarContract.Instances.CONTENT_URI.buildUpon()
+                .also {
+                    ContentUris.appendId(it, start)
+                    ContentUris.appendId(it, endExclusive - 1)
+                }
+                .build()
 
             val projection = arrayOf(
-                CalendarContract.Events.TITLE,
-                CalendarContract.Events.DTSTART
+                CalendarContract.Instances.TITLE,
+                CalendarContract.Instances.BEGIN,
+                CalendarContract.Instances.END,
+                CalendarContract.Instances.ALL_DAY
             )
 
-            val selection = "${CalendarContract.Events.DTSTART} >= ? AND ${CalendarContract.Events.DTSTART} <= ?"
-            val selectionArgs = arrayOf(startOfDay.toString(), endOfDay.toString())
-            val sortOrder = "${CalendarContract.Events.DTSTART} ASC"
-
-            val items = mutableListOf<CalendarEvent>()
-            context.contentResolver.query(
-                CalendarContract.Events.CONTENT_URI,
-                projection,
-                selection,
-                selectionArgs,
-                sortOrder
-            )?.use { cursor ->
-                val titleColumn = cursor.getColumnIndex(CalendarContract.Events.TITLE)
-                val startColumn = cursor.getColumnIndex(CalendarContract.Events.DTSTART)
-
+            val rows = mutableListOf<InstanceRow>()
+            context.contentResolver.query(uri, projection, null, null, null)?.use { cursor ->
+                val titleColumn = cursor.getColumnIndexOrThrow(CalendarContract.Instances.TITLE)
+                val beginColumn = cursor.getColumnIndexOrThrow(CalendarContract.Instances.BEGIN)
+                val endColumn = cursor.getColumnIndexOrThrow(CalendarContract.Instances.END)
+                val allDayColumn = cursor.getColumnIndexOrThrow(CalendarContract.Instances.ALL_DAY)
                 while (cursor.moveToNext()) {
-                    val rawTitle = if (titleColumn >= 0) cursor.getString(titleColumn) else null
-                    val title = rawTitle?.takeIf { it.isNotBlank() } ?: "(No title)"
-                    val startTime = if (startColumn >= 0) cursor.getLong(startColumn) else 0L
-                    items += CalendarEvent(title = title, startTime = startTime)
+                    rows += InstanceRow(
+                        title = cursor.getString(titleColumn),
+                        begin = cursor.getLong(beginColumn),
+                        end = cursor.getLong(endColumn),
+                        allDay = cursor.getInt(allDayColumn) == 1
+                    )
                 }
             }
-            items
+            rowsToEvents(rows, today = LocalDate.now())
         }.onFailure {
             Log.e(TAG, "Failed to fetch calendar events", it)
         }.getOrDefault(emptyList())

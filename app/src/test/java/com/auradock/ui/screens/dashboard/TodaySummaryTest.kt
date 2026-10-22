@@ -51,4 +51,11 @@ class TodaySummaryTest {
         assertEquals(emptyList<String>(), s.lines)
         assertEquals("Open Settings", s.actionText)
     }
+
+    @Test
+    fun `all-day events show All day instead of a time`() {
+        val all = listOf(CalendarEvent("Priya's birthday", 5_000, allDay = true), CalendarEvent("Standup", 1_000))
+        val s = buildTodaySummary(all, CalendarPermissionUiState.GRANTED, fmt)
+        assertEquals(listOf("All day  Priya's birthday", "t1  Standup"), s.lines)
+    }
 }

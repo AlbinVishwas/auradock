@@ -100,7 +100,7 @@ fun CalendarWidget(
                         modifier = Modifier.weight(1f)
                     )
                     Text(
-                        text = formatter.format(Date(event.startTime)),
+                        text = if (event.allDay) "All day" else formatter.format(Date(event.startTime)),
                         style = AuraDockTypography.Caption,
                         color = AuraDockColors.OnSurfaceVariant
                     )
@@ -112,7 +112,7 @@ fun CalendarWidget(
         val nextText = if (nextEvent == null) {
             ""
         } else {
-            "Next: ${formatter.format(Date(nextEvent.startTime))}"
+            if (nextEvent.allDay) "Next: All day" else "Next: ${formatter.format(Date(nextEvent.startTime))}"
         }
         Text(
             text = nextText,
