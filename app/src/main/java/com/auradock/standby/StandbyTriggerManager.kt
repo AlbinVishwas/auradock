@@ -59,7 +59,9 @@ class StandbyTriggerManager(
                 batteryReceiver,
                 IntentFilter(Intent.ACTION_BATTERY_CHANGED)
             )
-            isCharging = stickyIntent?.getIntExtra(BatteryManager.EXTRA_PLUGGED, 0) != 0
+            // A null sticky intent means "no battery info yet", which must read as not charging.
+            // (null != 0 is true in Kotlin, so the plain comparison would wrongly say "charging".)
+            isCharging = (stickyIntent?.getIntExtra(BatteryManager.EXTRA_PLUGGED, 0) ?: 0) != 0
             isLandscape = appContext.resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
 
             appContext.registerComponentCallbacks(orientationCallbacks)

@@ -190,4 +190,22 @@ class StandbyTriggerManagerTest {
         verify(editor).putString(any(), eq(StandbyTriggerMode.CHARGING_ONLY.name))
         verify(editor).putString(any(), eq(StandbyTriggerMode.LANDSCAPE_ONLY.name))
     }
+
+    // ── missing battery info ──────────────────────────────────────────────────
+
+    @Test
+    fun `missing sticky battery intent is treated as not charging`() {
+        whenever(prefs.getString(any(), any())).thenReturn(StandbyTriggerMode.CHARGING_ONLY.name)
+        // registerReceiver returns null when no ACTION_BATTERY_CHANGED broadcast has been sent yet.
+        whenever(context.registerReceiver(any<BroadcastReceiver>(), any<IntentFilter>())).thenReturn(null)
+        val initialConfig = config(landscape = false)
+        val resources: Resources = mock()
+        whenever(resources.configuration).thenReturn(initialConfig)
+        whenever(context.resources).thenReturn(resources)
+
+        val manager = StandbyTriggerManager(context)
+        manager.start()
+
+        assertEquals(StandbyState.INACTIVE, manager.state())
+    }
 }
