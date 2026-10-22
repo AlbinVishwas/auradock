@@ -21,7 +21,9 @@ fun TodaySnapshotCard(
     items: List<String>,
     modifier: Modifier = Modifier,
     title: String = "Today",
-    emptyStateText: String = "No events today"
+    emptyStateText: String = "No events today",
+    actionText: String? = null,
+    onAction: () -> Unit = {}
 ) {
     val spacing = LocalAuraDockSpacing.current
 
@@ -44,6 +46,10 @@ fun TodaySnapshotCard(
                     style = AuraDockTypography.WidgetLabel,
                     color = AuraDockColors.OnSurfaceVariant
                 )
+                if (actionText != null) {
+                    Spacer(modifier = Modifier.height(spacing.md))
+                    QuickActionButton(text = actionText, onClick = onAction, isActive = true)
+                }
             } else {
                 items.forEachIndexed { index, item ->
                     Text(

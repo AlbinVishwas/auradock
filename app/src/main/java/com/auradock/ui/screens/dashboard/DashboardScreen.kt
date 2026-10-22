@@ -17,7 +17,11 @@ import androidx.compose.material3.Text
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.background
+import android.text.format.DateFormat
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import androidx.compose.ui.platform.LocalContext
+import java.util.Date
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
@@ -68,6 +72,7 @@ fun DashboardScreen(
 ) {
     val spacing = LocalAuraDockSpacing.current
     val haptic = LocalHapticFeedback.current
+    val context = LocalContext.current
 
     LaunchedEffect(voiceState) {
         if (voiceState == VoiceState.Success) {
@@ -111,13 +116,18 @@ fun DashboardScreen(
 
         Spacer(modifier = Modifier.height(spacing.lg))
 
+        val timeFormat = remember(context) { DateFormat.getTimeFormat(context) }
+        val summary = buildTodaySummary(
+            events = todayEvents,
+            permission = calendarPermissionState,
+            formatTime = { timeFormat.format(Date(it)) }
+        )
         TodaySnapshotCard(
             modifier = Modifier.fillMaxWidth(),
-            items = listOf(
-                "Team standup 10:30",
-                "Investor call 14:00",
-                "Ship beta build"
-            )
+            items = summary.lines,
+            emptyStateText = summary.emptyText,
+            actionText = summary.actionText,
+            onAction = onEnableCalendarAccess
         )
 
         Spacer(modifier = Modifier.height(spacing.lg))
