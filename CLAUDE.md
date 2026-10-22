@@ -1,0 +1,1 @@
+- Emulator: Medium_Phone_API_36.1 (Android 16) is already running; never start or kill it yourself.
