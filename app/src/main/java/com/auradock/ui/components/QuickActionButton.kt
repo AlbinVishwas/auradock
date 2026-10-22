@@ -92,7 +92,9 @@ fun QuickActionButton(
             Text(
                 text = text,
                 style = AuraDockTypography.WidgetLabel,
-                color = resolvedContentColor
+                color = resolvedContentColor,
+                maxLines = 1,
+                softWrap = false
             )
         }
     }

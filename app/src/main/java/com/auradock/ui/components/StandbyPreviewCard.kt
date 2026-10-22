@@ -13,6 +13,11 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.auradock.ui.theme.AuraDockColors
 import com.auradock.ui.theme.AuraDockTheme
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.requiredSize
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 
 @Composable
 fun StandbyPreviewCard(
@@ -40,6 +45,33 @@ fun StandbyPreviewCard(
             .then(selectionModifier)
     ) {
         GlassCard(modifier = Modifier.fillMaxSize(), content = content)
+    }
+}
+
+/**
+ * Lays [content] out at [designWidth] (keeping the available aspect ratio) and scales the result
+ * down to fit, so a preview looks like the real full-size screen instead of overflowing.
+ * Content is centered and scaled about its center, so the scaled copy exactly fills the space.
+ */
+@Composable
+fun ScaledPreview(
+    designWidth: Dp,
+    modifier: Modifier = Modifier,
+    content: @Composable () -> Unit
+) {
+    BoxWithConstraints(modifier = modifier) {
+        val scale = maxWidth / designWidth
+        val designHeight = designWidth * (maxHeight / maxWidth)
+        Box(
+            modifier = Modifier
+                .requiredSize(designWidth, designHeight)
+                .graphicsLayer {
+                    scaleX = scale
+                    scaleY = scale
+                }
+        ) {
+            content()
+        }
     }
 }
 
