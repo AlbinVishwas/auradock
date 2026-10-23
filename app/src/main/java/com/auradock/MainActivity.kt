@@ -29,8 +29,9 @@ import com.auradock.permissions.isNotificationAccessEnabled
 import com.auradock.permissions.openAppSettings
 import com.auradock.permissions.openNotificationAccessSettings
 import com.auradock.standby.StandbyState
-import com.auradock.ui.screens.StandbyScreen
-import com.auradock.ui.template.toLegacyTemplate
+import com.auradock.dock.DockData
+import com.auradock.dock.DockScreen
+import javax.inject.Inject
 import com.auradock.ui.screens.TemplateGalleryScreen
 import com.auradock.ui.screens.dashboard.DashboardScreen
 import com.auradock.ui.theme.AuraDockTheme
@@ -42,6 +43,8 @@ import kotlinx.coroutines.launch
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     private val standbyViewModel: StandbyViewModel by viewModels()
+
+    @Inject lateinit var dockData: DockData
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -67,8 +70,6 @@ class MainActivity : ComponentActivity() {
                 val standbyState by standbyViewModel.standbyState.collectAsState()
                 val todayEvents by standbyViewModel.todayEvents.collectAsState()
                 val calendarPermissionState by standbyViewModel.calendarPermissionState.collectAsState()
-                val importantNotifications by standbyViewModel.importantNotifications.collectAsState()
-                val hasNotificationAccess by standbyViewModel.hasNotificationAccess.collectAsState()
                 var showGallery by remember { mutableStateOf(false) }
                 val calendarPermissionLauncher = rememberLauncherForActivityResult(
                     contract = ActivityResultContracts.RequestPermission()
@@ -116,19 +117,11 @@ class MainActivity : ComponentActivity() {
                     label = "rootModeTransition"
                 ) { mode ->
                     when (mode) {
-                        "standby" -> StandbyScreen(
-                            template = currentTemplate.toLegacyTemplate(),
-                            timeMillis = timeMillis,
-                            todayEvents = todayEvents,
-                            calendarPermissionState = calendarPermissionState,
-                            importantNotifications = importantNotifications,
-                            hasNotificationAccess = hasNotificationAccess,
-                            onEnableCalendarAccess = { standbyViewModel.requestCalendarPermission() },
-                            onOpenNotificationSettings = { standbyViewModel.openNotificationSettings() }
-                        )
+                        "standby" -> DockScreen(dockData = dockData, window = this@MainActivity.window)
 
                         "gallery" -> TemplateGalleryScreen(
                             selected = currentTemplate,
+                            timeMillis = timeMillis,
                             onApplyClick = {
                                 standbyViewModel.setTemplate(it)
                                 showGallery = false
@@ -140,11 +133,8 @@ class MainActivity : ComponentActivity() {
                             timeMillis = timeMillis,
                             todayEvents = todayEvents,
                             calendarPermissionState = calendarPermissionState,
-                            importantNotifications = importantNotifications,
-                            hasNotificationAccess = hasNotificationAccess,
                             onCustomizeStandby = { showGallery = true },
-                            onEnableCalendarAccess = { standbyViewModel.requestCalendarPermission() },
-                            onOpenNotificationSettings = { standbyViewModel.openNotificationSettings() }
+                            onEnableCalendarAccess = { standbyViewModel.requestCalendarPermission() }
                         )
                     }
                 }

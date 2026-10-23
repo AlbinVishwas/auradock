@@ -27,7 +27,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.auradock.dock.DockContent
 import com.auradock.dock.DockTemplate
+import com.auradock.ui.components.ScaledPreview
 import com.auradock.ui.components.GlassCard
 import com.auradock.ui.components.QuickActionButton
 import com.auradock.ui.theme.AuraDockColors
@@ -40,6 +42,7 @@ import kotlin.math.abs
 @OptIn(ExperimentalFoundationApi::class)
 fun TemplateGalleryScreen(
     selected: DockTemplate,
+    timeMillis: Long,
     modifier: Modifier = Modifier,
     templates: List<DockTemplate> = DockTemplate.available,
     onApplyClick: (DockTemplate) -> Unit = {}
@@ -85,6 +88,7 @@ fun TemplateGalleryScreen(
 
                 TemplateCard(
                     template = templates[page],
+                    timeMillis = timeMillis,
                     inUse = templates[page] == selected,
                     modifier = Modifier.graphicsLayer {
                         scaleX = scale
@@ -111,6 +115,7 @@ fun TemplateGalleryScreen(
 @Composable
 private fun TemplateCard(
     template: DockTemplate,
+    timeMillis: Long,
     inUse: Boolean,
     modifier: Modifier = Modifier
 ) {
@@ -128,17 +133,20 @@ private fun TemplateCard(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .weight(1f)
-                    .clip(RoundedCornerShape(20.dp))
-                    .background(Color(0xFF111111)),
+                    .weight(1f),
                 contentAlignment = Alignment.Center
             ) {
-                Text(
-                    text = "10:42",
-                    color = if (template == DockTemplate.MINIMAL) Color(0xFF9A9A9A) else Color.White,
-                    fontSize = 44.sp,
-                    fontWeight = FontWeight.ExtraLight
-                )
+                // The real dock for this template, shrunk to a thumbnail.
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .aspectRatio(16f / 9f)
+                        .clip(RoundedCornerShape(16.dp))
+                ) {
+                    ScaledPreview(designWidth = 800.dp) {
+                        DockContent(template = template, timeMillis = timeMillis)
+                    }
+                }
             }
 
             Row(horizontalArrangement = Arrangement.spacedBy(AuraDockSpacing.sm)) {
@@ -165,6 +173,6 @@ private fun TemplateCard(
 @Composable
 private fun TemplateGalleryScreenPreview() {
     AuraDockTheme {
-        TemplateGalleryScreen(selected = DockTemplate.CLASSIC)
+        TemplateGalleryScreen(selected = DockTemplate.CLASSIC, timeMillis = System.currentTimeMillis())
     }
 }

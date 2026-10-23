@@ -16,7 +16,6 @@ import android.view.Display
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -32,8 +31,6 @@ import androidx.savedstate.SavedStateRegistry
 import androidx.savedstate.SavedStateRegistryController
 import androidx.savedstate.SavedStateRegistryOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
-import com.auradock.ui.screens.StandbyScreen
-import com.auradock.ui.template.toLegacyTemplate
 import com.auradock.ui.theme.AuraDockTheme
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
@@ -111,23 +108,12 @@ class DockDreamService : DreamService(), LifecycleOwner, SavedStateRegistryOwner
             setViewTreeSavedStateRegistryOwner(this@DockDreamService)
             setContent {
                 AuraDockTheme {
-                    val time by dockData.timeMillis.collectAsState(initial = dockData.currentTimeMillis())
-                    val events by dockData.todayEvents.collectAsState(initial = emptyList())
-                    val notifications by dockData.notifications.collectAsState()
-                    val template by dockData.selectedTemplate.collectAsState()
                     val shown = shownOrientation
                     if (shown == null) {
                         Box(Modifier.fillMaxSize().background(Color.Black)) // waiting for the sensor
                     } else {
                         RotatedContent(contentRotationDegrees(shown, displayRotationDegrees)) {
-                            StandbyScreen(
-                                template = template.toLegacyTemplate(),
-                                timeMillis = time,
-                                todayEvents = events,
-                                calendarPermissionState = dockData.calendarPermissionState(),
-                                importantNotifications = notifications,
-                                hasNotificationAccess = dockData.hasNotificationAccess()
-                            )
+                            DockScreen(dockData = dockData, window = window)
                         }
                     }
                 }

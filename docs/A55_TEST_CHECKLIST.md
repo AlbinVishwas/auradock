@@ -53,6 +53,25 @@ Emulator notes that explain some of these items are in the "Why" lines.
   While the dock shows, turn the phone from left-landscape to right-landscape. Pass: content turns upright
   again without closing.
 
+## Templates and display
+
+- [ ] **Minimal is visibly dim on the AMOLED.**
+  Pick Minimal, dock the phone in a dark room, in the screensaver and in the app. Pass: the screen is very dim
+  (window brightness is set to 5%; the emulator only logs it), the digits are soft gray, and nothing looks
+  pure white. Also check the time is still readable in a dim room.
+- [ ] **Samsung honors the screensaver's brightness request.**
+  Same check, screensaver only. Pass: Minimal is dimmer than Classic. If Samsung ignores window brightness
+  inside a screensaver, record it (the fix would be a different dimming method).
+- [ ] **Classic looks the same in the screensaver and in the app.**
+  Dock via the screensaver, then via the app (charging + landscape). Pass: same layout, same clock, same card.
+- [ ] **Burn-in drift is invisible but real.**
+  Leave the dock for 10+ minutes. Pass: you do not see it move, but a marker on the screen edge shows the
+  content has shifted a few millimeters after several minutes.
+- [ ] **Chosen template survives a reboot.**
+  Pick Minimal, reboot, dock. Pass: Minimal is still selected in the Templates screen and used by the dock.
+- [ ] **Weather shows a dash, not fake data.**
+  Pass: Classic shows "—" under the date (until step 8 adds real weather).
+
 ## Battery, alarms, listener *(not built yet)*
 
 - [ ] **Sleeping apps / Deep sleeping apps.**

@@ -24,7 +24,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.auradock.data.CalendarEvent
-import com.auradock.data.NotificationItem
 import com.auradock.ui.components.QuickActionButton
 import com.auradock.time.formatDashboardDate
 import com.auradock.time.greetingFor
@@ -32,8 +31,7 @@ import com.auradock.ui.components.ScaledPreview
 import com.auradock.ui.components.StandbyPreviewCard
 import com.auradock.ui.components.TodaySnapshotCard
 import com.auradock.dock.DockTemplate
-import com.auradock.ui.template.toLegacyTemplate
-import com.auradock.ui.template.TemplateRenderer
+import com.auradock.dock.DockContent
 import com.auradock.ui.theme.AuraDockTheme
 import com.auradock.ui.theme.LocalAuraDockSpacing
 import com.auradock.ui.viewmodel.CalendarPermissionUiState
@@ -46,11 +44,8 @@ fun DashboardScreen(
     modifier: Modifier = Modifier,
     todayEvents: List<CalendarEvent> = emptyList(),
     calendarPermissionState: CalendarPermissionUiState = CalendarPermissionUiState.DENIED,
-    importantNotifications: List<NotificationItem> = emptyList(),
-    hasNotificationAccess: Boolean = false,
     onCustomizeStandby: () -> Unit = {},
-    onEnableCalendarAccess: () -> Unit = {},
-    onOpenNotificationSettings: () -> Unit = {}
+    onEnableCalendarAccess: () -> Unit = {}
 ) {
     val spacing = LocalAuraDockSpacing.current
     val context = LocalContext.current
@@ -114,17 +109,7 @@ fun DashboardScreen(
         ) {
             // Lay the template out at a realistic landscape size, then shrink it to fit the card.
             ScaledPreview(designWidth = 800.dp) {
-                TemplateRenderer(
-                    template = currentTemplate.toLegacyTemplate(),
-                    timeMillis = timeMillis,
-                    todayEvents = todayEvents,
-                    calendarPermissionState = calendarPermissionState,
-                    importantNotifications = importantNotifications,
-                    hasNotificationAccess = hasNotificationAccess,
-                    onEnableCalendarAccess = onEnableCalendarAccess,
-                    onOpenNotificationSettings = onOpenNotificationSettings,
-                    modifier = Modifier.fillMaxSize()
-                )
+                DockContent(template = currentTemplate, timeMillis = timeMillis)
             }
         }
 

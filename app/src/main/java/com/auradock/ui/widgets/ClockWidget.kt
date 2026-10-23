@@ -45,8 +45,14 @@ import java.util.*
 fun ClockWidget(
     timeMillis : Long    = System.currentTimeMillis(),
     use24Hour  : Boolean = false,
+    /** Low-contrast look for OLED night use: soft gray digits, no glow, nothing pure white. */
+    dimmed     : Boolean = false,
+    showDate   : Boolean = true,
     modifier   : Modifier = Modifier
 ) {
+    val digitColor = if (dimmed) DimDigits else Color.White
+    val colonColor = if (dimmed) DimColon else AuraDockColors.ClockGlow
+    val labelColor = if (dimmed) DimLabel else AuraDockColors.OnSurfaceVariant
     // ── Time components (recomputed only when millis cross a minute boundary) ─
     val calendar = remember(timeMillis) {
         Calendar.getInstance().apply { timeInMillis = timeMillis }
@@ -121,15 +127,17 @@ fun ClockWidget(
 
                 // Ghost layer — blurred copy creates the ambient halo.
                 // Drawn first so it sits visually behind the sharp text.
-                Text(
-                    text = "$hourStr:$minuteStr",
-                    style = AuraDockTypography.ClockDisplay.copy(
-                        color = AuraDockColors.ClockGlow.copy(
-                            alpha = glowBreath * minuteAlpha
-                        )
-                    ),
-                    modifier = Modifier.blur(20.dp)
-                )
+                if (!dimmed) {
+                    Text(
+                        text = "$hourStr:$minuteStr",
+                        style = AuraDockTypography.ClockDisplay.copy(
+                            color = AuraDockColors.ClockGlow.copy(
+                                alpha = glowBreath * minuteAlpha
+                            )
+                        ),
+                        modifier = Modifier.blur(20.dp)
+                    )
+                }
 
                 // Sharp foreground clock row
                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -137,14 +145,14 @@ fun ClockWidget(
                     // Hour
                     Text(
                         text  = hourStr,
-                        style = AuraDockTypography.ClockDisplay.copy(color = Color.White)
+                        style = AuraDockTypography.ClockDisplay.copy(color = digitColor)
                     )
 
                     // Blinking colon — cyan tint, step-function opacity
                     Text(
                         text  = ":",
                         style = AuraDockTypography.ClockDisplay.copy(
-                            color = AuraDockColors.ClockGlow.copy(alpha = colonAlpha)
+                            color = colonColor.copy(alpha = colonAlpha)
                         ),
                         modifier = Modifier.padding(horizontal = 2.dp)
                     )
@@ -153,7 +161,7 @@ fun ClockWidget(
                     Text(
                         text  = minuteStr,
                         style = AuraDockTypography.ClockDisplay.copy(
-                            color = Color.White.copy(alpha = minuteAlpha)
+                            color = digitColor.copy(alpha = minuteAlpha)
                         )
                     )
 
@@ -163,7 +171,7 @@ fun ClockWidget(
                         Text(
                             text  = amPmStr,
                             style = AuraDockTypography.Caption.copy(
-                                color      = AuraDockColors.OnSurfaceVariant,
+                                color      = labelColor,
                                 fontSize   = 18.sp,
                                 fontWeight = FontWeight.Light
                             ),
@@ -176,15 +184,17 @@ fun ClockWidget(
             }
 
             // ── Date subtitle ─────────────────────────────────────────────────
-            Text(
-                text  = dateStr,
-                style = AuraDockTypography.WidgetLabel.copy(
-                    color         = AuraDockColors.OnSurfaceVariant,
-                    letterSpacing = 2.sp,
-                    fontWeight    = FontWeight.Light,
-                    fontSize      = 13.sp
+            if (showDate) {
+                Text(
+                    text  = dateStr,
+                    style = AuraDockTypography.WidgetLabel.copy(
+                        color         = labelColor,
+                        letterSpacing = 2.sp,
+                        fontWeight    = FontWeight.Light,
+                        fontSize      = 13.sp
+                    )
                 )
-            )
+            }
         }
     }
 }
@@ -193,5 +203,10 @@ fun ClockWidget(
 // Private easing — step function for colon blink (no interpolation between
 // visible and invisible; mimics physical clock colon behaviour).
 // ─────────────────────────────────────────────────────────────────────────────
+
+// Dimmed (OLED night) palette: nothing is pure white.
+private val DimDigits = Color(0xFF8A8A8A)
+private val DimColon = Color(0xFF55616A)
+private val DimLabel = Color(0xFF666666)
 
 private val StepEasing = Easing { fraction -> if (fraction < 1f) 0f else 1f }
