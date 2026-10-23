@@ -16,7 +16,6 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
 import androidx.compose.animation.togetherWith
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -36,7 +35,6 @@ import com.auradock.ui.screens.dashboard.DashboardScreen
 import com.auradock.ui.theme.AuraDockTheme
 import com.auradock.ui.viewmodel.PermissionAction
 import com.auradock.ui.viewmodel.StandbyViewModel
-import com.auradock.voice.VoiceInputManager
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 
@@ -66,17 +64,11 @@ class MainActivity : ComponentActivity() {
                 val currentTemplate by standbyViewModel.currentTemplate.collectAsState()
                 val timeMillis by standbyViewModel.currentTimeMillis.collectAsState()
                 val standbyState by standbyViewModel.standbyState.collectAsState()
-                val triggerMode by standbyViewModel.standbyTriggerMode.collectAsState()
                 val todayEvents by standbyViewModel.todayEvents.collectAsState()
                 val calendarPermissionState by standbyViewModel.calendarPermissionState.collectAsState()
                 val importantNotifications by standbyViewModel.importantNotifications.collectAsState()
                 val hasNotificationAccess by standbyViewModel.hasNotificationAccess.collectAsState()
-                val isGenerating by standbyViewModel.isGenerating.collectAsState()
-                val voiceState by standbyViewModel.voiceState.collectAsState()
-                val voiceFeedbackText by standbyViewModel.voiceFeedbackText.collectAsState()
-                val partialTranscript by standbyViewModel.partialTranscript.collectAsState()
                 var showGallery by remember { mutableStateOf(false) }
-                val voiceInputManager = remember { VoiceInputManager(this) }
                 val calendarPermissionLauncher = rememberLauncherForActivityResult(
                     contract = ActivityResultContracts.RequestPermission()
                 ) { granted ->
@@ -86,10 +78,6 @@ class MainActivity : ComponentActivity() {
                             Manifest.permission.READ_CALENDAR
                         )
                     standbyViewModel.onCalendarPermissionResult(granted, permanentlyDenied)
-                }
-
-                DisposableEffect(Unit) {
-                    onDispose { voiceInputManager.release() }
                 }
 
                 LaunchedEffect(Unit) {
@@ -153,21 +141,7 @@ class MainActivity : ComponentActivity() {
                             calendarPermissionState = calendarPermissionState,
                             importantNotifications = importantNotifications,
                             hasNotificationAccess = hasNotificationAccess,
-                            standbyTriggerMode = triggerMode,
-                            isGenerating = isGenerating,
-                            voiceState = voiceState,
-                            voiceFeedbackText = voiceFeedbackText,
-                            partialTranscript = partialTranscript,
                             onCustomizeStandby = { showGallery = true },
-                            onVoiceCommand = {
-                                voiceInputManager.startSpeechToTemplateGeneration(
-                                    viewModel = standbyViewModel,
-                                    onError = { standbyViewModel.onVoiceInputError() }
-                                )
-                            },
-                            onStandbyTriggerModeClick = {
-                                standbyViewModel.cycleStandbyTriggerMode()
-                            },
                             onEnableCalendarAccess = { standbyViewModel.requestCalendarPermission() },
                             onOpenNotificationSettings = { standbyViewModel.openNotificationSettings() }
                         )

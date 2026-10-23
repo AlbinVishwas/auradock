@@ -5,7 +5,6 @@ import android.content.ComponentCallbacks
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
-import android.content.SharedPreferences
 import android.content.res.Configuration
 import android.content.res.Resources
 import android.os.BatteryManager
@@ -22,48 +21,37 @@ import org.mockito.kotlin.whenever
 /**
  * JVM tests for [StandbyTriggerManager]. The manager only talks to Android through a Context, so
  * we hand it a mock Context, capture the BroadcastReceiver / ComponentCallbacks it registers, and
- * then drive them by hand — exactly what the OS does when you plug in a charger or rotate.
+ * then drive them by hand, exactly what the OS does when you plug in a charger or rotate.
+ * The rule under test: dock when charging AND landscape.
  */
 class StandbyTriggerManagerTest {
 
     private lateinit var context: Context
-    private lateinit var prefs: SharedPreferences
-    private lateinit var editor: SharedPreferences.Editor
     private lateinit var batteryReceiver: BroadcastReceiver
     private lateinit var orientationCallbacks: ComponentCallbacks
 
     @Before
     fun setUp() {
         context = mock()
-        prefs = mock()
-        editor = mock()
         whenever(context.applicationContext).thenReturn(context)
-        whenever(context.getSharedPreferences(any(), any())).thenReturn(prefs)
-        whenever(prefs.edit()).thenReturn(editor)
-        whenever(editor.putString(any(), any())).thenReturn(editor)
     }
 
     // ── helpers ───────────────────────────────────────────────────────────────
 
-    /** Builds a manager, starts it with the given initial hardware state and captures its listeners. */
-    private fun startManager(
-        mode: StandbyTriggerMode,
-        charging: Boolean = false,
-        landscape: Boolean = false
-    ): StandbyTriggerManager {
-        whenever(prefs.getString(any(), any())).thenReturn(mode.name)
+    private fun startManager(charging: Boolean = false, landscape: Boolean = false): StandbyTriggerManager {
         // Build the mocks first: creating a mock inside thenReturn(...) would interrupt stubbing.
         val stickyIntent = batteryIntent(charging)
         val initialConfig = config(landscape)
-        whenever(context.registerReceiver(any<BroadcastReceiver>(), any<IntentFilter>()))
-            .thenReturn(stickyIntent)
+        whenever(context.registerReceiver(any<BroadcastReceiver>(), any<IntentFilter>())).thenReturn(stickyIntent)
         val resources: Resources = mock()
         whenever(resources.configuration).thenReturn(initialConfig)
         whenever(context.resources).thenReturn(resources)
+        return startAndCapture()
+    }
 
+    private fun startAndCapture(): StandbyTriggerManager {
         val manager = StandbyTriggerManager(context)
         manager.start()
-
         val receiver = argumentCaptor<BroadcastReceiver>()
         verify(context).registerReceiver(receiver.capture(), any<IntentFilter>())
         batteryReceiver = receiver.firstValue
@@ -86,73 +74,52 @@ class StandbyTriggerManagerTest {
     }
 
     private fun plug(charging: Boolean) = batteryReceiver.onReceive(context, batteryIntent(charging))
-
     private fun rotate(landscape: Boolean) = orientationCallbacks.onConfigurationChanged(config(landscape))
-
     private fun StandbyTriggerManager.state() = standbyState.value
 
-    // ── trigger modes ─────────────────────────────────────────────────────────
+    // ── the rule: charging AND landscape ──────────────────────────────────────
 
     @Test
-    fun `charging and landscape mode needs both conditions`() {
-        val manager = startManager(StandbyTriggerMode.CHARGING_AND_LANDSCAPE)
+    fun `needs both charging and landscape`() {
+        val manager = startManager()
         assertEquals(StandbyState.INACTIVE, manager.state())
-
-        plug(true)  // charging only
+        plug(true) // charging only
         assertEquals(StandbyState.INACTIVE, manager.state())
-
         rotate(true) // charging + landscape
         assertEquals(StandbyState.ACTIVE, manager.state())
     }
 
     @Test
-    fun `charging and landscape mode ignores landscape alone`() {
-        val manager = startManager(StandbyTriggerMode.CHARGING_AND_LANDSCAPE)
+    fun `landscape alone does not trigger`() {
+        val manager = startManager()
         rotate(true)
         assertEquals(StandbyState.INACTIVE, manager.state())
     }
 
     @Test
-    fun `charging only mode activates on plug regardless of orientation`() {
-        val manager = startManager(StandbyTriggerMode.CHARGING_ONLY)
-        rotate(false)
-        plug(true)
-        assertEquals(StandbyState.ACTIVE, manager.state())
-    }
-
-    @Test
-    fun `landscape only mode activates on rotate regardless of charging`() {
-        val manager = startManager(StandbyTriggerMode.LANDSCAPE_ONLY)
-        plug(false)
-        rotate(true)
-        assertEquals(StandbyState.ACTIVE, manager.state())
+    fun `starts active when already charging in landscape`() {
+        assertEquals(StandbyState.ACTIVE, startManager(charging = true, landscape = true).state())
     }
 
     // ── entering and exiting ──────────────────────────────────────────────────
 
     @Test
-    fun `starts active when already charging in landscape`() {
-        val manager = startManager(StandbyTriggerMode.CHARGING_AND_LANDSCAPE, charging = true, landscape = true)
-        assertEquals(StandbyState.ACTIVE, manager.state())
-    }
-
-    @Test
     fun `unplugging exits standby`() {
-        val manager = startManager(StandbyTriggerMode.CHARGING_AND_LANDSCAPE, charging = true, landscape = true)
+        val manager = startManager(charging = true, landscape = true)
         plug(false)
         assertEquals(StandbyState.INACTIVE, manager.state())
     }
 
     @Test
     fun `rotating back to portrait exits standby`() {
-        val manager = startManager(StandbyTriggerMode.CHARGING_AND_LANDSCAPE, charging = true, landscape = true)
+        val manager = startManager(charging = true, landscape = true)
         rotate(false)
         assertEquals(StandbyState.INACTIVE, manager.state())
     }
 
     @Test
     fun `standby can be re-entered after exiting`() {
-        val manager = startManager(StandbyTriggerMode.CHARGING_AND_LANDSCAPE, charging = true, landscape = true)
+        val manager = startManager(charging = true, landscape = true)
         rotate(false)
         rotate(true)
         assertEquals(StandbyState.ACTIVE, manager.state())
@@ -160,52 +127,25 @@ class StandbyTriggerManagerTest {
 
     @Test
     fun `stop forces inactive and unregisters listeners`() {
-        val manager = startManager(StandbyTriggerMode.CHARGING_AND_LANDSCAPE, charging = true, landscape = true)
+        val manager = startManager(charging = true, landscape = true)
         manager.stop()
         assertEquals(StandbyState.INACTIVE, manager.state())
         verify(context).unregisterReceiver(batteryReceiver)
         verify(context).unregisterComponentCallbacks(orientationCallbacks)
     }
 
-    // ── mode switching ────────────────────────────────────────────────────────
-
-    @Test
-    fun `changing mode re-evaluates the current state`() {
-        // charging in portrait: inactive under CHARGING_AND_LANDSCAPE, active under CHARGING_ONLY
-        val manager = startManager(StandbyTriggerMode.CHARGING_AND_LANDSCAPE, charging = true, landscape = false)
-        assertEquals(StandbyState.INACTIVE, manager.state())
-        manager.setTriggerMode(StandbyTriggerMode.CHARGING_ONLY)
-        assertEquals(StandbyState.ACTIVE, manager.state())
-    }
-
-    @Test
-    fun `cycleTriggerMode walks all three modes and persists each`() {
-        val manager = startManager(StandbyTriggerMode.CHARGING_AND_LANDSCAPE)
-        manager.cycleTriggerMode()
-        assertEquals(StandbyTriggerMode.CHARGING_ONLY, manager.triggerMode.value)
-        manager.cycleTriggerMode()
-        assertEquals(StandbyTriggerMode.LANDSCAPE_ONLY, manager.triggerMode.value)
-        manager.cycleTriggerMode()
-        assertEquals(StandbyTriggerMode.CHARGING_AND_LANDSCAPE, manager.triggerMode.value)
-        verify(editor).putString(any(), eq(StandbyTriggerMode.CHARGING_ONLY.name))
-        verify(editor).putString(any(), eq(StandbyTriggerMode.LANDSCAPE_ONLY.name))
-    }
-
     // ── missing battery info ──────────────────────────────────────────────────
 
     @Test
     fun `missing sticky battery intent is treated as not charging`() {
-        whenever(prefs.getString(any(), any())).thenReturn(StandbyTriggerMode.CHARGING_ONLY.name)
         // registerReceiver returns null when no ACTION_BATTERY_CHANGED broadcast has been sent yet.
+        // The phone is in landscape, so a wrongly assumed "charging" would turn standby on.
         whenever(context.registerReceiver(any<BroadcastReceiver>(), any<IntentFilter>())).thenReturn(null)
-        val initialConfig = config(landscape = false)
+        val initialConfig = config(landscape = true)
         val resources: Resources = mock()
         whenever(resources.configuration).thenReturn(initialConfig)
         whenever(context.resources).thenReturn(resources)
 
-        val manager = StandbyTriggerManager(context)
-        manager.start()
-
-        assertEquals(StandbyState.INACTIVE, manager.state())
+        assertEquals(StandbyState.INACTIVE, startAndCapture().state())
     }
 }

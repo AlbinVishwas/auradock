@@ -1,11 +1,5 @@
 package com.auradock.ui.screens.dashboard
 
-import androidx.compose.animation.core.LinearEasing
-import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -23,19 +17,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import java.util.Date
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import com.auradock.data.CalendarEvent
 import com.auradock.data.NotificationItem
-import com.auradock.standby.StandbyTriggerMode
 import com.auradock.ui.components.QuickActionButton
 import com.auradock.time.formatDashboardDate
 import com.auradock.time.greetingFor
@@ -48,7 +37,6 @@ import com.auradock.ui.template.TemplateRenderer
 import com.auradock.ui.theme.AuraDockTheme
 import com.auradock.ui.theme.LocalAuraDockSpacing
 import com.auradock.ui.viewmodel.CalendarPermissionUiState
-import com.auradock.ui.viewmodel.VoiceState
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -60,39 +48,14 @@ fun DashboardScreen(
     calendarPermissionState: CalendarPermissionUiState = CalendarPermissionUiState.DENIED,
     importantNotifications: List<NotificationItem> = emptyList(),
     hasNotificationAccess: Boolean = false,
-    standbyTriggerMode: StandbyTriggerMode = StandbyTriggerMode.CHARGING_AND_LANDSCAPE,
-    isGenerating: Boolean = false,
-    voiceState: VoiceState = VoiceState.Idle,
-    voiceFeedbackText: String = "",
-    partialTranscript: String = "",
     onCustomizeStandby: () -> Unit = {},
-    onVoiceCommand: () -> Unit = {},
-    onStandbyTriggerModeClick: () -> Unit = {},
     onEnableCalendarAccess: () -> Unit = {},
     onOpenNotificationSettings: () -> Unit = {}
 ) {
     val spacing = LocalAuraDockSpacing.current
-    val haptic = LocalHapticFeedback.current
     val context = LocalContext.current
 
-    LaunchedEffect(voiceState) {
-        if (voiceState == VoiceState.Success) {
-            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-        }
-    }
-
     val dateText = formatDashboardDate(timeMillis)
-    val pulseTransition = rememberInfiniteTransition(label = "voicePulse")
-    val micScale by pulseTransition.animateFloat(
-        initialValue = 1f,
-        targetValue = 1.08f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(durationMillis = 700, easing = LinearEasing),
-            repeatMode = RepeatMode.Reverse
-        ),
-        label = "micScale"
-    )
-
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -141,30 +104,6 @@ fun DashboardScreen(
         ) {
             QuickActionButton(text = "Add Reminder", onClick = {})
             QuickActionButton(text = "Customize Standby", onClick = onCustomizeStandby)
-            QuickActionButton(
-                text = when (standbyTriggerMode) {
-                    StandbyTriggerMode.CHARGING_AND_LANDSCAPE -> "Charging + Landscape"
-                    StandbyTriggerMode.CHARGING_ONLY -> "Charging Only"
-                    StandbyTriggerMode.LANDSCAPE_ONLY -> "Landscape Only"
-                },
-                onClick = onStandbyTriggerModeClick
-            )
-            QuickActionButton(
-                text = when (voiceState) {
-                    VoiceState.Listening -> "Listening..."
-                    VoiceState.Processing -> "Creating..."
-                    VoiceState.Success -> "Done"
-                    VoiceState.Error -> "Try Again"
-                    VoiceState.Idle -> "Voice Command"
-                },
-                onClick = onVoiceCommand,
-                isActive = voiceState == VoiceState.Listening || voiceState == VoiceState.Processing,
-                modifier = Modifier.graphicsLayer {
-                    val listening = voiceState == VoiceState.Listening
-                    scaleX = if (listening) micScale else 1f
-                    scaleY = if (listening) micScale else 1f
-                }
-            )
         }
 
         Spacer(modifier = Modifier.height(spacing.lg))

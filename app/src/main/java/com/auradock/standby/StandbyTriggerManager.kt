@@ -12,17 +12,17 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
+/**
+ * Decides when the in-app dock should show: the phone is charging AND in landscape. (One fixed rule,
+ * as the V1 spec says; there are no other trigger modes.)
+ */
 class StandbyTriggerManager(
-    private val context: Context
+    context: Context
 ) {
     private val appContext = context.applicationContext
-    private val prefs = appContext.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
 
     private val _standbyState = MutableStateFlow(StandbyState.INACTIVE)
     val standbyState: StateFlow<StandbyState> = _standbyState.asStateFlow()
-
-    private val _triggerMode = MutableStateFlow(readModeFromPrefs())
-    val triggerMode: StateFlow<StandbyTriggerMode> = _triggerMode.asStateFlow()
 
     private var isStarted = false
     private var isCharging = false
@@ -66,7 +66,7 @@ class StandbyTriggerManager(
 
             appContext.registerComponentCallbacks(orientationCallbacks)
             recomputeStandbyState()
-            Log.d(TAG, "StandbyTriggerManager started. charging=$isCharging landscape=$isLandscape mode=${_triggerMode.value}")
+            Log.d(TAG, "StandbyTriggerManager started. charging=$isCharging landscape=$isLandscape")
         }.onFailure {
             Log.e(TAG, "Failed to start trigger manager", it)
             transitionTo(StandbyState.INACTIVE)
@@ -93,43 +93,8 @@ class StandbyTriggerManager(
         Log.d(TAG, "StandbyTriggerManager stopped")
     }
 
-    fun setTriggerMode(mode: StandbyTriggerMode) {
-        _triggerMode.value = mode
-        prefs.edit().putString(KEY_TRIGGER_MODE, mode.name).apply()
-        Log.d(TAG, "Trigger mode changed to $mode")
-        recomputeStandbyState()
-    }
-
-    fun cycleTriggerMode() {
-        val next = when (_triggerMode.value) {
-            StandbyTriggerMode.CHARGING_AND_LANDSCAPE -> StandbyTriggerMode.CHARGING_ONLY
-            StandbyTriggerMode.CHARGING_ONLY -> StandbyTriggerMode.LANDSCAPE_ONLY
-            StandbyTriggerMode.LANDSCAPE_ONLY -> StandbyTriggerMode.CHARGING_AND_LANDSCAPE
-        }
-        setTriggerMode(next)
-    }
-
-    private fun readModeFromPrefs(): StandbyTriggerMode {
-        val stored = prefs.getString(KEY_TRIGGER_MODE, StandbyTriggerMode.CHARGING_AND_LANDSCAPE.name)
-        return runCatching { StandbyTriggerMode.valueOf(stored.orEmpty()) }
-            .getOrDefault(StandbyTriggerMode.CHARGING_AND_LANDSCAPE)
-    }
-
     private fun recomputeStandbyState() {
-        val next = when (_triggerMode.value) {
-            StandbyTriggerMode.CHARGING_AND_LANDSCAPE -> {
-                if (isCharging && isLandscape) StandbyState.ACTIVE else StandbyState.INACTIVE
-            }
-
-            StandbyTriggerMode.CHARGING_ONLY -> {
-                if (isCharging) StandbyState.ACTIVE else StandbyState.INACTIVE
-            }
-
-            StandbyTriggerMode.LANDSCAPE_ONLY -> {
-                if (isLandscape) StandbyState.ACTIVE else StandbyState.INACTIVE
-            }
-        }
-        transitionTo(next)
+        transitionTo(if (isCharging && isLandscape) StandbyState.ACTIVE else StandbyState.INACTIVE)
     }
 
     private fun transitionTo(next: StandbyState) {
@@ -141,7 +106,5 @@ class StandbyTriggerManager(
 
     companion object {
         private const val TAG = "StandbyTriggerManager"
-        private const val PREFS_NAME = "auradock_standby_prefs"
-        private const val KEY_TRIGGER_MODE = "standby_trigger_mode"
     }
 }

@@ -2,7 +2,6 @@ package com.auradock.ui.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.auradock.ai.TemplateGenerator
 import com.auradock.data.CalendarEvent
 import com.auradock.data.CalendarRepository
 import com.auradock.data.NotificationItem
@@ -10,7 +9,6 @@ import com.auradock.data.NotificationRepository
 import com.auradock.standby.StandbyState
 import com.auradock.standby.StandbyTriggerManager
 import com.auradock.time.MinuteClock
-import com.auradock.standby.StandbyTriggerMode
 import com.auradock.ui.template.StandbyTemplate
 import com.auradock.ui.template.TemplateDefaults
 import com.auradock.ui.template.sanitizedForStandby
@@ -25,8 +23,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
@@ -48,7 +44,6 @@ class StandbyViewModel @Inject constructor(
     // Activity, does not stop and restart it. It is stopped in onCleared().
     private val standbyTriggerManager = StandbyTriggerManager(context).also { it.start() }
     val standbyState: StateFlow<StandbyState> = standbyTriggerManager.standbyState
-    val standbyTriggerMode: StateFlow<StandbyTriggerMode> = standbyTriggerManager.triggerMode
 
     private val _hasCalendarPermission = MutableStateFlow(calendarRepository.hasCalendarPermission())
     val hasCalendarPermission: StateFlow<Boolean> = _hasCalendarPermission.asStateFlow()
@@ -64,14 +59,6 @@ class StandbyViewModel @Inject constructor(
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
     val importantNotifications: StateFlow<List<NotificationItem>> = notificationRepository.importantNotifications
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
-    private val _isGenerating = MutableStateFlow(false)
-    val isGenerating: StateFlow<Boolean> = _isGenerating.asStateFlow()
-    private val _voiceState = MutableStateFlow<VoiceState>(VoiceState.Idle)
-    val voiceState: StateFlow<VoiceState> = _voiceState.asStateFlow()
-    private val _voiceFeedbackText = MutableStateFlow("")
-    val voiceFeedbackText: StateFlow<String> = _voiceFeedbackText.asStateFlow()
-    private val _partialTranscript = MutableStateFlow("")
-    val partialTranscript: StateFlow<String> = _partialTranscript.asStateFlow()
 
     fun setTemplate(template: StandbyTemplate) {
         _currentTemplate.value = template.sanitizedForStandby()
@@ -81,10 +68,6 @@ class StandbyViewModel @Inject constructor(
         _currentTemplate.update { existing ->
             update(existing).sanitizedForStandby()
         }
-    }
-
-    fun cycleStandbyTriggerMode() {
-        standbyTriggerManager.cycleTriggerMode()
     }
 
     override fun onCleared() {
@@ -124,61 +107,5 @@ class StandbyViewModel @Inject constructor(
 
     fun openNotificationSettings() {
         _permissionActions.tryEmit(PermissionAction.OpenNotificationSettings)
-    }
-
-    fun generateFromPrompt(prompt: String, fromVoice: Boolean = false) {
-        viewModelScope.launch {
-            if (fromVoice) {
-                _voiceState.value = VoiceState.Processing
-                _voiceFeedbackText.value = "Creating your layout..."
-            }
-            _isGenerating.value = true
-            try {
-                val template = TemplateGenerator.generateTemplateFromPrompt(prompt)
-                setTemplate(template)
-                if (fromVoice) {
-                    _voiceState.value = VoiceState.Success
-                    _voiceFeedbackText.value = "Done"
-                }
-            } catch (_: Throwable) {
-                if (fromVoice) {
-                    _voiceState.value = VoiceState.Error
-                    _voiceFeedbackText.value = "Couldn't understand. Try again."
-                }
-            } finally {
-                _isGenerating.value = false
-                if (fromVoice) {
-                    delay(1200)
-                    resetVoiceState()
-                }
-            }
-        }
-    }
-
-    fun onVoiceListeningStarted() {
-        _voiceState.value = VoiceState.Listening
-        _voiceFeedbackText.value = "Listening..."
-        _partialTranscript.value = ""
-    }
-
-    fun onVoicePartialTranscript(text: String) {
-        if (_voiceState.value == VoiceState.Listening) {
-            _partialTranscript.value = text
-        }
-    }
-
-    fun onVoiceInputError() {
-        viewModelScope.launch {
-            _voiceState.value = VoiceState.Error
-            _voiceFeedbackText.value = "Couldn't understand. Try again."
-            delay(1600)
-            resetVoiceState()
-        }
-    }
-
-    private fun resetVoiceState() {
-        _voiceState.value = VoiceState.Idle
-        _voiceFeedbackText.value = ""
-        _partialTranscript.value = ""
     }
 }
