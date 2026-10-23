@@ -26,8 +26,11 @@ class DockData @Inject constructor(
     @ApplicationContext private val context: Context,
     private val calendarRepository: CalendarRepository,
     notificationRepository: NotificationRepository,
-    private val minuteClock: MinuteClock
+    private val minuteClock: MinuteClock,
+    templateRepository: TemplateRepository
 ) {
+    val selectedTemplate: StateFlow<DockTemplate> = templateRepository.selected
+
     /** Ticks at the start of every minute (see [MinuteClock]). */
     val timeMillis: Flow<Long> get() = minuteClock.minutes
     fun currentTimeMillis(): Long = minuteClock.currentMillis()

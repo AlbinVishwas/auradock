@@ -31,8 +31,8 @@ import com.auradock.time.greetingFor
 import com.auradock.ui.components.ScaledPreview
 import com.auradock.ui.components.StandbyPreviewCard
 import com.auradock.ui.components.TodaySnapshotCard
-import com.auradock.ui.template.StandbyTemplate
-import com.auradock.ui.template.TemplateDefaults
+import com.auradock.dock.DockTemplate
+import com.auradock.ui.template.toLegacyTemplate
 import com.auradock.ui.template.TemplateRenderer
 import com.auradock.ui.theme.AuraDockTheme
 import com.auradock.ui.theme.LocalAuraDockSpacing
@@ -41,7 +41,7 @@ import com.auradock.ui.viewmodel.CalendarPermissionUiState
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun DashboardScreen(
-    currentTemplate: StandbyTemplate,
+    currentTemplate: DockTemplate,
     timeMillis: Long,
     modifier: Modifier = Modifier,
     todayEvents: List<CalendarEvent> = emptyList(),
@@ -115,7 +115,7 @@ fun DashboardScreen(
             // Lay the template out at a realistic landscape size, then shrink it to fit the card.
             ScaledPreview(designWidth = 800.dp) {
                 TemplateRenderer(
-                    template = currentTemplate,
+                    template = currentTemplate.toLegacyTemplate(),
                     timeMillis = timeMillis,
                     todayEvents = todayEvents,
                     calendarPermissionState = calendarPermissionState,
@@ -136,6 +136,6 @@ fun DashboardScreen(
 @Composable
 private fun DashboardScreenPreview() {
     AuraDockTheme {
-        DashboardScreen(currentTemplate = TemplateDefaults.Split, timeMillis = System.currentTimeMillis())
+        DashboardScreen(currentTemplate = DockTemplate.CLASSIC, timeMillis = System.currentTimeMillis())
     }
 }

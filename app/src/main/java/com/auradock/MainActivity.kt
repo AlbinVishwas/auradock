@@ -30,6 +30,7 @@ import com.auradock.permissions.openAppSettings
 import com.auradock.permissions.openNotificationAccessSettings
 import com.auradock.standby.StandbyState
 import com.auradock.ui.screens.StandbyScreen
+import com.auradock.ui.template.toLegacyTemplate
 import com.auradock.ui.screens.TemplateGalleryScreen
 import com.auradock.ui.screens.dashboard.DashboardScreen
 import com.auradock.ui.theme.AuraDockTheme
@@ -116,7 +117,7 @@ class MainActivity : ComponentActivity() {
                 ) { mode ->
                     when (mode) {
                         "standby" -> StandbyScreen(
-                            template = currentTemplate,
+                            template = currentTemplate.toLegacyTemplate(),
                             timeMillis = timeMillis,
                             todayEvents = todayEvents,
                             calendarPermissionState = calendarPermissionState,
@@ -127,7 +128,7 @@ class MainActivity : ComponentActivity() {
                         )
 
                         "gallery" -> TemplateGalleryScreen(
-                            onPreviewClick = { standbyViewModel.setTemplate(it) },
+                            selected = currentTemplate,
                             onApplyClick = {
                                 standbyViewModel.setTemplate(it)
                                 showGallery = false

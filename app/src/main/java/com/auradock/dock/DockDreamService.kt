@@ -33,8 +33,7 @@ import androidx.savedstate.SavedStateRegistryController
 import androidx.savedstate.SavedStateRegistryOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
 import com.auradock.ui.screens.StandbyScreen
-import com.auradock.ui.template.TemplateDefaults
-import com.auradock.ui.template.sanitizedForStandby
+import com.auradock.ui.template.toLegacyTemplate
 import com.auradock.ui.theme.AuraDockTheme
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
@@ -115,13 +114,14 @@ class DockDreamService : DreamService(), LifecycleOwner, SavedStateRegistryOwner
                     val time by dockData.timeMillis.collectAsState(initial = dockData.currentTimeMillis())
                     val events by dockData.todayEvents.collectAsState(initial = emptyList())
                     val notifications by dockData.notifications.collectAsState()
+                    val template by dockData.selectedTemplate.collectAsState()
                     val shown = shownOrientation
                     if (shown == null) {
                         Box(Modifier.fillMaxSize().background(Color.Black)) // waiting for the sensor
                     } else {
                         RotatedContent(contentRotationDegrees(shown, displayRotationDegrees)) {
                             StandbyScreen(
-                                template = TemplateDefaults.Minimal.sanitizedForStandby(),
+                                template = template.toLegacyTemplate(),
                                 timeMillis = time,
                                 todayEvents = events,
                                 calendarPermissionState = dockData.calendarPermissionState(),

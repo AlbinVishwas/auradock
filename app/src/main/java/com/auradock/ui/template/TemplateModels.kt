@@ -1,5 +1,7 @@
 package com.auradock.ui.template
 
+import com.auradock.dock.DockTemplate
+
 import androidx.compose.ui.graphics.Color
 import com.auradock.ui.theme.AuraDockColors
 
@@ -88,6 +90,16 @@ object TemplateDefaults {
 
     val gallery: List<StandbyTemplate> = listOf(Minimal, Split, FocusCalendar, GridMix)
 }
+
+/**
+ * TEMPORARY, removed in step 4c: maps the new template choice onto the old layout engine so the dock keeps
+ * rendering until the single DockScreen replaces it.
+ */
+fun DockTemplate.toLegacyTemplate(): StandbyTemplate =
+    when (this) {
+        DockTemplate.MINIMAL -> TemplateDefaults.Minimal
+        else -> TemplateDefaults.Split
+    }.sanitizedForStandby()
 
 fun StandbyTemplate.sanitizedForStandby(): StandbyTemplate {
     val clockWidget = widgets.firstOrNull { it.type == WidgetType.CLOCK }

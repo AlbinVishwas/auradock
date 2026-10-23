@@ -3,15 +3,14 @@ package com.auradock.ui.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.auradock.data.CalendarEvent
+import com.auradock.dock.DockTemplate
+import com.auradock.dock.TemplateRepository
 import com.auradock.data.CalendarRepository
 import com.auradock.data.NotificationItem
 import com.auradock.data.NotificationRepository
 import com.auradock.standby.StandbyState
 import com.auradock.standby.StandbyTriggerManager
 import com.auradock.time.MinuteClock
-import com.auradock.ui.template.StandbyTemplate
-import com.auradock.ui.template.TemplateDefaults
-import com.auradock.ui.template.sanitizedForStandby
 import android.content.Context
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -22,7 +21,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.flow.update
 import javax.inject.Inject
 
 @HiltViewModel
@@ -30,6 +28,7 @@ class StandbyViewModel @Inject constructor(
     @ApplicationContext context: Context,
     private val calendarRepository: CalendarRepository,
     private val notificationRepository: NotificationRepository,
+    private val templateRepository: TemplateRepository,
     minuteClock: MinuteClock
 ) : ViewModel() {
 
@@ -37,8 +36,8 @@ class StandbyViewModel @Inject constructor(
     val currentTimeMillis: StateFlow<Long> = minuteClock.minutes
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), minuteClock.currentMillis())
 
-    private val _currentTemplate = MutableStateFlow(TemplateDefaults.Minimal.sanitizedForStandby())
-    val currentTemplate: StateFlow<StandbyTemplate> = _currentTemplate.asStateFlow()
+    /** The saved template choice (shared with the screensaver). */
+    val currentTemplate: StateFlow<DockTemplate> = templateRepository.selected
 
     // Owned by the ViewModel (not the Activity) so a rotation, which destroys and recreates the
     // Activity, does not stop and restart it. It is stopped in onCleared().
@@ -60,14 +59,8 @@ class StandbyViewModel @Inject constructor(
     val importantNotifications: StateFlow<List<NotificationItem>> = notificationRepository.importantNotifications
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
-    fun setTemplate(template: StandbyTemplate) {
-        _currentTemplate.value = template.sanitizedForStandby()
-    }
-
-    fun updateTemplate(update: (StandbyTemplate) -> StandbyTemplate) {
-        _currentTemplate.update { existing ->
-            update(existing).sanitizedForStandby()
-        }
+    fun setTemplate(template: DockTemplate) {
+        templateRepository.select(template)
     }
 
     override fun onCleared() {
