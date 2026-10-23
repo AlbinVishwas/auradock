@@ -46,6 +46,9 @@ Emulator notes that explain some of these items are in the "Why" lines.
   and the phone sleeps normally.
 - [ ] **First reading is not slow.**
   Pass: the screen is black for no more than about a second before the dock appears.
+- [ ] **Bumping or picking up while docked does not close the dock.**
+  With the dock showing, nudge the phone, tilt it toward portrait, or lay it flat. Pass: the dock stays until you
+  touch the screen (only the touch closes it).
 - [ ] **Flipping the stand while docked.**
   While the dock shows, turn the phone from left-landscape to right-landscape. Pass: content turns upright
   again without closing.
