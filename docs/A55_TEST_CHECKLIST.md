@@ -72,6 +72,29 @@ Emulator notes that explain some of these items are in the "Why" lines.
 - [ ] **Weather shows a dash, not fake data.**
   Pass: Classic shows "—" under the date (until step 8 adds real weather).
 
+## Dock now and the in-app dock
+
+- [ ] **"Dock now" forces landscape.**
+  Hold the phone upright (portrait, auto-rotate off or on), open AuraDock, tap "Dock now". Pass: the screen turns
+  to landscape and shows the dock; turning the phone upside down flips it with the sensor (either landscape).
+- [ ] **One-time "Viewing full screen" notice.**
+  The first time the dock hides the system bars, Android shows a "Viewing full screen / Got it" dialog. Pass:
+  it appears once, "Got it" dismisses it, and it does not block the dock afterwards. (It appeared on the
+  emulator; Samsung may word it differently or not show it.)
+- [ ] **System bars and gestures.**
+  In the dock, the status bar and navigation bar are hidden. Pass: swiping from the screen edge shows them for a
+  moment and they hide again; the dock is not left with a bar stuck on screen.
+- [ ] **Touch and Back close the dock.**
+  Pass: a tap anywhere closes it; the Back gesture closes it; either way the dashboard comes back in portrait
+  (not stuck in landscape) and the screen can sleep normally again.
+- [ ] **Automatic dock does not re-open after a touch.**
+  Charge the phone in landscape (on the stand) with the app open; the dock shows. Tap to close. Pass: the
+  dashboard stays (no instant re-open); lift the phone to portrait and put it back in landscape: the dock shows
+  again.
+- [ ] **Dock now when not charging.**
+  Unplug and tap "Dock now". Pass: dock shows and the screen stays on while it is visible; it stops staying on
+  after you close it.
+
 ## Battery, alarms, listener *(not built yet)*
 
 - [ ] **Sleeping apps / Deep sleeping apps.**

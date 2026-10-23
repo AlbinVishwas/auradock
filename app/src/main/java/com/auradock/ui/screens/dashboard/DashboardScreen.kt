@@ -2,6 +2,7 @@ package com.auradock.ui.screens.dashboard
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Spacer
@@ -17,6 +18,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import java.util.Date
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
@@ -44,7 +46,8 @@ fun DashboardScreen(
     modifier: Modifier = Modifier,
     todayEvents: List<CalendarEvent> = emptyList(),
     calendarPermissionState: CalendarPermissionUiState = CalendarPermissionUiState.DENIED,
-    onCustomizeStandby: () -> Unit = {},
+    onOpenTemplates: () -> Unit = {},
+    onDockNow: () -> Unit = {},
     onEnableCalendarAccess: () -> Unit = {}
 ) {
     val spacing = LocalAuraDockSpacing.current
@@ -98,19 +101,26 @@ fun DashboardScreen(
             verticalArrangement = Arrangement.spacedBy(spacing.sm)
         ) {
             QuickActionButton(text = "Add Reminder", onClick = {})
-            QuickActionButton(text = "Customize Standby", onClick = onCustomizeStandby)
+            QuickActionButton(text = "Templates", onClick = onOpenTemplates)
         }
 
         Spacer(modifier = Modifier.height(spacing.lg))
 
-        StandbyPreviewCard(
-            selected = true,
-            modifier = Modifier.fillMaxWidth()
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(spacing.md),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            // Lay the template out at a realistic landscape size, then shrink it to fit the card.
-            ScaledPreview(designWidth = 800.dp) {
-                DockContent(template = currentTemplate, timeMillis = timeMillis)
+            StandbyPreviewCard(
+                selected = true,
+                modifier = Modifier.weight(1f)
+            ) {
+                // Lay the template out at a realistic landscape size, then shrink it to fit the card.
+                ScaledPreview(designWidth = 800.dp) {
+                    DockContent(template = currentTemplate, timeMillis = timeMillis)
+                }
             }
+            QuickActionButton(text = "Dock now", onClick = onDockNow, isActive = true)
         }
 
         Spacer(modifier = Modifier.height(spacing.xl))
