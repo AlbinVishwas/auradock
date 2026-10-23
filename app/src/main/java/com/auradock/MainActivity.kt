@@ -2,7 +2,6 @@ package com.auradock
 
 import android.Manifest
 import android.os.Bundle
-import android.provider.Settings
 import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -27,6 +26,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import com.auradock.permissions.isNotificationAccessEnabled
 import com.auradock.permissions.openAppSettings
 import com.auradock.permissions.openNotificationAccessSettings
 import com.auradock.standby.StandbyState
@@ -180,7 +180,7 @@ class MainActivity : ComponentActivity() {
     override fun onStart() {
         super.onStart()
         standbyViewModel.refreshCalendarPermission()
-        standbyViewModel.updateNotificationAccess(isNotificationAccessEnabled())
+        standbyViewModel.updateNotificationAccess(isNotificationAccessEnabled(this))
     }
 
     override fun onStop() {
@@ -191,14 +191,6 @@ class MainActivity : ComponentActivity() {
     override fun onResume() {
         super.onResume()
         standbyViewModel.refreshCalendarPermission()
-        standbyViewModel.updateNotificationAccess(isNotificationAccessEnabled())
-    }
-
-    private fun isNotificationAccessEnabled(): Boolean {
-        val enabledListeners = Settings.Secure.getString(
-            contentResolver,
-            "enabled_notification_listeners"
-        ) ?: return false
-        return enabledListeners.contains(packageName)
+        standbyViewModel.updateNotificationAccess(isNotificationAccessEnabled(this))
     }
 }

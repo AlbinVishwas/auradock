@@ -21,3 +21,12 @@ fun openAppSettings(context: Context) {
         }
     )
 }
+
+/** True if the user has turned on AuraDock under "Notification access" in system settings. */
+fun isNotificationAccessEnabled(context: Context): Boolean {
+    val enabledListeners = Settings.Secure.getString(
+        context.contentResolver,
+        "enabled_notification_listeners"
+    ) ?: return false
+    return enabledListeners.contains(context.packageName)
+}
