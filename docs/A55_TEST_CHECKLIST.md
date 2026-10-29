@@ -139,6 +139,27 @@ Emulator notes that explain some of these items are in the "Why" lines.
 - [ ] **Nothing to show.**
   Finish every task and clear today's events: Pass: just the clock, no empty labels.
 
+## Productivity template and readability
+
+- [ ] **Readable from across a desk.**
+  Dock the phone on your stand with Productivity selected and stand 1 m, then 2 m away. Pass: the time is readable at 2 m;
+  task titles and event titles are readable at 1 m. Note the distance at which task titles stop being readable. If they fail
+  at 1 m, the font sizes in `DockContent.kt` (tasks 26sp, events 24sp) need to go up, and the number of rows down.
+- [ ] **Everything fits the A55 screen.**
+  With 4+ open tasks (one overdue), "+N more", and 3 upcoming events: Pass: nothing is clipped at the bottom, with the
+  slow burn-in drift moving it a few millimetres. Try long titles (30+ characters): they end in "…" and never wrap.
+- [ ] **Camera cutout.**
+  In landscape the punch-hole camera sits on one short edge. Pass: no text runs under it, in either landscape direction.
+- [ ] **Burn-in safety.**
+  Leave Productivity docked for a few hours at night. Pass: the screen is only thin text on black (no bright blocks), and
+  afterwards a black screenshot/wallpaper test shows no ghosting of the divider line or text.
+- [ ] **Colours at night.**
+  In a dark room. Pass: white clock digits are not glaring; task and event text is soft gray-white; the overdue amber is
+  visible but not harsh.
+- [ ] **All four templates.**
+  Templates screen shows Classic, Focus, Minimal, Productivity with correct previews of *your* real tasks/events/weather;
+  choosing each and docking looks the same as its preview. Pass: yes for all four, in the app and in the screensaver.
+
 ## Tasks (dashboard)
 
 - [ ] **Swipe to delete does not fight the Back gesture.**

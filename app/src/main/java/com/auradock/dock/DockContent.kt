@@ -5,8 +5,14 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.border
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import android.text.format.DateFormat
@@ -15,6 +21,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
 import com.auradock.data.nextEvent
+import com.auradock.data.upcomingEvents
+import com.auradock.tasks.priorityOrder
 import com.auradock.tasks.isOverdue
 import com.auradock.tasks.topTask
 import java.util.Date
@@ -51,8 +59,8 @@ fun DockContent(template: DockTemplate, state: DockUiState, modifier: Modifier =
         when (template) {
             DockTemplate.MINIMAL -> ClockWidget(timeMillis = state.timeMillis, dimmed = true, showDate = false)
             DockTemplate.FOCUS -> FocusLayout(state)
-            // PRODUCTIVITY is built in the next commit; until then it draws Classic.
-            else -> ClassicLayout(state)
+            DockTemplate.PRODUCTIVITY -> ProductivityLayout(state)
+            DockTemplate.CLASSIC -> ClassicLayout(state)
         }
     }
 }
@@ -118,6 +126,131 @@ private fun FocusLine(label: String, text: String, labelColor: Color = FocusLabe
 private val FocusLabel = Color(0xFF6E6E6E)
 private val FocusOverdue = Color(0xFFB8892D)
 private val FocusText = Color(0xFFD2D2D2)
+
+/**
+ * Productivity: the clock and weather on the left; on the right, up to four of today's open tasks ("+N more" for the
+ * rest) and up to three upcoming events. Sized to read from a metre or two. It is only text and one hairline on black
+ * (no panels or large bright areas), so nothing stays lit as a big block on an OLED.
+ */
+@Composable
+private fun ProductivityLayout(state: DockUiState) {
+    val context = LocalContext.current
+    val timeFormat = remember(context) { DateFormat.getTimeFormat(context) }
+    val tasks = priorityOrder(state.tasks, state.timeMillis)
+    val shownTasks = tasks.take(PRODUCTIVITY_TASKS)
+    val moreTasks = tasks.size - shownTasks.size
+    val events = upcomingEvents(state.events, state.timeMillis).take(PRODUCTIVITY_EVENTS)
+
+    Row(
+        modifier = Modifier.fillMaxSize().padding(horizontal = 40.dp, vertical = 20.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Column(
+            modifier = Modifier.weight(0.42f),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(18.dp, Alignment.CenterVertically)
+        ) {
+            ClockWidget(timeMillis = state.timeMillis)
+            WeatherBlock(state.weather)
+        }
+
+        // one thin line between the two halves
+        Box(Modifier.padding(horizontal = 28.dp).width(1.dp).fillMaxHeight(0.7f).background(Color(0x14FFFFFF)))
+
+        Column(
+            modifier = Modifier.weight(0.58f),
+            verticalArrangement = Arrangement.spacedBy(2.dp, Alignment.CenterVertically)
+        ) {
+            SectionLabel("TODAY")
+            if (shownTasks.isEmpty()) {
+                QuietLine("Nothing left to do")
+            } else {
+                shownTasks.forEach { task ->
+                    val overdue = isOverdue(task, state.timeMillis)
+                    TaskLine(
+                        title = task.title,
+                        due = task.dueAt?.let { timeFormat.format(Date(it)) },
+                        overdue = overdue
+                    )
+                }
+                if (moreTasks > 0) QuietLine("+$moreTasks more")
+            }
+
+            Spacer(Modifier.height(12.dp))
+            SectionLabel("UP NEXT")
+            if (events.isEmpty()) {
+                QuietLine("No more events today")
+            } else {
+                events.forEach { event ->
+                    EventLine(time = timeFormat.format(Date(event.startTime)), title = event.title)
+                }
+            }
+        }
+    }
+}
+
+private const val PRODUCTIVITY_TASKS = 4
+private const val PRODUCTIVITY_EVENTS = 3
+
+@Composable
+private fun SectionLabel(text: String) {
+    Text(text = text, color = FocusLabel, fontSize = 12.sp, letterSpacing = 2.sp, fontWeight = FontWeight.Medium)
+}
+
+@Composable
+private fun QuietLine(text: String) {
+    Text(text = text, color = FocusLabel, fontSize = 20.sp, fontWeight = FontWeight.Light, modifier = Modifier.padding(vertical = 2.dp))
+}
+
+/** An open circle, the task title, and its due time on the right (amber once it is overdue). */
+@Composable
+private fun TaskLine(title: String, due: String?, overdue: Boolean) {
+    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(vertical = 1.dp)) {
+        Box(
+            Modifier
+                .size(14.dp)
+                .border(1.5.dp, if (overdue) FocusOverdue else FocusLabel, CircleShape)
+        )
+        Spacer(Modifier.width(14.dp))
+        Text(
+            text = title,
+            color = FocusText,
+            fontSize = 26.sp,
+            fontWeight = FontWeight.Light,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.weight(1f, fill = false)
+        )
+        if (due != null) {
+            Spacer(Modifier.width(14.dp))
+            Text(text = due, color = if (overdue) FocusOverdue else FocusLabel, fontSize = 20.sp, fontWeight = FontWeight.Light)
+        }
+    }
+}
+
+@Composable
+private fun EventLine(time: String, title: String) {
+    Row(verticalAlignment = Alignment.Bottom, modifier = Modifier.padding(vertical = 1.dp)) {
+        Text(text = time, color = FocusLabel, fontSize = 20.sp, fontWeight = FontWeight.Light, modifier = Modifier.width(104.dp))
+        Text(text = title, color = FocusText, fontSize = 24.sp, fontWeight = FontWeight.Light, maxLines = 1, overflow = TextOverflow.Ellipsis)
+    }
+}
+
+/** Icon and temperature with the condition under it, or a quiet dash. */
+@Composable
+private fun WeatherBlock(weather: Weather?) {
+    if (weather == null) {
+        Text(text = "—", color = FocusLabel, fontSize = 28.sp, fontWeight = FontWeight.Light)
+        return
+    }
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+            WeatherIcon(weather.condition.icon, FocusLabel, size = 36.dp)
+            Text(text = temperatureLabel(weather.temperatureC), color = FocusText, fontSize = 36.sp, fontWeight = FontWeight.Light)
+        }
+        Text(text = conditionLine(weather), color = FocusLabel, fontSize = 16.sp, fontWeight = FontWeight.Light)
+    }
+}
 
 /** Big clock, date, weather, on a glass card. */
 @Composable
