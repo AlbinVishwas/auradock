@@ -3,6 +3,7 @@ package com.auradock
 import android.Manifest
 import android.content.pm.ActivityInfo
 import android.content.res.Configuration
+import android.os.Build
 import android.os.Bundle
 import android.view.WindowManager
 import androidx.activity.ComponentActivity
@@ -40,6 +41,7 @@ import com.auradock.dock.DockData
 import com.auradock.dock.DockScreen
 import com.auradock.permissions.isNotificationAccessEnabled
 import com.auradock.permissions.openAppSettings
+import com.auradock.permissions.openExactAlarmSettings
 import com.auradock.permissions.openNotificationAccessSettings
 import com.auradock.ui.screens.TemplateGalleryScreen
 import com.auradock.ui.screens.dashboard.DashboardScreen
@@ -66,6 +68,7 @@ class MainActivity : ComponentActivity() {
                 val manualDock by standbyViewModel.manualDock.collectAsState()
                 val todayEvents by standbyViewModel.todayEvents.collectAsState()
                 val tasks by standbyViewModel.tasks.collectAsState()
+                val exactAlarmsAllowed by standbyViewModel.exactAlarmsAllowed.collectAsState()
                 val calendarPermissionState by standbyViewModel.calendarPermissionState.collectAsState()
                 var showGallery by rememberSaveable { mutableStateOf(false) }
                 val calendarPermissionLauncher = rememberLauncherForActivityResult(
@@ -78,6 +81,10 @@ class MainActivity : ComponentActivity() {
                         )
                     standbyViewModel.onCalendarPermissionResult(granted, permanentlyDenied)
                 }
+
+                val notificationPermissionLauncher = rememberLauncherForActivityResult(
+                    contract = ActivityResultContracts.RequestPermission()
+                ) { /* nothing to do: without it, reminders are saved but no notification is shown */ }
 
                 LaunchedEffect(Unit) {
                     standbyViewModel.permissionActions.collect { action ->
@@ -92,6 +99,16 @@ class MainActivity : ComponentActivity() {
 
                             PermissionAction.OpenAppSettings -> {
                                 openAppSettings(this@MainActivity)
+                            }
+
+                            PermissionAction.RequestNotificationPermission -> {
+                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                                    notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                                }
+                            }
+
+                            PermissionAction.OpenExactAlarmSettings -> {
+                                openExactAlarmSettings(this@MainActivity)
                             }
                         }
                     }
@@ -145,6 +162,8 @@ class MainActivity : ComponentActivity() {
                             timeMillis = timeMillis,
                             todayEvents = todayEvents,
                             tasks = tasks,
+                            exactAlarmsAllowed = exactAlarmsAllowed,
+                            onAllowExactAlarms = { standbyViewModel.openExactAlarmSettings() },
                             onSaveTask = { id, title, dueAt -> standbyViewModel.saveTask(id, title, dueAt) },
                             onToggleTask = { standbyViewModel.setTaskDone(it, !it.done) },
                             onDeleteTask = { standbyViewModel.deleteTask(it) },
@@ -209,6 +228,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onResume() {
         super.onResume()
+        standbyViewModel.refreshExactAlarmAccess() // the user may have just allowed it in settings
         standbyViewModel.refreshCalendarPermission()
         standbyViewModel.updateNotificationAccess(isNotificationAccessEnabled(this))
     }

@@ -1,8 +1,10 @@
 package com.auradock.permissions
 
+import android.app.AlarmManager
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import android.os.Build
 import android.provider.Settings
 
 fun openNotificationAccessSettings(context: Context) {
@@ -29,4 +31,19 @@ fun isNotificationAccessEnabled(context: Context): Boolean {
         "enabled_notification_listeners"
     ) ?: return false
     return enabledListeners.contains(context.packageName)
+}
+
+/** Android 12+ makes exact alarms opt-in; below that they are always allowed. */
+fun canScheduleExactAlarms(context: Context): Boolean =
+    Build.VERSION.SDK_INT < Build.VERSION_CODES.S ||
+        context.getSystemService(AlarmManager::class.java).canScheduleExactAlarms()
+
+/** Opens the system page where the user can allow AuraDock to set exact alarms. */
+fun openExactAlarmSettings(context: Context) {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+        context.startActivity(
+            Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM, Uri.fromParts("package", context.packageName, null))
+                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        )
+    }
 }

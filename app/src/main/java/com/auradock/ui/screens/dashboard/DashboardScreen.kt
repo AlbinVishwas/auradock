@@ -54,6 +54,8 @@ fun DashboardScreen(
     modifier: Modifier = Modifier,
     todayEvents: List<CalendarEvent> = emptyList(),
     tasks: List<TaskEntity> = emptyList(),
+    exactAlarmsAllowed: Boolean = true,
+    onAllowExactAlarms: () -> Unit = {},
     onSaveTask: (id: Long?, title: String, dueAt: Long?) -> Unit = { _, _, _ -> },
     onToggleTask: (TaskEntity) -> Unit = {},
     onDeleteTask: (TaskEntity) -> Unit = {},
@@ -110,6 +112,8 @@ fun DashboardScreen(
             TaskSheet(
                 task = editing,
                 nowMillis = timeMillis,
+                exactAlarmsAllowed = exactAlarmsAllowed,
+                onAllowExactAlarms = onAllowExactAlarms,
                 onSave = { title, dueAt ->
                     onSaveTask(editing?.id, title, dueAt)
                     sheetTaskId = null

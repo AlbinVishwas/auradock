@@ -112,14 +112,51 @@ Emulator notes that explain some of these items are in the "Why" lines.
   Tick off a task late in the evening, then look again after midnight. Pass: the finished task is gone; an
   unfinished one from the day before is still there.
 
-## Battery, alarms, listener *(not built yet)*
+## Task reminders (alarms and notifications)
 
-- [ ] **Sleeping apps / Deep sleeping apps.**
-  Settings > Battery > Background usage limits. With AuraDock in "Sleeping apps", a task due in 5 minutes
-  still notifies on time; then add AuraDock to "Never sleeping apps" and repeat. Pass: the notification
-  arrives within a minute of the due time at least when set to Never sleeping; record behavior for both.
-- [ ] **Exact alarms after reboot.**
-  Schedule a task for 10 minutes ahead, reboot the phone. Pass: the notification still fires on time.
+- [ ] **Notification permission prompt.**
+  Fresh install. Add the first task that has a time. Pass: Android asks "Allow AuraDock to send you notifications?"
+  once. Allow: reminders appear. Deny, then add another timed task: no second prompt, the task is still saved, no
+  notification appears (and nothing crashes).
+- [ ] **Exact-alarm permission flow.**
+  New installs on Android 14+ start with exact alarms *denied*. Add a task with a time: the sheet shows
+  "Reminders may arrive a few minutes late" with an "Allow exact alarms" button. Tap it. Pass: Android's "Alarms &
+  reminders" page for AuraDock opens; switch it on and come back: the hint is gone. Then add a task due in 2
+  minutes. Pass: the notification arrives at the minute (not 5+ minutes later).
+- [ ] **Inexact fallback is usable.**
+  With exact alarms off, add a task due in 5 minutes. Pass: the notification still arrives (may be a few minutes
+  late). Note how late it was.
+- [ ] **Reminder on time with the screen off.**
+  Add a task due in 2 minutes, lock the phone, put it down. Pass: the screen wakes/the notification sounds at the
+  due minute, and tapping it opens the AuraDock dashboard.
+- [ ] **Tapping the notification.**
+  Pass: opens AuraDock on the dashboard; the notification disappears.
+- [ ] **Checking off or deleting cancels the reminder.**
+  Add a task due in 3 minutes, tick it off (or swipe-delete) after 1 minute. Pass: no notification at the due time.
+- [ ] **Editing the time reschedules.**
+  Add a task due in 10 minutes, edit it to 3 minutes. Pass: it fires at the new time only, once.
+- [ ] **Alarms survive a reboot.**
+  Add a task due in 10 minutes, restart the phone, do not open AuraDock. Pass: the notification still arrives at the
+  due time. (This is the BOOT_COMPLETED receiver; on the emulator it could only be checked that the receiver is
+  registered, since a script cannot send that protected broadcast.)
+- [ ] **Alarms survive an app update.**
+  Install a new build over the old one with a task pending. Pass: it still fires (MY_PACKAGE_REPLACED).
+- [ ] **Samsung "Sleeping apps" / "Deep sleeping apps".**
+  Settings > Battery > Background usage limits. Put AuraDock in "Sleeping apps", add a task due in 5 minutes, lock
+  the phone, wait. Record whether it fires and how late. Then move AuraDock to "Never sleeping apps" and repeat.
+  Pass: fires on time at least when set to "Never sleeping apps". If it fails when sleeping, the onboarding screen
+  must tell testers to set "Never sleeping".
+- [ ] **Force-stop clears alarms (expected).**
+  Settings > Apps > AuraDock > Force stop: pending reminders are lost until the app is opened again. Pass: after
+  opening AuraDock once, pending timed tasks fire again (the app resets them on start-up).
+- [ ] **Do Not Disturb.**
+  With DND on (manually), a task reminder is silenced like any other notification. Record the behaviour. (Dock mode
+  DND handling arrives in step 9.)
+- [ ] **Notification channel settings.**
+  Long-press a reminder > settings. Pass: a "Task reminders" channel exists; turning its sound off works.
+
+## Notification listener *(not built yet)*
+
 - [ ] **Notification listener disconnects.**
   Enable notification access, then let the phone idle overnight / force-stop the app. Pass: after reopening
   AuraDock, mirrored notifications appear again without re-granting access.

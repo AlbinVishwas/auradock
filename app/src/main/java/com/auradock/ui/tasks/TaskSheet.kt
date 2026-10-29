@@ -52,6 +52,8 @@ import java.time.ZoneId
 fun TaskSheet(
     task: TaskEntity?,
     nowMillis: Long,
+    exactAlarmsAllowed: Boolean,
+    onAllowExactAlarms: () -> Unit,
     onSave: (title: String, dueAt: Long?) -> Unit,
     onDismiss: () -> Unit
 ) {
@@ -120,6 +122,15 @@ fun TaskSheet(
             }
             if (hasTime) {
                 TimeInput(state = timeState)
+                if (!exactAlarmsAllowed) {
+                    // Without the exact-alarm permission Android may deliver the reminder a few minutes late.
+                    Text(
+                        text = "Reminders may arrive a few minutes late. Allow exact alarms for on-the-minute reminders.",
+                        style = AuraDockTypography.Caption,
+                        color = AuraDockColors.OnSurfaceVariant
+                    )
+                    QuickActionButton(text = "Allow exact alarms", onClick = onAllowExactAlarms)
+                }
             }
             Spacer(Modifier.height(4.dp))
             QuickActionButton(

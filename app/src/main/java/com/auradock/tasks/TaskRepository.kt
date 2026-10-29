@@ -1,5 +1,6 @@
 package com.auradock.tasks
 
+import com.auradock.tasks.reminders.TaskAlarmScheduler
 import com.auradock.time.MinuteClock
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
@@ -15,7 +16,8 @@ import javax.inject.Singleton
 @Singleton
 class TaskRepository @Inject constructor(
     private val dao: TaskDao,
-    private val clock: MinuteClock
+    private val clock: MinuteClock,
+    private val alarms: TaskAlarmScheduler
 ) {
     /**
      * Today's list. It is a Flow: it emits the current list straight away and again after every change to
@@ -33,23 +35,36 @@ class TaskRepository @Inject constructor(
     /** Returns the new task's id, or null if [title] is blank. */
     suspend fun add(title: String, dueAt: Long?): Long? {
         val clean = cleanTitle(title) ?: return null
-        return dao.insert(TaskEntity(title = clean, dueAt = dueAt, createdAt = clock.currentMillis()))
+        val task = TaskEntity(title = clean, dueAt = dueAt, createdAt = clock.currentMillis())
+        val id = dao.insert(task)
+        alarms.schedule(task.copy(id = id))
+        return id
     }
 
     suspend fun setDone(id: Long, done: Boolean) {
         val task = dao.get(id) ?: return
-        dao.update(task.copy(done = done, completedAt = if (done) clock.currentMillis() else null))
+        val updated = task.copy(done = done, completedAt = if (done) clock.currentMillis() else null)
+        dao.update(updated)
+        alarms.schedule(updated) // done -> cancels; un-done with a future time -> sets it again
     }
 
     /** Changes the title and due time. Returns false if the task is gone or [title] is blank. */
     suspend fun edit(id: Long, title: String, dueAt: Long?): Boolean {
         val clean = cleanTitle(title) ?: return false
         val task = dao.get(id) ?: return false
-        dao.update(task.copy(title = clean, dueAt = dueAt))
+        val updated = task.copy(title = clean, dueAt = dueAt)
+        dao.update(updated)
+        alarms.schedule(updated) // a new time replaces the old alarm; no time cancels it
         return true
     }
 
-    suspend fun delete(id: Long) = dao.delete(id)
+    suspend fun delete(id: Long) {
+        dao.delete(id)
+        alarms.cancel(id)
+    }
+
+    /** Sets every pending alarm again (called when the app starts, in case any were lost). */
+    suspend fun rescheduleAlarms() = alarms.rescheduleAll()
 
     /** Removes finished tasks from before today (they are already hidden). */
     suspend fun purgeOldDone() = dao.deleteDoneBefore(startOfToday(clock.currentMillis()))

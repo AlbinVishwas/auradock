@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.auradock.data.CalendarEvent
 import com.auradock.dock.DockModeState
+import com.auradock.permissions.canScheduleExactAlarms
 import com.auradock.dock.DockTemplate
 import com.auradock.dock.TemplateRepository
 import com.auradock.tasks.TaskEntity
@@ -32,7 +33,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class StandbyViewModel @Inject constructor(
-    @ApplicationContext context: Context,
+    @ApplicationContext private val context: Context,
     private val calendarRepository: CalendarRepository,
     private val notificationRepository: NotificationRepository,
     private val templateRepository: TemplateRepository,
@@ -62,6 +63,8 @@ class StandbyViewModel @Inject constructor(
     init {
         // Housekeeping: finished tasks from before today are hidden already; delete them.
         viewModelScope.launch { taskRepository.purgeOldDone() }
+        // Alarms can be lost (a restart, a force-stop); set the pending ones again whenever the app opens.
+        viewModelScope.launch { taskRepository.rescheduleAlarms() }
         viewModelScope.launch {
             standbyState.collect { auto -> dockMode.update { it.onAutoChanged(auto) } }
         }
@@ -74,6 +77,31 @@ class StandbyViewModel @Inject constructor(
     fun saveTask(id: Long?, title: String, dueAt: Long?) {
         viewModelScope.launch {
             if (id == null) taskRepository.add(title, dueAt) else taskRepository.edit(id, title, dueAt)
+        }
+        if (dueAt != null) askForNotificationsOnce()
+    }
+
+    /** True if AuraDock may set exact alarms (Android 12+ asks the user in settings). */
+    private val _exactAlarmsAllowed = MutableStateFlow(canScheduleExactAlarms(context))
+    val exactAlarmsAllowed: StateFlow<Boolean> = _exactAlarmsAllowed.asStateFlow()
+
+    fun refreshExactAlarmAccess() {
+        _exactAlarmsAllowed.value = canScheduleExactAlarms(context)
+    }
+
+    fun openExactAlarmSettings() {
+        _permissionActions.tryEmit(PermissionAction.OpenExactAlarmSettings)
+    }
+
+    /**
+     * The first time a task gets a time, ask for permission to show notifications (Android 13+ shows the system
+     * dialog). Only once: if the user says no, we do not nag; reminders just will not appear.
+     */
+    private fun askForNotificationsOnce() {
+        val prefs = context.getSharedPreferences("auradock_prefs", Context.MODE_PRIVATE)
+        if (!prefs.getBoolean("asked_post_notifications", false)) {
+            prefs.edit().putBoolean("asked_post_notifications", true).apply()
+            _permissionActions.tryEmit(PermissionAction.RequestNotificationPermission)
         }
     }
 
