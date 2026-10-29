@@ -6,6 +6,7 @@ import com.auradock.data.CalendarEvent
 import com.auradock.dock.DockModeState
 import com.auradock.dock.DockTemplate
 import com.auradock.dock.TemplateRepository
+import com.auradock.tasks.TaskEntity
 import com.auradock.tasks.TaskRepository
 import com.auradock.data.CalendarRepository
 import com.auradock.data.NotificationItem
@@ -64,6 +65,24 @@ class StandbyViewModel @Inject constructor(
         viewModelScope.launch {
             standbyState.collect { auto -> dockMode.update { it.onAutoChanged(auto) } }
         }
+    }
+
+    val tasks: StateFlow<List<TaskEntity>> = taskRepository.todayTasks
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+
+    /** Adds a task when [id] is null, otherwise edits that task. */
+    fun saveTask(id: Long?, title: String, dueAt: Long?) {
+        viewModelScope.launch {
+            if (id == null) taskRepository.add(title, dueAt) else taskRepository.edit(id, title, dueAt)
+        }
+    }
+
+    fun setTaskDone(task: TaskEntity, done: Boolean) {
+        viewModelScope.launch { taskRepository.setDone(task.id, done) }
+    }
+
+    fun deleteTask(task: TaskEntity) {
+        viewModelScope.launch { taskRepository.delete(task.id) }
     }
 
     fun enterDock() = dockMode.update { it.enterManual() }

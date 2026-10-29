@@ -95,6 +95,23 @@ Emulator notes that explain some of these items are in the "Why" lines.
   Unplug and tap "Dock now". Pass: dock shows and the screen stays on while it is visible; it stops staying on
   after you close it.
 
+## Tasks (dashboard)
+
+- [ ] **Swipe to delete does not fight the Back gesture.**
+  Samsung's gesture navigation treats a swipe from the screen edge as Back. Swipe a task left, starting well inside
+  the row, then starting near the right edge. Pass: the first deletes the task; the second may trigger Back, but
+  the app never closes unexpectedly and a task is never deleted by mistake.
+- [ ] **Typing a task on Samsung Keyboard.**
+  Add a task with a title and a time. Pass: the keyboard does not cover the "Add task" button (the sheet scrolls
+  or resizes), the hour/minute boxes accept typing, and Done on the keyboard saves the task. (On the emulator
+  fast scripted typing scrambled the time boxes; this check is about real fingers.)
+- [ ] **Overdue highlight appears by itself.**
+  Add a task due 2 minutes from now and leave the dashboard open. Pass: within a minute of the due time the row
+  turns amber without touching anything.
+- [ ] **Midnight.**
+  Tick off a task late in the evening, then look again after midnight. Pass: the finished task is gone; an
+  unfinished one from the day before is still there.
+
 ## Battery, alarms, listener *(not built yet)*
 
 - [ ] **Sleeping apps / Deep sleeping apps.**

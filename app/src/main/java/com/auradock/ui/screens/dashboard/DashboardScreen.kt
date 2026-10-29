@@ -14,10 +14,15 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.background
 import android.text.format.DateFormat
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.ui.platform.LocalContext
 import java.util.Date
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -34,6 +39,9 @@ import com.auradock.ui.components.StandbyPreviewCard
 import com.auradock.ui.components.TodaySnapshotCard
 import com.auradock.dock.DockTemplate
 import com.auradock.dock.DockContent
+import com.auradock.tasks.TaskEntity
+import com.auradock.ui.tasks.TaskCard
+import com.auradock.ui.tasks.TaskSheet
 import com.auradock.ui.theme.AuraDockTheme
 import com.auradock.ui.theme.LocalAuraDockSpacing
 import com.auradock.ui.viewmodel.CalendarPermissionUiState
@@ -45,6 +53,10 @@ fun DashboardScreen(
     timeMillis: Long,
     modifier: Modifier = Modifier,
     todayEvents: List<CalendarEvent> = emptyList(),
+    tasks: List<TaskEntity> = emptyList(),
+    onSaveTask: (id: Long?, title: String, dueAt: Long?) -> Unit = { _, _, _ -> },
+    onToggleTask: (TaskEntity) -> Unit = {},
+    onDeleteTask: (TaskEntity) -> Unit = {},
     calendarPermissionState: CalendarPermissionUiState = CalendarPermissionUiState.DENIED,
     onOpenTemplates: () -> Unit = {},
     onDockNow: () -> Unit = {},
@@ -58,6 +70,7 @@ fun DashboardScreen(
         modifier = modifier
             .fillMaxSize()
             .background(Color.Black)
+            .verticalScroll(rememberScrollState())
             .padding(horizontal = spacing.lg),
         verticalArrangement = Arrangement.Top
     ) {
@@ -79,6 +92,33 @@ fun DashboardScreen(
         Spacer(modifier = Modifier.height(spacing.lg))
 
         val timeFormat = remember(context) { DateFormat.getTimeFormat(context) }
+
+        // Task list + its add/edit sheet. -1 means "new task"; null means the sheet is closed.
+        var sheetTaskId by rememberSaveable { mutableStateOf<Long?>(null) }
+        TaskCard(
+            tasks = tasks,
+            timeMillis = timeMillis,
+            formatTime = { timeFormat.format(Date(it)) },
+            onAdd = { sheetTaskId = NEW_TASK },
+            onEdit = { sheetTaskId = it.id },
+            onToggle = onToggleTask,
+            onDelete = onDeleteTask,
+            modifier = Modifier.fillMaxWidth()
+        )
+        sheetTaskId?.let { id ->
+            val editing = tasks.firstOrNull { it.id == id }
+            TaskSheet(
+                task = editing,
+                nowMillis = timeMillis,
+                onSave = { title, dueAt ->
+                    onSaveTask(editing?.id, title, dueAt)
+                    sheetTaskId = null
+                },
+                onDismiss = { sheetTaskId = null }
+            )
+        }
+
+        Spacer(modifier = Modifier.height(spacing.lg))
         val summary = buildTodaySummary(
             events = todayEvents,
             permission = calendarPermissionState,
@@ -86,6 +126,7 @@ fun DashboardScreen(
         )
         TodaySnapshotCard(
             modifier = Modifier.fillMaxWidth(),
+            title = "Calendar",
             items = summary.lines,
             emptyStateText = summary.emptyText,
             actionText = summary.actionText,
@@ -100,7 +141,6 @@ fun DashboardScreen(
             horizontalArrangement = Arrangement.spacedBy(spacing.md),
             verticalArrangement = Arrangement.spacedBy(spacing.sm)
         ) {
-            QuickActionButton(text = "Add Reminder", onClick = {})
             QuickActionButton(text = "Templates", onClick = onOpenTemplates)
         }
 
@@ -134,3 +174,5 @@ private fun DashboardScreenPreview() {
         DashboardScreen(currentTemplate = DockTemplate.CLASSIC, timeMillis = System.currentTimeMillis())
     }
 }
+
+private const val NEW_TASK = -1L

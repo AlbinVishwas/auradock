@@ -65,6 +65,7 @@ class MainActivity : ComponentActivity() {
                 val dockVisible by standbyViewModel.dockVisible.collectAsState()
                 val manualDock by standbyViewModel.manualDock.collectAsState()
                 val todayEvents by standbyViewModel.todayEvents.collectAsState()
+                val tasks by standbyViewModel.tasks.collectAsState()
                 val calendarPermissionState by standbyViewModel.calendarPermissionState.collectAsState()
                 var showGallery by rememberSaveable { mutableStateOf(false) }
                 val calendarPermissionLauncher = rememberLauncherForActivityResult(
@@ -143,6 +144,10 @@ class MainActivity : ComponentActivity() {
                             currentTemplate = currentTemplate,
                             timeMillis = timeMillis,
                             todayEvents = todayEvents,
+                            tasks = tasks,
+                            onSaveTask = { id, title, dueAt -> standbyViewModel.saveTask(id, title, dueAt) },
+                            onToggleTask = { standbyViewModel.setTaskDone(it, !it.done) },
+                            onDeleteTask = { standbyViewModel.deleteTask(it) },
                             calendarPermissionState = calendarPermissionState,
                             onOpenTemplates = { showGallery = true },
                             onDockNow = { standbyViewModel.enterDock() },
