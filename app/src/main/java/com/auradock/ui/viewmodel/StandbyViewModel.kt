@@ -73,8 +73,9 @@ class StandbyViewModel @Inject constructor(
         }
     }
 
-    val tasks: StateFlow<List<TaskEntity>> = taskRepository.todayTasks
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+    /** Null until the first load finishes, so the screen never claims "nothing planned" before it knows. */
+    val tasks: StateFlow<List<TaskEntity>?> = taskRepository.todayTasks
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
 
     /** Adds a task when [id] is null, otherwise edits that task. */
     fun saveTask(id: Long?, title: String, dueAt: Long?) {
@@ -166,8 +167,9 @@ class StandbyViewModel @Inject constructor(
     val hasNotificationAccess: StateFlow<Boolean> = _hasNotificationAccess.asStateFlow()
     private val _permissionActions = MutableSharedFlow<PermissionAction>(extraBufferCapacity = 1)
     val permissionActions: SharedFlow<PermissionAction> = _permissionActions
-    val todayEvents: StateFlow<List<CalendarEvent>> = calendarRepository.observeTodayEvents()
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+    /** Null until the first load finishes, so the screen never claims "no events" before it knows. */
+    val todayEvents: StateFlow<List<CalendarEvent>?> = calendarRepository.observeTodayEvents()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
     val importantNotifications: StateFlow<List<NotificationItem>> = notificationRepository.importantNotifications
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 

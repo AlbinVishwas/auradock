@@ -10,8 +10,8 @@ enum class DockTemplate(val label: String, val description: String) {
     companion object {
         val default = CLASSIC
 
-        /** Templates the gallery offers. FOCUS and PRODUCTIVITY are added in step 7. */
-        val available = listOf(CLASSIC, MINIMAL)
+        /** Templates the gallery offers (PRODUCTIVITY is added in the next commit). */
+        val available = listOf(CLASSIC, FOCUS, MINIMAL)
     }
 }
 

@@ -48,3 +48,19 @@ fun dueTimeToday(hour: Int, minute: Int, nowMillis: Long, zone: ZoneId = ZoneId.
 fun cleanTitle(raw: String): String? = raw.trim().takeIf { it.isNotEmpty() }?.take(MAX_TITLE_LENGTH)
 
 const val MAX_TITLE_LENGTH = 120
+
+/**
+ * Unfinished tasks in the order the dock shows them: overdue ones first (earliest time first), then the rest by
+ * earliest due time, and tasks without a time last, oldest first.
+ */
+fun priorityOrder(tasks: List<TaskEntity>, nowMillis: Long): List<TaskEntity> =
+    tasks.filter { !it.done }
+        .sortedWith(
+            compareBy<TaskEntity> { !isOverdue(it, nowMillis) }
+                .thenBy { it.dueAt ?: Long.MAX_VALUE }
+                .thenBy { it.createdAt }
+                .thenBy { it.id }
+        )
+
+/** The one task to show when there is room for just one. */
+fun topTask(tasks: List<TaskEntity>, nowMillis: Long): TaskEntity? = priorityOrder(tasks, nowMillis).firstOrNull()

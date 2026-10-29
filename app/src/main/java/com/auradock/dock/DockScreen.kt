@@ -35,6 +35,8 @@ fun DockScreen(dockData: DockData, window: Window?, modifier: Modifier = Modifie
     val template by dockData.selectedTemplate.collectAsState()
     val time by dockData.timeMillis.collectAsState(initial = dockData.currentTimeMillis())
     val weather by dockData.weather.collectAsState()
+    val events by dockData.todayEvents.collectAsState(initial = emptyList())
+    val tasks by dockData.todayTasks.collectAsState(initial = emptyList())
 
     // The dock just appeared: refresh the weather if it is 30+ minutes old (does nothing otherwise).
     LaunchedEffect(Unit) { dockData.refreshWeather() }
@@ -48,7 +50,7 @@ fun DockScreen(dockData: DockData, window: Window?, modifier: Modifier = Modifie
         BurnInProtection(modifier = modifier) { drift ->
             DockContent(
                 template = template,
-                state = DockUiState(timeMillis = time, weather = weather.usableAt(time)),
+                state = DockUiState(timeMillis = time, weather = weather.usableAt(time), events = events, tasks = tasks),
                 modifier = drift.fillMaxSize()
             )
         }

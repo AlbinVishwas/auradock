@@ -134,4 +134,39 @@ class TaskRulesTest {
         assertNull(cleanTitle("   "))
         assertEquals(MAX_TITLE_LENGTH, cleanTitle("x".repeat(500))!!.length)
     }
+
+    // ── priority (what the dock shows first) ──────────────────────────────────
+
+    @Test
+    fun `priority is overdue first, then earliest due time, then tasks with no time oldest first`() {
+        val now = at(day, 12)
+        val order = priorityOrder(
+            listOf(
+                task(1, "no time, new", createdAt = at(day, 11)),
+                task(2, "due 16:00", dueAt = at(day, 16)),
+                task(3, "overdue 11:30", dueAt = at(day, 11, 30)),
+                task(4, "no time, old", createdAt = at(day.minusDays(1), 9)),
+                task(5, "due 14:00", dueAt = at(day, 14)),
+                task(6, "overdue 09:00", dueAt = at(day, 9))
+            ),
+            now
+        )
+        assertEquals(
+            listOf("overdue 09:00", "overdue 11:30", "due 14:00", "due 16:00", "no time, old", "no time, new"),
+            order.map { it.title }
+        )
+    }
+
+    @Test
+    fun `finished tasks are never prioritised`() {
+        val order = priorityOrder(listOf(task(1, "done", done = true, completedAt = at(day, 9)), task(2, "open")), at(day, 12))
+        assertEquals(listOf("open"), order.map { it.title })
+    }
+
+    @Test
+    fun `top task is the first in priority order, or null when nothing is left`() {
+        assertEquals("overdue", topTask(listOf(task(1, "later", dueAt = at(day, 18)), task(2, "overdue", dueAt = at(day, 8))), at(day, 12))?.title)
+        assertNull(topTask(emptyList(), at(day, 12)))
+        assertNull(topTask(listOf(task(1, "done", done = true, completedAt = at(day, 9))), at(day, 12)))
+    }
 }

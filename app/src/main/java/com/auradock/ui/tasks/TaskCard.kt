@@ -53,7 +53,8 @@ private val DeleteRed = Color(0xFF8E2A2A)
  */
 @Composable
 fun TaskCard(
-    tasks: List<TaskEntity>,
+    /** Null while the first load is still running: the card shows no body rather than a wrong "nothing planned". */
+    tasks: List<TaskEntity>?,
     timeMillis: Long,
     formatTime: (Long) -> String,
     onAdd: () -> Unit,
@@ -84,7 +85,9 @@ fun TaskCard(
             }
             Spacer(Modifier.height(spacing.sm))
 
-            if (tasks.isEmpty()) {
+            if (tasks == null) {
+                Spacer(Modifier.height(spacing.sm))
+            } else if (tasks.isEmpty()) {
                 Text(
                     text = "Nothing planned. Enjoy the quiet.",
                     style = AuraDockTypography.WidgetLabel,

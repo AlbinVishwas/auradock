@@ -6,6 +6,8 @@ import com.auradock.data.CalendarRepository
 import com.auradock.data.NotificationItem
 import com.auradock.data.NotificationRepository
 import com.auradock.permissions.isNotificationAccessEnabled
+import com.auradock.tasks.TaskEntity
+import com.auradock.tasks.TaskRepository
 import com.auradock.time.MinuteClock
 import com.auradock.weather.Weather
 import com.auradock.weather.WeatherRepository
@@ -30,7 +32,8 @@ class DockData @Inject constructor(
     notificationRepository: NotificationRepository,
     private val minuteClock: MinuteClock,
     templateRepository: TemplateRepository,
-    private val weatherRepository: WeatherRepository
+    private val weatherRepository: WeatherRepository,
+    taskRepository: TaskRepository
 ) {
     val selectedTemplate: StateFlow<DockTemplate> = templateRepository.selected
 
@@ -43,6 +46,8 @@ class DockData @Inject constructor(
     /** Ticks at the start of every minute (see [MinuteClock]). */
     val timeMillis: Flow<Long> get() = minuteClock.minutes
     fun currentTimeMillis(): Long = minuteClock.currentMillis()
+
+    val todayTasks: Flow<List<TaskEntity>> = taskRepository.todayTasks
 
     val todayEvents: Flow<List<CalendarEvent>> get() = calendarRepository.observeTodayEvents()
     val notifications: StateFlow<List<NotificationItem>> = notificationRepository.importantNotifications

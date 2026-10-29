@@ -168,7 +168,7 @@ class MainActivity : ComponentActivity() {
 
                         "gallery" -> TemplateGalleryScreen(
                             selected = currentTemplate,
-                            state = DockUiState(timeMillis, weather.usableAt(timeMillis)),
+                            state = DockUiState(timeMillis, weather.usableAt(timeMillis), todayEvents.orEmpty(), tasks.orEmpty()),
                             onApplyClick = {
                                 standbyViewModel.setTemplate(it)
                                 showGallery = false

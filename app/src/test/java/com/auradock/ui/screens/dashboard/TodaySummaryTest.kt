@@ -58,4 +58,12 @@ class TodaySummaryTest {
         val s = buildTodaySummary(all, CalendarPermissionUiState.GRANTED, fmt)
         assertEquals(listOf("All day  Priya's birthday", "t1  Standup"), s.lines)
     }
+
+    @Test
+    fun `before the first load it says nothing rather than claiming no events`() {
+        val s = buildTodaySummary(null, CalendarPermissionUiState.GRANTED, fmt)
+        assertEquals(emptyList<String>(), s.lines)
+        assertEquals("", s.emptyText)
+        assertNull(s.actionText)
+    }
 }

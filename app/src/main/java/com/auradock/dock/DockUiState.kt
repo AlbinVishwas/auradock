@@ -1,5 +1,7 @@
 package com.auradock.dock
 
+import com.auradock.data.CalendarEvent
+import com.auradock.tasks.TaskEntity
 import com.auradock.weather.Weather
 
 /**
@@ -9,5 +11,9 @@ import com.auradock.weather.Weather
 data class DockUiState(
     val timeMillis: Long,
     /** Null means "no weather": shown as a quiet dash, never as made-up numbers. */
-    val weather: Weather? = null
+    val weather: Weather? = null,
+    /** Today's calendar events (empty if there are none or calendar access is off). */
+    val events: List<CalendarEvent> = emptyList(),
+    /** Today's tasks, as the task list holds them (finished ones included). */
+    val tasks: List<TaskEntity> = emptyList()
 )

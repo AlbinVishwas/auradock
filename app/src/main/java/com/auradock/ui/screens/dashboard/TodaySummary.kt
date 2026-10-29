@@ -14,7 +14,7 @@ data class TodaySummary(
 )
 
 fun buildTodaySummary(
-    events: List<CalendarEvent>,
+    events: List<CalendarEvent>?,
     permission: CalendarPermissionUiState,
     formatTime: (Long) -> String,
     maxLines: Int = 4
@@ -33,7 +33,8 @@ fun buildTodaySummary(
         actionText = "Open Settings"
     )
 
-    CalendarPermissionUiState.GRANTED -> {
+    // Permission is fine but the first load has not finished: say nothing yet rather than "No events today".
+    CalendarPermissionUiState.GRANTED -> if (events == null) TodaySummary(emptyList(), emptyText = "", actionText = null) else {
         val shown = events.take(maxLines).map { "${if (it.allDay) "All day" else formatTime(it.startTime)}  ${it.title}" }
         val hidden = events.size - shown.size
         TodaySummary(

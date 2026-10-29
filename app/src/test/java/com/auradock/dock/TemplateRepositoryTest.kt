@@ -45,14 +45,15 @@ class TemplateRepositoryTest {
     fun `an offered template is restored`() = assertEquals(DockTemplate.MINIMAL, parseDockTemplate("MINIMAL"))
 
     @Test
-    fun `a template that is not built yet falls back to the default`() {
-        assertEquals(DockTemplate.CLASSIC, parseDockTemplate("FOCUS"))
+    fun `a template that is not built yet falls back to the default`() =
         assertEquals(DockTemplate.CLASSIC, parseDockTemplate("PRODUCTIVITY"))
-    }
 
     @Test
-    fun `the gallery offers only Classic and Minimal for now`() =
-        assertEquals(listOf(DockTemplate.CLASSIC, DockTemplate.MINIMAL), DockTemplate.available)
+    fun `Focus is restored once it is offered`() = assertEquals(DockTemplate.FOCUS, parseDockTemplate("FOCUS"))
+
+    @Test
+    fun `the gallery offers Classic, Focus and Minimal for now`() =
+        assertEquals(listOf(DockTemplate.CLASSIC, DockTemplate.FOCUS, DockTemplate.MINIMAL), DockTemplate.available)
 
     // ── the repository ────────────────────────────────────────────────────────
 

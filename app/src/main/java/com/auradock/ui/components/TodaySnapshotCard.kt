@@ -41,7 +41,7 @@ fun TodaySnapshotCard(
             )
             Spacer(modifier = Modifier.height(spacing.sm))
             if (items.isEmpty()) {
-                Text(
+                if (emptyStateText.isNotBlank()) Text(
                     text = emptyStateText,
                     style = AuraDockTypography.WidgetLabel,
                     color = AuraDockColors.OnSurfaceVariant

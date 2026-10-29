@@ -63,8 +63,8 @@ fun DashboardScreen(
     weather: Weather? = null,
     locationPermissionState: CalendarPermissionUiState = CalendarPermissionUiState.GRANTED,
     onEnableWeather: () -> Unit = {},
-    todayEvents: List<CalendarEvent> = emptyList(),
-    tasks: List<TaskEntity> = emptyList(),
+    todayEvents: List<CalendarEvent>? = emptyList(),
+    tasks: List<TaskEntity>? = emptyList(),
     exactAlarmsAllowed: Boolean = true,
     onAllowExactAlarms: () -> Unit = {},
     onSaveTask: (id: Long?, title: String, dueAt: Long?) -> Unit = { _, _, _ -> },
@@ -122,7 +122,7 @@ fun DashboardScreen(
             modifier = Modifier.fillMaxWidth()
         )
         sheetTaskId?.let { id ->
-            val editing = tasks.firstOrNull { it.id == id }
+            val editing = tasks?.firstOrNull { it.id == id }
             TaskSheet(
                 task = editing,
                 nowMillis = timeMillis,
@@ -175,7 +175,10 @@ fun DashboardScreen(
             ) {
                 // Lay the template out at a realistic landscape size, then shrink it to fit the card.
                 ScaledPreview(designWidth = 800.dp) {
-                    DockContent(template = currentTemplate, state = DockUiState(timeMillis, weather))
+                    DockContent(
+                        template = currentTemplate,
+                        state = DockUiState(timeMillis, weather, todayEvents.orEmpty(), tasks.orEmpty())
+                    )
                 }
             }
             QuickActionButton(text = "Dock now", onClick = onDockNow, isActive = true)

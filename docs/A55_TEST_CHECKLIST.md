@@ -125,6 +125,20 @@ Emulator notes that explain some of these items are in the "Why" lines.
   Leave the phone docked for an hour. Pass: the temperature updates about every 30 minutes only when you wake or dock it
   (there is deliberately no background refresh).
 
+## Focus template
+
+- [ ] **Readable at a glance.**
+  Dock with Focus selected. From about 1.5 m: Pass: the clock is readable, and the NEXT / TASK lines are legible but
+  clearly secondary (no glare, mostly black).
+- [ ] **Next event is right.**
+  With real calendar events: Pass: it shows the next *timed* event that has not started, skips all-day events and events
+  already under way, and shows nothing for events once none are left today.
+- [ ] **Top task is right.**
+  With a few tasks: Pass: an overdue task wins (earliest overdue first); otherwise the earliest due time; otherwise the
+  oldest task without a time. Tick the shown task off in the app: the next one takes its place within a minute.
+- [ ] **Nothing to show.**
+  Finish every task and clear today's events: Pass: just the clock, no empty labels.
+
 ## Tasks (dashboard)
 
 - [ ] **Swipe to delete does not fight the Back gesture.**
