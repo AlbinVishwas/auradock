@@ -6,6 +6,7 @@ import com.auradock.data.CalendarEvent
 import com.auradock.dock.DockModeState
 import com.auradock.dock.DockTemplate
 import com.auradock.dock.TemplateRepository
+import com.auradock.tasks.TaskRepository
 import com.auradock.data.CalendarRepository
 import com.auradock.data.NotificationItem
 import com.auradock.data.NotificationRepository
@@ -34,6 +35,7 @@ class StandbyViewModel @Inject constructor(
     private val calendarRepository: CalendarRepository,
     private val notificationRepository: NotificationRepository,
     private val templateRepository: TemplateRepository,
+    private val taskRepository: TaskRepository,
     minuteClock: MinuteClock
 ) : ViewModel() {
 
@@ -57,6 +59,8 @@ class StandbyViewModel @Inject constructor(
         .stateIn(viewModelScope, SharingStarted.Eagerly, false)
 
     init {
+        // Housekeeping: finished tasks from before today are hidden already; delete them.
+        viewModelScope.launch { taskRepository.purgeOldDone() }
         viewModelScope.launch {
             standbyState.collect { auto -> dockMode.update { it.onAutoChanged(auto) } }
         }
