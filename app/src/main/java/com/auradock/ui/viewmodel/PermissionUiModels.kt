@@ -5,6 +5,7 @@ sealed class PermissionAction {
     data object OpenNotificationSettings : PermissionAction()
     data object OpenAppSettings : PermissionAction()
     data object RequestNotificationPermission : PermissionAction()
+    data object RequestLocationPermission : PermissionAction()
     data object OpenExactAlarmSettings : PermissionAction()
 }
 

@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
@@ -16,7 +17,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.auradock.ui.components.GlassCard
 import com.auradock.ui.theme.AuraDockColors
+import com.auradock.ui.weather.WeatherIcon
 import com.auradock.ui.widgets.ClockWidget
+import com.auradock.weather.Weather
+import com.auradock.weather.conditionLine
+import com.auradock.weather.temperatureLabel
 
 /**
  * What the dock looks like for [template]. This is the one place that draws the dock: the screensaver, the
@@ -26,7 +31,7 @@ import com.auradock.ui.widgets.ClockWidget
  * template is [DockScreen].
  */
 @Composable
-fun DockContent(template: DockTemplate, timeMillis: Long, modifier: Modifier = Modifier) {
+fun DockContent(template: DockTemplate, state: DockUiState, modifier: Modifier = Modifier) {
     Box(
         modifier = modifier
             .fillMaxSize()
@@ -34,35 +39,48 @@ fun DockContent(template: DockTemplate, timeMillis: Long, modifier: Modifier = M
         contentAlignment = Alignment.Center
     ) {
         when (template) {
-            DockTemplate.MINIMAL -> ClockWidget(timeMillis = timeMillis, dimmed = true, showDate = false)
+            DockTemplate.MINIMAL -> ClockWidget(timeMillis = state.timeMillis, dimmed = true, showDate = false)
             // FOCUS and PRODUCTIVITY are built in step 7; until then anything else draws Classic.
-            else -> ClassicLayout(timeMillis)
+            else -> ClassicLayout(state)
         }
     }
 }
 
 /** Big clock, date, weather, on a glass card. */
 @Composable
-private fun ClassicLayout(timeMillis: Long) {
+private fun ClassicLayout(state: DockUiState) {
     GlassCard(modifier = Modifier.fillMaxSize().padding(32.dp)) {
         Column(
             modifier = Modifier.fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(20.dp, Alignment.CenterVertically)
         ) {
-            ClockWidget(timeMillis = timeMillis)
-            WeatherLine(temperatureLabel = null)
+            ClockWidget(timeMillis = state.timeMillis)
+            WeatherLine(weather = state.weather)
         }
     }
 }
 
-/** Temperature, or an em dash while there is no real weather (step 8 supplies it). Never fake data. */
+/** Icon, temperature and condition (with the city if known), or a quiet dash when there is no weather. Never fake data. */
 @Composable
-private fun WeatherLine(temperatureLabel: String?) {
-    Text(
-        text = temperatureLabel ?: "—",
-        color = AuraDockColors.OnSurfaceVariant,
-        fontSize = 28.sp,
-        fontWeight = FontWeight.Light
-    )
+private fun WeatherLine(weather: Weather?) {
+    if (weather == null) {
+        Text(text = "—", color = AuraDockColors.OnSurfaceVariant, fontSize = 28.sp, fontWeight = FontWeight.Light)
+        return
+    }
+    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(14.dp)) {
+        WeatherIcon(weather.condition.icon, AuraDockColors.OnSurfaceVariant, size = 44.dp)
+        Text(
+            text = temperatureLabel(weather.temperatureC),
+            color = Color.White,
+            fontSize = 40.sp,
+            fontWeight = FontWeight.Light
+        )
+        Text(
+            text = conditionLine(weather),
+            color = AuraDockColors.OnSurfaceVariant,
+            fontSize = 20.sp,
+            fontWeight = FontWeight.Light
+        )
+    }
 }

@@ -29,6 +29,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.auradock.dock.DockContent
 import com.auradock.dock.DockTemplate
+import com.auradock.dock.DockUiState
 import com.auradock.ui.components.ScaledPreview
 import com.auradock.ui.components.GlassCard
 import com.auradock.ui.components.QuickActionButton
@@ -42,7 +43,7 @@ import kotlin.math.abs
 @OptIn(ExperimentalFoundationApi::class)
 fun TemplateGalleryScreen(
     selected: DockTemplate,
-    timeMillis: Long,
+    state: DockUiState,
     modifier: Modifier = Modifier,
     templates: List<DockTemplate> = DockTemplate.available,
     onApplyClick: (DockTemplate) -> Unit = {}
@@ -88,7 +89,7 @@ fun TemplateGalleryScreen(
 
                 TemplateCard(
                     template = templates[page],
-                    timeMillis = timeMillis,
+                    state = state,
                     inUse = templates[page] == selected,
                     modifier = Modifier.graphicsLayer {
                         scaleX = scale
@@ -115,7 +116,7 @@ fun TemplateGalleryScreen(
 @Composable
 private fun TemplateCard(
     template: DockTemplate,
-    timeMillis: Long,
+    state: DockUiState,
     inUse: Boolean,
     modifier: Modifier = Modifier
 ) {
@@ -144,7 +145,7 @@ private fun TemplateCard(
                         .clip(RoundedCornerShape(16.dp))
                 ) {
                     ScaledPreview(designWidth = 800.dp) {
-                        DockContent(template = template, timeMillis = timeMillis)
+                        DockContent(template = template, state = state)
                     }
                 }
             }
@@ -173,6 +174,6 @@ private fun TemplateCard(
 @Composable
 private fun TemplateGalleryScreenPreview() {
     AuraDockTheme {
-        TemplateGalleryScreen(selected = DockTemplate.CLASSIC, timeMillis = System.currentTimeMillis())
+        TemplateGalleryScreen(selected = DockTemplate.CLASSIC, state = DockUiState(System.currentTimeMillis()))
     }
 }

@@ -1,5 +1,8 @@
 package com.auradock.ui.screens.dashboard
 
+import androidx.compose.foundation.clickable
+import com.auradock.ui.theme.AuraDockColors
+import com.auradock.ui.theme.AuraDockTypography
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -39,6 +42,11 @@ import com.auradock.ui.components.StandbyPreviewCard
 import com.auradock.ui.components.TodaySnapshotCard
 import com.auradock.dock.DockTemplate
 import com.auradock.dock.DockContent
+import com.auradock.dock.DockUiState
+import com.auradock.weather.Weather
+import com.auradock.weather.conditionLine
+import com.auradock.weather.temperatureLabel
+import com.auradock.ui.weather.WeatherIcon
 import com.auradock.tasks.TaskEntity
 import com.auradock.ui.tasks.TaskCard
 import com.auradock.ui.tasks.TaskSheet
@@ -52,6 +60,9 @@ fun DashboardScreen(
     currentTemplate: DockTemplate,
     timeMillis: Long,
     modifier: Modifier = Modifier,
+    weather: Weather? = null,
+    locationPermissionState: CalendarPermissionUiState = CalendarPermissionUiState.GRANTED,
+    onEnableWeather: () -> Unit = {},
     todayEvents: List<CalendarEvent> = emptyList(),
     tasks: List<TaskEntity> = emptyList(),
     exactAlarmsAllowed: Boolean = true,
@@ -90,6 +101,9 @@ fun DashboardScreen(
             fontSize = 14.sp,
             modifier = Modifier.padding(top = spacing.xs)
         )
+
+        Spacer(modifier = Modifier.height(spacing.sm))
+        WeatherRow(weather = weather, permission = locationPermissionState, onEnable = onEnableWeather)
 
         Spacer(modifier = Modifier.height(spacing.lg))
 
@@ -161,7 +175,7 @@ fun DashboardScreen(
             ) {
                 // Lay the template out at a realistic landscape size, then shrink it to fit the card.
                 ScaledPreview(designWidth = 800.dp) {
-                    DockContent(template = currentTemplate, timeMillis = timeMillis)
+                    DockContent(template = currentTemplate, state = DockUiState(timeMillis, weather))
                 }
             }
             QuickActionButton(text = "Dock now", onClick = onDockNow, isActive = true)
@@ -180,3 +194,30 @@ private fun DashboardScreenPreview() {
 }
 
 private const val NEW_TASK = -1L
+
+/** One quiet line under the date: icon, temperature, condition and city, or a dash (with a way to allow location). */
+@Composable
+private fun WeatherRow(weather: Weather?, permission: CalendarPermissionUiState, onEnable: () -> Unit) {
+    val spacing = LocalAuraDockSpacing.current
+    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(spacing.sm)) {
+        if (weather != null) {
+            WeatherIcon(weather.condition.icon, AuraDockColors.OnSurfaceVariant, size = 22.dp)
+            Text(
+                text = temperatureLabel(weather.temperatureC) + "  " + conditionLine(weather),
+                style = AuraDockTypography.WidgetLabel,
+                color = AuraDockColors.OnSurfaceVariant
+            )
+        } else {
+            Text(text = "—", style = AuraDockTypography.WidgetLabel, color = AuraDockColors.OnSurfaceVariant)
+            if (permission != CalendarPermissionUiState.GRANTED) {
+                Text(
+                    text = if (permission == CalendarPermissionUiState.PERMANENTLY_DENIED) "Allow location in Settings for weather"
+                    else "Allow location for weather",
+                    style = AuraDockTypography.Caption,
+                    color = AuraDockColors.AccentBlue,
+                    modifier = Modifier.clickable(onClick = onEnable)
+                )
+            }
+        }
+    }
+}

@@ -95,6 +95,36 @@ Emulator notes that explain some of these items are in the "Why" lines.
   Unplug and tap "Dock now". Pass: dock shows and the screen stays on while it is visible; it stops staying on
   after you close it.
 
+## Weather and location
+
+- [ ] **Location permission prompt on Samsung.**
+  Tap "Allow location for weather" on the dashboard. Pass: Samsung shows the prompt for *approximate* location only
+  (no "Precise" switch), "While using the app" works, and the weather line appears within ~10 seconds.
+- [ ] **Deny, then the quiet fallback.**
+  Deny the prompt. Pass: the dashboard and the Classic dock show "—" (no error text, no fake numbers) and the link
+  "Allow location for weather" stays. Deny twice: the link changes to "Allow location in Settings for weather" and opens
+  AuraDock's app settings.
+- [ ] **Location services switched off.**
+  Turn the phone's Location toggle off (quick settings) with permission granted. Pass: "—", no crash. Turn it back on and
+  reopen the app: weather returns (allow the 1-minute retry pause).
+- [ ] **Real location, real numbers.**
+  Compare with a weather app at your real location. Pass: city name and temperature within a degree or two; condition
+  matches (clear / cloudy / rain).
+- [ ] **City name from Samsung's Geocoder.**
+  Pass: the city shows next to the condition. If the phone has no geocoder the city is simply left out (note which).
+- [ ] **Units.**
+  Pass: °C on an Indian/UK/EU region setting. Change Settings > General management > Language > Region to the United
+  States: after reopening, the same weather shows in °F.
+- [ ] **Offline.**
+  Turn Wi-Fi and mobile data off with no saved weather (clear the app's storage): "—". With recent weather saved (under
+  30 minutes old) it keeps showing until it is 3 hours old, then shows "—".
+- [ ] **Screensaver shows weather without opening the app.**
+  Let the screensaver start from cold (force-stop the app first). Pass: weather appears in the Classic dock within a few
+  seconds (it may show "—" for a moment first). Records whether Samsung lets the screensaver use the network.
+- [ ] **Refresh timing.**
+  Leave the phone docked for an hour. Pass: the temperature updates about every 30 minutes only when you wake or dock it
+  (there is deliberately no background refresh).
+
 ## Tasks (dashboard)
 
 - [ ] **Swipe to delete does not fight the Back gesture.**

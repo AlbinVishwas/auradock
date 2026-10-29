@@ -2,6 +2,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <!-- Weather: approximate location only (about a city block), never precise. -->
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.READ_CALENDAR" />
     <!-- Task reminders: show notifications (Android 13+), fire at the exact minute (Android 12+, user-granted),
          and set the alarms again after a restart. -->

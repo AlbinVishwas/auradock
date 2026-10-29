@@ -17,6 +17,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import com.auradock.ui.components.BurnInProtection
+import com.auradock.weather.usableAt
 
 /** Screen brightness (0..1) for the dimmed Minimal template. */
 private const val MINIMAL_BRIGHTNESS = 0.05f
@@ -33,6 +34,10 @@ private const val MINIMAL_BRIGHTNESS = 0.05f
 fun DockScreen(dockData: DockData, window: Window?, modifier: Modifier = Modifier) {
     val template by dockData.selectedTemplate.collectAsState()
     val time by dockData.timeMillis.collectAsState(initial = dockData.currentTimeMillis())
+    val weather by dockData.weather.collectAsState()
+
+    // The dock just appeared: refresh the weather if it is 30+ minutes old (does nothing otherwise).
+    LaunchedEffect(Unit) { dockData.refreshWeather() }
 
     DockBrightness(window, template)
 
@@ -41,7 +46,11 @@ fun DockScreen(dockData: DockData, window: Window?, modifier: Modifier = Modifie
 
     AnimatedVisibility(visible = visible, enter = fadeIn(animationSpec = tween(320))) {
         BurnInProtection(modifier = modifier) { drift ->
-            DockContent(template = template, timeMillis = time, modifier = drift.fillMaxSize())
+            DockContent(
+                template = template,
+                state = DockUiState(timeMillis = time, weather = weather.usableAt(time)),
+                modifier = drift.fillMaxSize()
+            )
         }
     }
 }

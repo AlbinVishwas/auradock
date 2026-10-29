@@ -9,6 +9,8 @@ import com.auradock.dock.DockTemplate
 import com.auradock.dock.TemplateRepository
 import com.auradock.tasks.TaskEntity
 import com.auradock.tasks.TaskRepository
+import com.auradock.weather.Weather
+import com.auradock.weather.WeatherRepository
 import com.auradock.data.CalendarRepository
 import com.auradock.data.NotificationItem
 import com.auradock.data.NotificationRepository
@@ -38,6 +40,7 @@ class StandbyViewModel @Inject constructor(
     private val notificationRepository: NotificationRepository,
     private val templateRepository: TemplateRepository,
     private val taskRepository: TaskRepository,
+    private val weatherRepository: WeatherRepository,
     minuteClock: MinuteClock
 ) : ViewModel() {
 
@@ -112,6 +115,43 @@ class StandbyViewModel @Inject constructor(
     fun deleteTask(task: TaskEntity) {
         viewModelScope.launch { taskRepository.delete(task.id) }
     }
+
+    val weather: StateFlow<Weather?> = weatherRepository.weather
+
+    private val _locationPermissionState = MutableStateFlow(locationState())
+    val locationPermissionState: StateFlow<CalendarPermissionUiState> = _locationPermissionState.asStateFlow()
+
+    private fun locationState() =
+        if (weatherRepository.hasLocationPermission()) CalendarPermissionUiState.GRANTED else CalendarPermissionUiState.DENIED
+
+    fun refreshLocationPermission() {
+        // keep "permanently denied" until the user grants it: only Android settings can undo it
+        _locationPermissionState.value =
+            if (weatherRepository.hasLocationPermission()) CalendarPermissionUiState.GRANTED
+            else if (_locationPermissionState.value == CalendarPermissionUiState.PERMANENTLY_DENIED) CalendarPermissionUiState.PERMANENTLY_DENIED
+            else CalendarPermissionUiState.DENIED
+    }
+
+    fun onLocationPermissionResult(granted: Boolean, permanentlyDenied: Boolean) {
+        _locationPermissionState.value = when {
+            granted -> CalendarPermissionUiState.GRANTED
+            permanentlyDenied -> CalendarPermissionUiState.PERMANENTLY_DENIED
+            else -> CalendarPermissionUiState.DENIED
+        }
+        if (granted) weatherRepository.refreshIfStale()
+    }
+
+    /** The user tapped "Allow location for weather". */
+    fun requestLocationPermission() {
+        when (_locationPermissionState.value) {
+            CalendarPermissionUiState.GRANTED -> Unit
+            CalendarPermissionUiState.DENIED -> _permissionActions.tryEmit(PermissionAction.RequestLocationPermission)
+            CalendarPermissionUiState.PERMANENTLY_DENIED -> _permissionActions.tryEmit(PermissionAction.OpenAppSettings)
+        }
+    }
+
+    /** The app is visible: refresh the weather if the cache is 30+ minutes old. */
+    fun refreshWeather() = weatherRepository.refreshIfStale()
 
     fun enterDock() = dockMode.update { it.enterManual() }
     fun dismissDock() = dockMode.update { it.dismiss(standbyState.value) }

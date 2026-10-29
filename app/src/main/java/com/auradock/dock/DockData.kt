@@ -7,6 +7,8 @@ import com.auradock.data.NotificationItem
 import com.auradock.data.NotificationRepository
 import com.auradock.permissions.isNotificationAccessEnabled
 import com.auradock.time.MinuteClock
+import com.auradock.weather.Weather
+import com.auradock.weather.WeatherRepository
 import com.auradock.ui.viewmodel.CalendarPermissionUiState
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
@@ -27,9 +29,16 @@ class DockData @Inject constructor(
     private val calendarRepository: CalendarRepository,
     notificationRepository: NotificationRepository,
     private val minuteClock: MinuteClock,
-    templateRepository: TemplateRepository
+    templateRepository: TemplateRepository,
+    private val weatherRepository: WeatherRepository
 ) {
     val selectedTemplate: StateFlow<DockTemplate> = templateRepository.selected
+
+    /** The latest weather (may be old: use usableAt before showing it). */
+    val weather: StateFlow<Weather?> = weatherRepository.weather
+
+    /** Call when the dock or app becomes visible: refreshes only if the cache is 30+ minutes old. */
+    fun refreshWeather() = weatherRepository.refreshIfStale()
 
     /** Ticks at the start of every minute (see [MinuteClock]). */
     val timeMillis: Flow<Long> get() = minuteClock.minutes

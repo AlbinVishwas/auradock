@@ -39,6 +39,8 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import com.auradock.dock.DockData
 import com.auradock.dock.DockScreen
+import com.auradock.dock.DockUiState
+import com.auradock.weather.usableAt
 import com.auradock.permissions.isNotificationAccessEnabled
 import com.auradock.permissions.openAppSettings
 import com.auradock.permissions.openExactAlarmSettings
@@ -69,6 +71,8 @@ class MainActivity : ComponentActivity() {
                 val todayEvents by standbyViewModel.todayEvents.collectAsState()
                 val tasks by standbyViewModel.tasks.collectAsState()
                 val exactAlarmsAllowed by standbyViewModel.exactAlarmsAllowed.collectAsState()
+                val weather by standbyViewModel.weather.collectAsState()
+                val locationPermissionState by standbyViewModel.locationPermissionState.collectAsState()
                 val calendarPermissionState by standbyViewModel.calendarPermissionState.collectAsState()
                 var showGallery by rememberSaveable { mutableStateOf(false) }
                 val calendarPermissionLauncher = rememberLauncherForActivityResult(
@@ -82,6 +86,16 @@ class MainActivity : ComponentActivity() {
                     standbyViewModel.onCalendarPermissionResult(granted, permanentlyDenied)
                 }
 
+                val locationPermissionLauncher = rememberLauncherForActivityResult(
+                    contract = ActivityResultContracts.RequestPermission()
+                ) { granted ->
+                    val permanentlyDenied = !granted &&
+                        !ActivityCompat.shouldShowRequestPermissionRationale(
+                            this@MainActivity,
+                            Manifest.permission.ACCESS_COARSE_LOCATION
+                        )
+                    standbyViewModel.onLocationPermissionResult(granted, permanentlyDenied)
+                }
                 val notificationPermissionLauncher = rememberLauncherForActivityResult(
                     contract = ActivityResultContracts.RequestPermission()
                 ) { /* nothing to do: without it, reminders are saved but no notification is shown */ }
@@ -99,6 +113,10 @@ class MainActivity : ComponentActivity() {
 
                             PermissionAction.OpenAppSettings -> {
                                 openAppSettings(this@MainActivity)
+                            }
+
+                            PermissionAction.RequestLocationPermission -> {
+                                locationPermissionLauncher.launch(Manifest.permission.ACCESS_COARSE_LOCATION)
                             }
 
                             PermissionAction.RequestNotificationPermission -> {
@@ -150,7 +168,7 @@ class MainActivity : ComponentActivity() {
 
                         "gallery" -> TemplateGalleryScreen(
                             selected = currentTemplate,
-                            timeMillis = timeMillis,
+                            state = DockUiState(timeMillis, weather.usableAt(timeMillis)),
                             onApplyClick = {
                                 standbyViewModel.setTemplate(it)
                                 showGallery = false
@@ -160,6 +178,9 @@ class MainActivity : ComponentActivity() {
                         else -> DashboardScreen(
                             currentTemplate = currentTemplate,
                             timeMillis = timeMillis,
+                            weather = weather.usableAt(timeMillis),
+                            locationPermissionState = locationPermissionState,
+                            onEnableWeather = { standbyViewModel.requestLocationPermission() },
                             todayEvents = todayEvents,
                             tasks = tasks,
                             exactAlarmsAllowed = exactAlarmsAllowed,
@@ -224,6 +245,8 @@ class MainActivity : ComponentActivity() {
         super.onStart()
         standbyViewModel.refreshCalendarPermission()
         standbyViewModel.updateNotificationAccess(isNotificationAccessEnabled(this))
+        standbyViewModel.refreshLocationPermission()
+        standbyViewModel.refreshWeather() // the app is visible: refreshes only if the weather is 30+ minutes old
     }
 
     override fun onResume() {
