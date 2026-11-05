@@ -70,8 +70,6 @@ class StandbyViewModel @Inject constructor(
     private val dockMode = MutableStateFlow(DockModeState())
     val dockVisible: StateFlow<Boolean> = combine(dockMode, standbyState) { mode, auto -> mode.visible(auto) }
         .stateIn(viewModelScope, SharingStarted.Eagerly, false)
-    val manualDock: StateFlow<Boolean> = dockMode.map { it.manual }
-        .stateIn(viewModelScope, SharingStarted.Eagerly, false)
 
     init {
         // Housekeeping: finished tasks from before today are hidden already; delete them.

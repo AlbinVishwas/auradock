@@ -1,13 +1,11 @@
 package com.auradock.standby
 
 import android.content.BroadcastReceiver
-import android.content.ComponentCallbacks
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
-import android.content.res.Configuration
-import android.content.res.Resources
 import android.os.BatteryManager
+import com.auradock.dock.PhysicalOrientation
 import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
@@ -28,7 +26,6 @@ class StandbyTriggerManagerTest {
 
     private lateinit var context: Context
     private lateinit var batteryReceiver: BroadcastReceiver
-    private lateinit var orientationCallbacks: ComponentCallbacks
 
     @Before
     fun setUp() {
@@ -41,12 +38,8 @@ class StandbyTriggerManagerTest {
     private fun startManager(charging: Boolean = false, landscape: Boolean = false): StandbyTriggerManager {
         // Build the mocks first: creating a mock inside thenReturn(...) would interrupt stubbing.
         val stickyIntent = batteryIntent(charging)
-        val initialConfig = config(landscape)
         whenever(context.registerReceiver(any<BroadcastReceiver>(), any<IntentFilter>())).thenReturn(stickyIntent)
-        val resources: Resources = mock()
-        whenever(resources.configuration).thenReturn(initialConfig)
-        whenever(context.resources).thenReturn(resources)
-        return startAndCapture()
+        return startAndCapture().also { if (landscape) it.rotate(true) }
     }
 
     private fun startAndCapture(): StandbyTriggerManager {
@@ -55,9 +48,6 @@ class StandbyTriggerManagerTest {
         val receiver = argumentCaptor<BroadcastReceiver>()
         verify(context).registerReceiver(receiver.capture(), any<IntentFilter>())
         batteryReceiver = receiver.firstValue
-        val callbacks = argumentCaptor<ComponentCallbacks>()
-        verify(context).registerComponentCallbacks(callbacks.capture())
-        orientationCallbacks = callbacks.firstValue
         return manager
     }
 
@@ -69,12 +59,10 @@ class StandbyTriggerManagerTest {
         return intent
     }
 
-    private fun config(landscape: Boolean) = Configuration().apply {
-        orientation = if (landscape) Configuration.ORIENTATION_LANDSCAPE else Configuration.ORIENTATION_PORTRAIT
-    }
-
     private fun plug(charging: Boolean) = batteryReceiver.onReceive(context, batteryIntent(charging))
-    private fun rotate(landscape: Boolean) = orientationCallbacks.onConfigurationChanged(config(landscape))
+    // The accelerometer is out of reach of a JVM test, so tests hand the manager the steady reading directly.
+    private fun StandbyTriggerManager.rotate(landscape: Boolean) =
+        onStableOrientation(if (landscape) PhysicalOrientation.LANDSCAPE_LEFT else PhysicalOrientation.PORTRAIT)
     private fun StandbyTriggerManager.state() = standbyState.value
 
     // ── the rule: charging AND landscape ──────────────────────────────────────
@@ -85,14 +73,14 @@ class StandbyTriggerManagerTest {
         assertEquals(StandbyState.INACTIVE, manager.state())
         plug(true) // charging only
         assertEquals(StandbyState.INACTIVE, manager.state())
-        rotate(true) // charging + landscape
+        manager.rotate(true) // charging + landscape
         assertEquals(StandbyState.ACTIVE, manager.state())
     }
 
     @Test
     fun `landscape alone does not trigger`() {
         val manager = startManager()
-        rotate(true)
+        manager.rotate(true)
         assertEquals(StandbyState.INACTIVE, manager.state())
     }
 
@@ -113,15 +101,15 @@ class StandbyTriggerManagerTest {
     @Test
     fun `rotating back to portrait exits standby`() {
         val manager = startManager(charging = true, landscape = true)
-        rotate(false)
+        manager.rotate(false)
         assertEquals(StandbyState.INACTIVE, manager.state())
     }
 
     @Test
     fun `standby can be re-entered after exiting`() {
         val manager = startManager(charging = true, landscape = true)
-        rotate(false)
-        rotate(true)
+        manager.rotate(false)
+        manager.rotate(true)
         assertEquals(StandbyState.ACTIVE, manager.state())
     }
 
@@ -131,7 +119,6 @@ class StandbyTriggerManagerTest {
         manager.stop()
         assertEquals(StandbyState.INACTIVE, manager.state())
         verify(context).unregisterReceiver(batteryReceiver)
-        verify(context).unregisterComponentCallbacks(orientationCallbacks)
     }
 
     // ── missing battery info ──────────────────────────────────────────────────
@@ -141,11 +128,9 @@ class StandbyTriggerManagerTest {
         // registerReceiver returns null when no ACTION_BATTERY_CHANGED broadcast has been sent yet.
         // The phone is in landscape, so a wrongly assumed "charging" would turn standby on.
         whenever(context.registerReceiver(any<BroadcastReceiver>(), any<IntentFilter>())).thenReturn(null)
-        val initialConfig = config(landscape = true)
-        val resources: Resources = mock()
-        whenever(resources.configuration).thenReturn(initialConfig)
-        whenever(context.resources).thenReturn(resources)
 
-        assertEquals(StandbyState.INACTIVE, startAndCapture().state())
+        val manager = startAndCapture()
+        manager.rotate(true)
+        assertEquals(StandbyState.INACTIVE, manager.state())
     }
 }

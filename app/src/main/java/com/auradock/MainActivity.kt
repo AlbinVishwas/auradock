@@ -2,7 +2,6 @@ package com.auradock
 
 import android.Manifest
 import android.content.pm.ActivityInfo
-import android.content.res.Configuration
 import android.os.Build
 import android.os.Bundle
 import android.view.WindowManager
@@ -32,7 +31,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.core.app.ActivityCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
@@ -93,7 +91,6 @@ class MainActivity : ComponentActivity() {
                 val currentTemplate by standbyViewModel.currentTemplate.collectAsState()
                 val timeMillis by standbyViewModel.currentTimeMillis.collectAsState()
                 val dockVisible by standbyViewModel.dockVisible.collectAsState()
-                val manualDock by standbyViewModel.manualDock.collectAsState()
                 val todayEvents by standbyViewModel.todayEvents.collectAsState()
                 val tasks by standbyViewModel.tasks.collectAsState()
                 val exactAlarmsAllowed by standbyViewModel.exactAlarmsAllowed.collectAsState()
@@ -197,7 +194,7 @@ class MainActivity : ComponentActivity() {
                     }
                 }
 
-                ManualDockOrientation(manualDock)
+                DockOrientation(dockVisible)
                 DockWindowMode(dockVisible)
                 BackHandler(enabled = dockVisible) { standbyViewModel.dismissDock() }
                 BackHandler(enabled = page != "dashboard" && !dockVisible) { page = "dashboard" }
@@ -301,26 +298,19 @@ class MainActivity : ComponentActivity() {
     }
 
     /**
-     * "Dock now" forces landscape (either way up, following the sensor) so the dock fills the screen even
-     * when the phone is held upright. On exit it goes back to portrait for the dashboard, and only once the
-     * screen really is portrait does it hand rotation back to the system, so the dock does not instantly
-     * re-open just because the phone is still leaning in landscape.
+     * Every screen except the dock is portrait (also set in the manifest, so the very first frame is
+     * portrait). While the dock shows, the window follows the sensor between the two landscapes, so
+     * "Dock now" fills the screen even when the phone is held upright; closing it goes back to portrait.
+     * The auto-dock does not depend on the window turning (it reads the accelerometer), so going back to
+     * portrait here cannot make it re-open.
      */
     @androidx.compose.runtime.Composable
-    private fun ManualDockOrientation(manualDock: Boolean) {
-        val orientation = LocalConfiguration.current.orientation
-        var returningToPortrait by rememberSaveable { mutableStateOf(false) }
-        LaunchedEffect(manualDock, orientation) {
-            when {
-                manualDock -> {
-                    returningToPortrait = true
-                    requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
-                }
-                returningToPortrait && orientation == Configuration.ORIENTATION_PORTRAIT -> {
-                    requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
-                    returningToPortrait = false
-                }
-                returningToPortrait -> requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+    private fun DockOrientation(dockVisible: Boolean) {
+        LaunchedEffect(dockVisible) {
+            requestedOrientation = if (dockVisible) {
+                ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
+            } else {
+                ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
             }
         }
     }
