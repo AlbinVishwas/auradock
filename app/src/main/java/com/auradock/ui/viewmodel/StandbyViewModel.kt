@@ -4,6 +4,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.auradock.data.CalendarEvent
 import com.auradock.dock.DockModeState
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.core.graphics.drawable.toBitmap
+import com.auradock.focus.AppCatalog
+import com.auradock.focus.AppEntry
 import com.auradock.focus.DndController
 import com.auradock.focus.DockFocusController
 import com.auradock.focus.FocusSettings
@@ -15,8 +19,6 @@ import com.auradock.tasks.TaskRepository
 import com.auradock.weather.Weather
 import com.auradock.weather.WeatherRepository
 import com.auradock.data.CalendarRepository
-import com.auradock.data.NotificationItem
-import com.auradock.data.NotificationRepository
 import com.auradock.standby.StandbyState
 import com.auradock.standby.StandbyTriggerManager
 import com.auradock.time.MinuteClock
@@ -40,7 +42,7 @@ import javax.inject.Inject
 class StandbyViewModel @Inject constructor(
     @ApplicationContext private val context: Context,
     private val calendarRepository: CalendarRepository,
-    private val notificationRepository: NotificationRepository,
+    private val appCatalog: AppCatalog,
     private val templateRepository: TemplateRepository,
     private val taskRepository: TaskRepository,
     private val weatherRepository: WeatherRepository,
@@ -182,6 +184,27 @@ class StandbyViewModel @Inject constructor(
         _permissionActions.tryEmit(PermissionAction.OpenDndAccessSettings)
     }
 
+    // ── Apps whose notifications the dock shows ───────────────────────────────
+
+    val pickedApps: StateFlow<List<String>> = focusSettings.pickedApps
+
+    private val _apps = MutableStateFlow<List<AppEntry>?>(null)
+
+    /** The launchable apps, or null until loaded. */
+    val apps: StateFlow<List<AppEntry>?> = _apps.asStateFlow()
+
+    fun loadApps() {
+        if (_apps.value == null) viewModelScope.launch { _apps.value = appCatalog.launchableApps() }
+    }
+
+    fun toggleApp(packageName: String) {
+        focusSettings.toggleApp(packageName)
+    }
+
+    suspend fun appIcon(packageName: String): androidx.compose.ui.graphics.ImageBitmap? = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+        appCatalog.icon(packageName)?.toBitmap(96, 96)?.asImageBitmap()
+    }
+
     fun enterDock() = dockMode.update { it.enterManual() }
     fun dismissDock() = dockMode.update { it.dismiss(standbyState.value) }
 
@@ -198,8 +221,6 @@ class StandbyViewModel @Inject constructor(
     /** Null until the first load finishes, so the screen never claims "no events" before it knows. */
     val todayEvents: StateFlow<List<CalendarEvent>?> = calendarRepository.observeTodayEvents()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
-    val importantNotifications: StateFlow<List<NotificationItem>> = notificationRepository.importantNotifications
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
     fun setTemplate(template: DockTemplate) {
         templateRepository.select(template)

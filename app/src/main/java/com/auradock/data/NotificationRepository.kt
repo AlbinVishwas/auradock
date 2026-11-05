@@ -1,87 +1,82 @@
 package com.auradock.data
 
-import android.service.notification.StatusBarNotification
 import android.util.Log
-import javax.inject.Inject
-import javax.inject.Singleton
+import com.auradock.focus.FocusSettings
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.drop
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
+import javax.inject.Inject
+import javax.inject.Singleton
 
-data class NotificationItem(
-    val packageName: String,
-    val appName: String,
-    val title: String,
-    val content: String,
-    val postedAt: Long
-)
-
+/**
+ * The notifications from the user's picked apps, kept in memory only (never saved to disk) and fed by the notification
+ * listener service. A normal injected singleton: the service, the dock and the screensaver all share this one instance.
+ */
 @Singleton
-class NotificationRepository @Inject constructor() {
+class NotificationRepository @Inject constructor(
+    private val settings: FocusSettings
+) {
+    private val _items = MutableStateFlow<List<NotificationItem>>(emptyList())
+    val items: StateFlow<List<NotificationItem>> = _items.asStateFlow()
 
-    val importantNotifications: StateFlow<List<NotificationItem>> = cache.asStateFlow()
+    /** Reads the notifications currently showing in the shade; set while the listener is connected. */
+    @Volatile private var activeSource: (() -> List<RawNotification>)? = null
 
-    companion object {
-        private const val TAG = "NotificationRepository"
-        private const val MAX_ITEMS = 20
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
-        private val importantPackages = setOf(
-            "com.whatsapp",
-            "com.google.android.gm",
-            "com.google.android.apps.messaging",
-            "com.slack",
-            "com.microsoft.teams"
-        )
+    init {
+        // When the user changes their picked apps, rebuild from what is showing right now (a newly picked app's existing
+        // notifications appear; a dropped app's disappear).
+        scope.launch { settings.pickedApps.drop(1).collect { rebuild() } }
+    }
 
-        private val noisyPackages = setOf(
-            "android",
-            "com.android.systemui",
-            "com.google.android.dialer"
-        )
+    fun attach(source: () -> List<RawNotification>) {
+        activeSource = source
+        rebuild()
+    }
 
-        private val cache = MutableStateFlow<List<NotificationItem>>(emptyList())
+    fun detach() {
+        activeSource = null
+    }
 
-        fun onNotificationPosted(sbn: StatusBarNotification?) {
-            if (sbn == null) return
-
-            runCatching {
-                val extras = sbn.notification.extras
-                val title = extras.getCharSequence("android.title")?.toString().orEmpty()
-                val content = extras.getCharSequence("android.text")?.toString().orEmpty()
-
-                if (shouldIgnore(sbn.packageName, title, content)) return
-
-                val item = NotificationItem(
-                    packageName = sbn.packageName,
-                    appName = sbn.packageName.substringAfterLast('.').replaceFirstChar { it.uppercase() },
-                    title = title.ifBlank { "Notification" },
-                    content = content,
-                    postedAt = sbn.postTime
-                )
-
-                val updated = (listOf(item) + cache.value)
-                    .distinctBy { "${it.packageName}:${it.title}:${it.content}:${it.postedAt}" }
-                    .take(MAX_ITEMS)
-
-                cache.value = updated
-                Log.d(TAG, "Notification captured from ${item.packageName}")
-            }.onFailure {
-                Log.e(TAG, "Failed processing notification", it)
-            }
+    fun onPosted(raw: RawNotification) {
+        val picked = settings.pickedApps.value.toSet()
+        if (isRelevant(raw, picked)) {
+            _items.update { upsert(it, raw.toItem()) }
+            Log.d(TAG, "cached ${raw.packageName} (${_items.value.size} total)")
+        } else {
+            // An update that no longer qualifies (it became "ongoing", say) must not leave the old version behind.
+            _items.update { removeByKey(it, raw.key) }
         }
+    }
 
-        fun onNotificationRemoved(sbn: StatusBarNotification?) {
-            if (sbn == null) return
-            cache.value = cache.value.filterNot {
-                it.packageName == sbn.packageName && it.postedAt == sbn.postTime
-            }
-        }
+    fun onRemoved(key: String) {
+        _items.update { removeByKey(it, key) }
+        Log.d(TAG, "removed (${_items.value.size} left)")
+    }
 
-        private fun shouldIgnore(packageName: String, title: String, content: String): Boolean {
-            if (packageName in noisyPackages) return true
-            if (title.isBlank() && content.isBlank()) return true
-            if (packageName !in importantPackages) return true
-            return false
+    private fun rebuild() {
+        val picked = settings.pickedApps.value.toSet()
+        val source = activeSource
+        _items.value = if (source == null) {
+            retainPicked(_items.value, picked)
+        } else {
+            runCatching { source() }.getOrDefault(emptyList())
+                .filter { isRelevant(it, picked) }
+                .map { it.toItem() }
+                .sortedByDescending { it.postedAt }
+                .take(MAX_CACHED_NOTIFICATIONS)
         }
+        Log.d(TAG, "rebuilt: ${_items.value.size} from picked apps $picked")
+    }
+
+    private companion object {
+        const val TAG = "NotificationRepo"
     }
 }

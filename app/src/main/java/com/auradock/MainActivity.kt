@@ -95,10 +95,14 @@ class MainActivity : ComponentActivity() {
                 val weather by standbyViewModel.weather.collectAsState()
                 val focusWhileDocked by standbyViewModel.focusWhileDocked.collectAsState()
                 val dndAccessGranted by standbyViewModel.dndAccessGranted.collectAsState()
+                val hasNotificationAccess by standbyViewModel.hasNotificationAccess.collectAsState()
+                val apps by standbyViewModel.apps.collectAsState()
+                val pickedApps by standbyViewModel.pickedApps.collectAsState()
                 val locationPermissionState by standbyViewModel.locationPermissionState.collectAsState()
                 val calendarPermissionState by standbyViewModel.calendarPermissionState.collectAsState()
                 // which page is open: "dashboard", "templates" or "focus"
                 var page by rememberSaveable { mutableStateOf("dashboard") }
+                LaunchedEffect(page) { if (page == "focus") standbyViewModel.loadApps() }
                 val calendarPermissionLauncher = rememberLauncherForActivityResult(
                     contract = ActivityResultContracts.RequestPermission()
                 ) { granted ->
@@ -208,7 +212,13 @@ class MainActivity : ComponentActivity() {
                             focusWhileDocked = focusWhileDocked,
                             hasDndAccess = dndAccessGranted,
                             onToggleFocus = { standbyViewModel.setFocusWhileDocked(it) },
-                            onOpenDndSettings = { standbyViewModel.openDndAccessSettings() }
+                            onOpenDndSettings = { standbyViewModel.openDndAccessSettings() },
+                            hasNotificationAccess = hasNotificationAccess,
+                            onOpenNotificationAccess = { standbyViewModel.openNotificationSettings() },
+                            apps = apps,
+                            pickedApps = pickedApps,
+                            onToggleApp = { standbyViewModel.toggleApp(it) },
+                            loadIcon = { standbyViewModel.appIcon(it) }
                         )
 
                         else -> DashboardScreen(

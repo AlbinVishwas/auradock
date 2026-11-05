@@ -267,3 +267,11 @@ Emulator notes that explain some of these items are in the "Why" lines.
   record whether it is acceptable.
 - [ ] **Quick re-dock does not flicker.**
   Dock, undock, and dock again within 3 seconds. Pass: DND stays on throughout (the restore waits 3 seconds).
+
+## Notification apps and listener (Focus settings, step 10a)
+- [ ] Focus page lists launchable apps with icons and names (Samsung apps, Secure Folder/duplicates appear once each, no AuraDock itself).
+- [ ] Pick 3 apps: the 4th and later rows grey out; un-pick one and the others become tappable again. Choice survives closing and reopening the app.
+- [ ] "Allow notification access" opens the Samsung page; after allowing, returning to AuraDock hides the amber note.
+- [ ] Listener survives Samsung battery management: leave the phone idle and docked for an hour, then post a notification from a picked app; it still arrives in the cache. If not, check Settings > Battery > Background usage limits and set AuraDock to "Never sleeping".
+- [ ] After a reboot, or after toggling notification access off and on, the listener reconnects without opening the app.
+- [ ] Swiping a notification away in the shade removes it from AuraDock too.

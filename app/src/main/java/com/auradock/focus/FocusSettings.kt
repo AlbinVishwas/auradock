@@ -25,7 +25,24 @@ class FocusSettings @Inject constructor(
         prefs.edit().putBoolean(KEY_FOCUS, enabled).apply()
     }
 
+    private val _pickedApps = MutableStateFlow(
+        prefs.getString(KEY_APPS, "").orEmpty().split(',').filter { it.isNotBlank() }.take(MAX_PICKED_APPS)
+    )
+
+    /** The (up to three) apps whose notifications the dock shows, in the order they were picked. */
+    val pickedApps: StateFlow<List<String>> = _pickedApps.asStateFlow()
+
+    /** Picks or un-picks [packageName]. Returns false if it could not be picked because three are already chosen. */
+    fun toggleApp(packageName: String): Boolean {
+        val next = togglePick(_pickedApps.value, packageName)
+        if (next == _pickedApps.value) return false
+        _pickedApps.value = next
+        prefs.edit().putString(KEY_APPS, next.joinToString(",")).apply()
+        return true
+    }
+
     private companion object {
         const val KEY_FOCUS = "focus_while_docked"
+        const val KEY_APPS = "picked_apps"
     }
 }

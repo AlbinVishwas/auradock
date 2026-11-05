@@ -50,7 +50,7 @@ class DockData @Inject constructor(
     val todayTasks: Flow<List<TaskEntity>> = taskRepository.todayTasks
 
     val todayEvents: Flow<List<CalendarEvent>> get() = calendarRepository.observeTodayEvents()
-    val notifications: StateFlow<List<NotificationItem>> = notificationRepository.importantNotifications
+    val notifications: StateFlow<List<NotificationItem>> = notificationRepository.items
 
     /** Only GRANTED/DENIED here: asking again (and "permanently denied") needs an Activity. */
     fun calendarPermissionState(): CalendarPermissionUiState =
