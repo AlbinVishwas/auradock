@@ -36,6 +36,10 @@ vary a little between One UI versions; the idea is the same.
 
 ## Screensaver (DockDreamService)
 
+- [ ] **Onboarding "Dock it, and AuraDock appears" step.** The 3-frame animation loops; "Choose AuraDock as
+  screensaver" opens the screensaver page and "Set screen timeout" opens Display settings. After choosing AuraDock
+  and coming back, the first button turns into "✓ AuraDock is your screensaver" (if Samsung keeps the choice
+  elsewhere the check just does not show; note it). The same explanation is on the Setup page.
 - [ ] **AuraDock appears in the screensaver picker.**
   Settings > Display > Screen saver. Pass: "AuraDock" is listed and can be selected; the start option
   offered is "while charging".

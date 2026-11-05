@@ -41,7 +41,9 @@ fun OnboardingScreen(
     dockState: DockUiState,
     permissionGranted: (SetupPermission) -> Boolean,
     onAllowPermission: (SetupPermission) -> Unit,
+    screensaverSelected: Boolean,
     onOpenScreensaverSettings: () -> Unit,
+    onOpenDisplaySettings: () -> Unit,
     onPickTemplate: (DockTemplate) -> Unit,
     onFinish: () -> Unit,
     modifier: Modifier = Modifier
@@ -70,33 +72,28 @@ fun OnboardingScreen(
                 .padding(horizontal = 24.dp, vertical = 48.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            Text(
-                text = when (step) {
-                    Step.WELCOME -> "Welcome to AuraDock"
-                    Step.SCREENSAVER -> "Set AuraDock as your screensaver"
-                    else -> "Permissions"
-                },
-                color = Color.White,
-                fontSize = 32.sp,
-                fontWeight = FontWeight.SemiBold
-            )
-            Text(
-                text = when (step) {
-                    Step.WELCOME -> "Turn your phone into a dock for the time, your tasks and your day while it charges on a stand."
-                    Step.SCREENSAVER -> "AuraDock appears in your phone's screensaver list and starts by itself while the phone charges. " +
-                        "Open the settings and choose AuraDock."
-                    else -> "AuraDock asks for a few things so its features work. You can skip any of them and allow them later."
-                },
-                style = AuraDockTypography.WidgetPrimary,
-                color = AuraDockColors.OnSurfaceVariant
-            )
             if (step == Step.SCREENSAVER) {
+                DockExplainer(
+                    screensaverSelected = screensaverSelected,
+                    onChooseScreensaver = onOpenScreensaverSettings,
+                    onSetScreenTimeout = onOpenDisplaySettings
+                )
+            } else {
                 Text(
-                    text = "Tip: to see it, put the phone on its stand while charging and let the screen time out.",
-                    style = AuraDockTypography.Caption,
+                    text = if (step == Step.WELCOME) "Welcome to AuraDock" else "Permissions",
+                    color = Color.White,
+                    fontSize = 32.sp,
+                    fontWeight = FontWeight.SemiBold
+                )
+                Text(
+                    text = if (step == Step.WELCOME) {
+                        "Turn your phone into a dock for the time, your tasks and your day while it charges on a stand."
+                    } else {
+                        "AuraDock asks for a few things so its features work. You can skip any of them and allow them later."
+                    },
+                    style = AuraDockTypography.WidgetPrimary,
                     color = AuraDockColors.OnSurfaceVariant
                 )
-                QuickActionButton(text = "Open screensaver settings", onClick = onOpenScreensaverSettings, isActive = true)
             }
             if (step == Step.PERMISSIONS) {
                 SetupPermission.entries.forEach { permission ->

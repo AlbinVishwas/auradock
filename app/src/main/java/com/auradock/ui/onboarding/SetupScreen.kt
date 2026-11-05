@@ -14,7 +14,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.auradock.ui.components.QuickActionButton
 import com.auradock.ui.theme.AuraDockColors
 import com.auradock.ui.theme.AuraDockTypography
 
@@ -23,7 +22,9 @@ import com.auradock.ui.theme.AuraDockTypography
 fun SetupScreen(
     permissionGranted: (SetupPermission) -> Boolean,
     onAllowPermission: (SetupPermission) -> Unit,
+    screensaverSelected: Boolean,
     onOpenScreensaverSettings: () -> Unit,
+    onOpenDisplaySettings: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -40,6 +41,12 @@ fun SetupScreen(
             style = AuraDockTypography.Caption,
             color = AuraDockColors.OnSurfaceVariant
         )
+        DockExplainer(
+            screensaverSelected = screensaverSelected,
+            onChooseScreensaver = onOpenScreensaverSettings,
+            onSetScreenTimeout = onOpenDisplaySettings,
+            showTitle = false
+        )
         SetupPermission.entries.forEach { permission ->
             PermissionCard(
                 permission = permission,
@@ -47,6 +54,5 @@ fun SetupScreen(
                 onAllow = { onAllowPermission(permission) }
             )
         }
-        QuickActionButton(text = "Open screensaver settings", onClick = onOpenScreensaverSettings)
     }
 }

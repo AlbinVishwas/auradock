@@ -45,7 +45,9 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import kotlinx.coroutines.launch
 import com.auradock.weather.usableAt
+import com.auradock.permissions.isAuraDockScreensaver
 import com.auradock.permissions.isNotificationAccessEnabled
+import com.auradock.permissions.openDisplaySettings
 import com.auradock.permissions.openAppSettings
 import com.auradock.permissions.openDndAccessSettings
 import com.auradock.permissions.openExactAlarmSettings
@@ -67,6 +69,9 @@ import javax.inject.Inject
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     private val standbyViewModel: StandbyViewModel by viewModels()
+
+    /** Whether Android has AuraDock as the chosen screensaver; re-read in onResume. */
+    private var screensaverSelected by androidx.compose.runtime.mutableStateOf(false)
 
     @Inject lateinit var dockData: DockData
     @Inject lateinit var dockFocus: DockFocusController
@@ -236,7 +241,9 @@ class MainActivity : ComponentActivity() {
                             dockState = DockUiState(timeMillis, weather.usableAt(timeMillis), todayEvents.orEmpty(), tasks.orEmpty()),
                             permissionGranted = permissionGranted,
                             onAllowPermission = onAllowPermission,
+                            screensaverSelected = screensaverSelected,
                             onOpenScreensaverSettings = { openScreensaverSettings(this@MainActivity) },
+                            onOpenDisplaySettings = { openDisplaySettings(this@MainActivity) },
                             onPickTemplate = { standbyViewModel.setTemplate(it) },
                             onFinish = { standbyViewModel.finishOnboarding() }
                         )
@@ -253,7 +260,9 @@ class MainActivity : ComponentActivity() {
                         "setup" -> SetupScreen(
                             permissionGranted = permissionGranted,
                             onAllowPermission = onAllowPermission,
-                            onOpenScreensaverSettings = { openScreensaverSettings(this@MainActivity) }
+                            screensaverSelected = screensaverSelected,
+                            onOpenScreensaverSettings = { openScreensaverSettings(this@MainActivity) },
+                            onOpenDisplaySettings = { openDisplaySettings(this@MainActivity) }
                         )
 
                         "focus" -> FocusSettingsScreen(
@@ -342,6 +351,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onResume() {
         super.onResume()
+        screensaverSelected = isAuraDockScreensaver(this) // the user may have just picked it
         standbyViewModel.refreshExactAlarmAccess() // the user may have just allowed it in settings
         standbyViewModel.refreshDndAccess()        // ...or just allowed Do Not Disturb access
         standbyViewModel.refreshPostNotifications()

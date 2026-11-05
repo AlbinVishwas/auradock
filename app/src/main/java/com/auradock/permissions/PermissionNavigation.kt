@@ -64,3 +64,17 @@ fun openScreensaverSettings(context: Context) {
         context.startActivity(Intent(Settings.ACTION_DISPLAY_SETTINGS).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
     }
 }
+
+/** Opens the system display settings, where the screen timeout lives. */
+fun openDisplaySettings(context: Context) {
+    context.startActivity(Intent(Settings.ACTION_DISPLAY_SETTINGS).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+}
+
+/**
+ * True if Android lists AuraDock as the chosen screensaver. Reads the system's setting, which some makers keep
+ * elsewhere; then this says false and the checkmark simply does not show.
+ */
+fun isAuraDockScreensaver(context: Context): Boolean {
+    val chosen = Settings.Secure.getString(context.contentResolver, "screensaver_components") ?: return false
+    return chosen.split(',').any { android.content.ComponentName.unflattenFromString(it.trim())?.packageName == context.packageName }
+}
