@@ -73,6 +73,7 @@ fun DashboardScreen(
     calendarPermissionState: CalendarPermissionUiState = CalendarPermissionUiState.DENIED,
     onOpenTemplates: () -> Unit = {},
     onOpenFocus: () -> Unit = {},
+    onOpenSetup: () -> Unit = {},
     onDockNow: () -> Unit = {},
     onEnableCalendarAccess: () -> Unit = {}
 ) {
@@ -162,6 +163,7 @@ fun DashboardScreen(
         ) {
             QuickActionButton(text = "Templates", onClick = onOpenTemplates)
             QuickActionButton(text = "Focus", onClick = onOpenFocus)
+            QuickActionButton(text = "Setup", onClick = onOpenSetup)
         }
 
         Spacer(modifier = Modifier.height(spacing.lg))

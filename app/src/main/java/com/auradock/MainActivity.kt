@@ -56,6 +56,7 @@ import com.auradock.permissions.openNotificationAccessSettings
 import com.auradock.permissions.openScreensaverSettings
 import com.auradock.ui.onboarding.OnboardingScreen
 import com.auradock.ui.onboarding.SetupPermission
+import com.auradock.ui.onboarding.SetupScreen
 import com.auradock.ui.viewmodel.CalendarPermissionUiState
 import com.auradock.ui.screens.TemplateGalleryScreen
 import com.auradock.ui.screens.dashboard.DashboardScreen
@@ -107,7 +108,7 @@ class MainActivity : ComponentActivity() {
                 val calendarPermissionState by standbyViewModel.calendarPermissionState.collectAsState()
                 val postNotificationsGranted by standbyViewModel.postNotificationsGranted.collectAsState()
                 val onboardingDone by standbyViewModel.onboardingDone.collectAsState()
-                // which page is open: "dashboard", "templates" or "focus"
+                // which page is open: "dashboard", "templates", "focus" or "setup"
                 var page by rememberSaveable { mutableStateOf("dashboard") }
                 LaunchedEffect(page) { if (page == "focus") standbyViewModel.loadApps() }
                 val calendarPermissionLauncher = rememberLauncherForActivityResult(
@@ -175,6 +176,27 @@ class MainActivity : ComponentActivity() {
                     }
                 }
 
+                val permissionGranted: (SetupPermission) -> Boolean = { permission ->
+                    when (permission) {
+                        SetupPermission.CALENDAR -> calendarPermissionState == CalendarPermissionUiState.GRANTED
+                        SetupPermission.NOTIFICATION_ACCESS -> hasNotificationAccess
+                        SetupPermission.DND_ACCESS -> dndAccessGranted
+                        SetupPermission.LOCATION -> locationPermissionState == CalendarPermissionUiState.GRANTED
+                        SetupPermission.POST_NOTIFICATIONS -> postNotificationsGranted
+                        SetupPermission.EXACT_ALARMS -> exactAlarmsAllowed
+                    }
+                }
+                val onAllowPermission: (SetupPermission) -> Unit = { permission ->
+                    when (permission) {
+                        SetupPermission.CALENDAR -> standbyViewModel.requestCalendarPermission()
+                        SetupPermission.NOTIFICATION_ACCESS -> standbyViewModel.openNotificationSettings()
+                        SetupPermission.DND_ACCESS -> standbyViewModel.openDndAccessSettings()
+                        SetupPermission.LOCATION -> standbyViewModel.requestLocationPermission()
+                        SetupPermission.POST_NOTIFICATIONS -> standbyViewModel.requestPostNotifications()
+                        SetupPermission.EXACT_ALARMS -> standbyViewModel.openExactAlarmSettings()
+                    }
+                }
+
                 ManualDockOrientation(manualDock)
                 DockWindowMode(dockVisible)
                 BackHandler(enabled = dockVisible) { standbyViewModel.dismissDock() }
@@ -185,6 +207,7 @@ class MainActivity : ComponentActivity() {
                     !onboardingDone -> "onboarding"
                     page == "templates" -> "gallery"
                     page == "focus" -> "focus"
+                    page == "setup" -> "setup"
                     else -> "dashboard"
                 }
 
@@ -214,26 +237,8 @@ class MainActivity : ComponentActivity() {
                         "onboarding" -> OnboardingScreen(
                             template = currentTemplate,
                             dockState = DockUiState(timeMillis, weather.usableAt(timeMillis), todayEvents.orEmpty(), tasks.orEmpty()),
-                            permissionGranted = { permission ->
-                                when (permission) {
-                                    SetupPermission.CALENDAR -> calendarPermissionState == CalendarPermissionUiState.GRANTED
-                                    SetupPermission.NOTIFICATION_ACCESS -> hasNotificationAccess
-                                    SetupPermission.DND_ACCESS -> dndAccessGranted
-                                    SetupPermission.LOCATION -> locationPermissionState == CalendarPermissionUiState.GRANTED
-                                    SetupPermission.POST_NOTIFICATIONS -> postNotificationsGranted
-                                    SetupPermission.EXACT_ALARMS -> exactAlarmsAllowed
-                                }
-                            },
-                            onAllowPermission = { permission ->
-                                when (permission) {
-                                    SetupPermission.CALENDAR -> standbyViewModel.requestCalendarPermission()
-                                    SetupPermission.NOTIFICATION_ACCESS -> standbyViewModel.openNotificationSettings()
-                                    SetupPermission.DND_ACCESS -> standbyViewModel.openDndAccessSettings()
-                                    SetupPermission.LOCATION -> standbyViewModel.requestLocationPermission()
-                                    SetupPermission.POST_NOTIFICATIONS -> standbyViewModel.requestPostNotifications()
-                                    SetupPermission.EXACT_ALARMS -> standbyViewModel.openExactAlarmSettings()
-                                }
-                            },
+                            permissionGranted = permissionGranted,
+                            onAllowPermission = onAllowPermission,
                             onOpenScreensaverSettings = { openScreensaverSettings(this@MainActivity) },
                             onPickTemplate = { standbyViewModel.setTemplate(it) },
                             onFinish = { standbyViewModel.finishOnboarding() }
@@ -246,6 +251,12 @@ class MainActivity : ComponentActivity() {
                                 standbyViewModel.setTemplate(it)
                                 page = "dashboard"
                             }
+                        )
+
+                        "setup" -> SetupScreen(
+                            permissionGranted = permissionGranted,
+                            onAllowPermission = onAllowPermission,
+                            onOpenScreensaverSettings = { openScreensaverSettings(this@MainActivity) }
                         )
 
                         "focus" -> FocusSettingsScreen(
@@ -279,6 +290,7 @@ class MainActivity : ComponentActivity() {
                             calendarPermissionState = calendarPermissionState,
                             onOpenTemplates = { page = "templates" },
                             onOpenFocus = { page = "focus" },
+                            onOpenSetup = { page = "setup" },
                             onDockNow = { standbyViewModel.enterDock() },
                             onEnableCalendarAccess = { standbyViewModel.requestCalendarPermission() }
                         )
