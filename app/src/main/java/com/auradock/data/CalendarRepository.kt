@@ -48,6 +48,9 @@ class CalendarRepository @Inject constructor(
     /**
      * Today's events, re-read when the calendar provider reports a change and otherwise once a minute
      * (the minute tick moves the day on and drops events that have ended).
+     *
+     * Watching the provider needs the calendar permission, and registering without it throws, so the
+     * observer is only registered once the permission is there (the minute tick notices a later grant).
      */
     fun observeTodayEvents(): Flow<List<CalendarEvent>> = channelFlow {
         val changes = Channel<Unit>(Channel.CONFLATED)
@@ -56,10 +59,18 @@ class CalendarRepository @Inject constructor(
                 changes.trySend(Unit)
             }
         }
-        context.contentResolver.registerContentObserver(CalendarContract.CONTENT_URI, true, observer)
+        var watching = false
+        fun watchIfAllowed() {
+            if (watching || !hasCalendarPermission()) return
+            watching = runCatching {
+                context.contentResolver.registerContentObserver(CalendarContract.CONTENT_URI, true, observer)
+            }.onFailure { Log.w(TAG, "Could not watch the calendar", it) }.isSuccess
+        }
+        watchIfAllowed()
         launch {
             while (true) {
                 delay(REFRESH_INTERVAL_MS)
+                watchIfAllowed()
                 changes.trySend(Unit)
             }
         }
@@ -67,7 +78,7 @@ class CalendarRepository @Inject constructor(
         try {
             for (change in changes) send(fetchTodayEvents())
         } finally {
-            context.contentResolver.unregisterContentObserver(observer)
+            if (watching) context.contentResolver.unregisterContentObserver(observer)
         }
     }.flowOn(Dispatchers.IO)
 

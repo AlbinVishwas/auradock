@@ -8,7 +8,7 @@ Emulator notes that explain some of these items are in the "Why" lines.
 
 ## How to install the APK
 
-For testers. AuraDock is not on the Play Store yet, so it is installed from a file (`AuraDock-0.1.0.apk`). Menu names
+For testers. AuraDock is not on the Play Store yet, so it is installed from a file (`AuraDock-0.1.1.apk`). Menu names
 vary a little between One UI versions; the idea is the same.
 
 1. **Get the file onto the phone.** Download it from the link you were sent (Chrome saves it to Downloads), or copy it
@@ -32,7 +32,7 @@ vary a little between One UI versions; the idea is the same.
 7. **Updating.** Install the new APK over the old one: your tasks and settings stay. It only works because every build
    is signed with the same key; if the install says "App not installed", uninstall first (that deletes your tasks) and
    report it.
-8. **Report** the version shown by Settings > Apps > AuraDock (it starts with 0.1.0) with anything you find.
+8. **Report** the version shown by Settings > Apps > AuraDock (it starts with 0.1.1) with anything you find.
 
 ## Screensaver (DockDreamService)
 
