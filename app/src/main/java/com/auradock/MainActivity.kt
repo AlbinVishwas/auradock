@@ -40,10 +40,18 @@ import androidx.core.view.WindowInsetsControllerCompat
 import com.auradock.dock.DockData
 import com.auradock.dock.DockScreen
 import com.auradock.dock.DockUiState
+import com.auradock.focus.DockFocusController
+import com.auradock.focus.DockSource
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
+import kotlinx.coroutines.launch
 import com.auradock.weather.usableAt
 import com.auradock.permissions.isNotificationAccessEnabled
 import com.auradock.permissions.openAppSettings
+import com.auradock.permissions.openDndAccessSettings
 import com.auradock.permissions.openExactAlarmSettings
+import com.auradock.ui.focus.FocusSettingsScreen
 import com.auradock.permissions.openNotificationAccessSettings
 import com.auradock.ui.screens.TemplateGalleryScreen
 import com.auradock.ui.screens.dashboard.DashboardScreen
@@ -58,9 +66,22 @@ class MainActivity : ComponentActivity() {
     private val standbyViewModel: StandbyViewModel by viewModels()
 
     @Inject lateinit var dockData: DockData
+    @Inject lateinit var dockFocus: DockFocusController
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // Do Not Disturb follows the dock: on while it is showing and this screen is visible, off when it closes or the
+        // app goes to the background. The finally block also runs if the Activity is destroyed while docked.
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                try {
+                    standbyViewModel.dockVisible.collect { dockFocus.setActive(DockSource.APP, it) }
+                } finally {
+                    dockFocus.setActive(DockSource.APP, false)
+                }
+            }
+        }
 
         setContent {
             AuraDockTheme {
@@ -72,9 +93,12 @@ class MainActivity : ComponentActivity() {
                 val tasks by standbyViewModel.tasks.collectAsState()
                 val exactAlarmsAllowed by standbyViewModel.exactAlarmsAllowed.collectAsState()
                 val weather by standbyViewModel.weather.collectAsState()
+                val focusWhileDocked by standbyViewModel.focusWhileDocked.collectAsState()
+                val dndAccessGranted by standbyViewModel.dndAccessGranted.collectAsState()
                 val locationPermissionState by standbyViewModel.locationPermissionState.collectAsState()
                 val calendarPermissionState by standbyViewModel.calendarPermissionState.collectAsState()
-                var showGallery by rememberSaveable { mutableStateOf(false) }
+                // which page is open: "dashboard", "templates" or "focus"
+                var page by rememberSaveable { mutableStateOf("dashboard") }
                 val calendarPermissionLauncher = rememberLauncherForActivityResult(
                     contract = ActivityResultContracts.RequestPermission()
                 ) { granted ->
@@ -125,6 +149,10 @@ class MainActivity : ComponentActivity() {
                                 }
                             }
 
+                            PermissionAction.OpenDndAccessSettings -> {
+                                openDndAccessSettings(this@MainActivity)
+                            }
+
                             PermissionAction.OpenExactAlarmSettings -> {
                                 openExactAlarmSettings(this@MainActivity)
                             }
@@ -135,11 +163,12 @@ class MainActivity : ComponentActivity() {
                 ManualDockOrientation(manualDock)
                 DockWindowMode(dockVisible)
                 BackHandler(enabled = dockVisible) { standbyViewModel.dismissDock() }
-                BackHandler(enabled = showGallery && !dockVisible) { showGallery = false }
+                BackHandler(enabled = page != "dashboard" && !dockVisible) { page = "dashboard" }
 
                 val targetState = when {
                     dockVisible -> "dock"
-                    showGallery -> "gallery"
+                    page == "templates" -> "gallery"
+                    page == "focus" -> "focus"
                     else -> "dashboard"
                 }
 
@@ -171,8 +200,15 @@ class MainActivity : ComponentActivity() {
                             state = DockUiState(timeMillis, weather.usableAt(timeMillis), todayEvents.orEmpty(), tasks.orEmpty()),
                             onApplyClick = {
                                 standbyViewModel.setTemplate(it)
-                                showGallery = false
+                                page = "dashboard"
                             }
+                        )
+
+                        "focus" -> FocusSettingsScreen(
+                            focusWhileDocked = focusWhileDocked,
+                            hasDndAccess = dndAccessGranted,
+                            onToggleFocus = { standbyViewModel.setFocusWhileDocked(it) },
+                            onOpenDndSettings = { standbyViewModel.openDndAccessSettings() }
                         )
 
                         else -> DashboardScreen(
@@ -189,7 +225,8 @@ class MainActivity : ComponentActivity() {
                             onToggleTask = { standbyViewModel.setTaskDone(it, !it.done) },
                             onDeleteTask = { standbyViewModel.deleteTask(it) },
                             calendarPermissionState = calendarPermissionState,
-                            onOpenTemplates = { showGallery = true },
+                            onOpenTemplates = { page = "templates" },
+                            onOpenFocus = { page = "focus" },
                             onDockNow = { standbyViewModel.enterDock() },
                             onEnableCalendarAccess = { standbyViewModel.requestCalendarPermission() }
                         )
@@ -252,6 +289,7 @@ class MainActivity : ComponentActivity() {
     override fun onResume() {
         super.onResume()
         standbyViewModel.refreshExactAlarmAccess() // the user may have just allowed it in settings
+        standbyViewModel.refreshDndAccess()        // ...or just allowed Do Not Disturb access
         standbyViewModel.refreshCalendarPermission()
         standbyViewModel.updateNotificationAccess(isNotificationAccessEnabled(this))
     }

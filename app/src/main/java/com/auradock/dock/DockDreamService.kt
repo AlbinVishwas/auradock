@@ -32,6 +32,8 @@ import androidx.savedstate.SavedStateRegistryController
 import androidx.savedstate.SavedStateRegistryOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
 import com.auradock.ui.theme.AuraDockTheme
+import com.auradock.focus.DockFocusController
+import com.auradock.focus.DockSource
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
@@ -60,6 +62,7 @@ import javax.inject.Inject
 class DockDreamService : DreamService(), LifecycleOwner, SavedStateRegistryOwner {
 
     @Inject lateinit var dockData: DockData
+    @Inject lateinit var dockFocus: DockFocusController
 
     private val handler = Handler(Looper.getMainLooper())
     private val stabilizer = OrientationStabilizer()
@@ -164,6 +167,7 @@ class DockDreamService : DreamService(), LifecycleOwner, SavedStateRegistryOwner
                     )
                 }
                 shownOrientation = decision.orientation
+                dockFocus.setActive(DockSource.DREAM, true) // the dock is really showing: Do Not Disturb on
             }
         }
     }
@@ -173,6 +177,7 @@ class DockDreamService : DreamService(), LifecycleOwner, SavedStateRegistryOwner
         (getSystemService(DisplayManager::class.java).getDisplay(Display.DEFAULT_DISPLAY)?.rotation ?: 0) * 90
 
     override fun onDreamingStopped() {
+        dockFocus.setActive(DockSource.DREAM, false) // the screensaver ended: put the user's settings back
         getSystemService(SensorManager::class.java)?.unregisterListener(sensorListener)
         handler.removeCallbacks(firstReadingTimeout)
         lifecycleRegistry.currentState = Lifecycle.State.CREATED
@@ -180,6 +185,7 @@ class DockDreamService : DreamService(), LifecycleOwner, SavedStateRegistryOwner
     }
 
     override fun onDetachedFromWindow() {
+        dockFocus.setActive(DockSource.DREAM, false)
         lifecycleRegistry.currentState = Lifecycle.State.DESTROYED
         super.onDetachedFromWindow()
     }

@@ -33,6 +33,11 @@ fun isNotificationAccessEnabled(context: Context): Boolean {
     return enabledListeners.contains(context.packageName)
 }
 
+/** Opens the system's "Do Not Disturb access" list, where the user can switch AuraDock on. */
+fun openDndAccessSettings(context: Context) {
+    context.startActivity(Intent(Settings.ACTION_NOTIFICATION_POLICY_ACCESS_SETTINGS).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+}
+
 /** Android 12+ makes exact alarms opt-in; below that they are always allowed. */
 fun canScheduleExactAlarms(context: Context): Boolean =
     Build.VERSION.SDK_INT < Build.VERSION_CODES.S ||

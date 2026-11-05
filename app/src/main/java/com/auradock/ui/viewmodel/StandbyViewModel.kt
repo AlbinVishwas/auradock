@@ -4,6 +4,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.auradock.data.CalendarEvent
 import com.auradock.dock.DockModeState
+import com.auradock.focus.DndController
+import com.auradock.focus.DockFocusController
+import com.auradock.focus.FocusSettings
 import com.auradock.permissions.canScheduleExactAlarms
 import com.auradock.dock.DockTemplate
 import com.auradock.dock.TemplateRepository
@@ -41,6 +44,9 @@ class StandbyViewModel @Inject constructor(
     private val templateRepository: TemplateRepository,
     private val taskRepository: TaskRepository,
     private val weatherRepository: WeatherRepository,
+    private val focusSettings: FocusSettings,
+    private val dndController: DndController,
+    private val dockFocus: DockFocusController,
     minuteClock: MinuteClock
 ) : ViewModel() {
 
@@ -153,6 +159,28 @@ class StandbyViewModel @Inject constructor(
 
     /** The app is visible: refresh the weather if the cache is 30+ minutes old. */
     fun refreshWeather() = weatherRepository.refreshIfStale()
+
+    // ── Focus (Do Not Disturb while docked) ───────────────────────────────────
+
+    val focusWhileDocked: StateFlow<Boolean> = focusSettings.focusWhileDocked
+
+    private val _dndAccessGranted = MutableStateFlow(dndController.hasAccess())
+    val dndAccessGranted: StateFlow<Boolean> = _dndAccessGranted.asStateFlow()
+
+    fun setFocusWhileDocked(enabled: Boolean) {
+        focusSettings.setFocusWhileDocked(enabled)
+        dockFocus.refresh() // switching it off while docked puts the user's settings back at once
+    }
+
+    /** The user may have just granted DND access on the system page. */
+    fun refreshDndAccess() {
+        _dndAccessGranted.value = dndController.hasAccess()
+        dockFocus.refreshRespectingGrace()
+    }
+
+    fun openDndAccessSettings() {
+        _permissionActions.tryEmit(PermissionAction.OpenDndAccessSettings)
+    }
 
     fun enterDock() = dockMode.update { it.enterManual() }
     fun dismissDock() = dockMode.update { it.dismiss(standbyState.value) }

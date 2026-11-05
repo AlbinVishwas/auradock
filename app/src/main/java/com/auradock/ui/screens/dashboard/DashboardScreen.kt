@@ -72,6 +72,7 @@ fun DashboardScreen(
     onDeleteTask: (TaskEntity) -> Unit = {},
     calendarPermissionState: CalendarPermissionUiState = CalendarPermissionUiState.DENIED,
     onOpenTemplates: () -> Unit = {},
+    onOpenFocus: () -> Unit = {},
     onDockNow: () -> Unit = {},
     onEnableCalendarAccess: () -> Unit = {}
 ) {
@@ -160,6 +161,7 @@ fun DashboardScreen(
             verticalArrangement = Arrangement.spacedBy(spacing.sm)
         ) {
             QuickActionButton(text = "Templates", onClick = onOpenTemplates)
+            QuickActionButton(text = "Focus", onClick = onOpenFocus)
         }
 
         Spacer(modifier = Modifier.height(spacing.lg))

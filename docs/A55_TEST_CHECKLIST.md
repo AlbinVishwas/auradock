@@ -226,11 +226,44 @@ Emulator notes that explain some of these items are in the "Why" lines.
   Enable notification access, then let the phone idle overnight / force-stop the app. Pass: after reopening
   AuraDock, mirrored notifications appear again without re-granting access.
 
-## Do Not Disturb *(not built yet)*
+## Do Not Disturb while docked (Focus)
 
-- [ ] **DND with Modes and Routines.**
-  Grant DND access, enter dock mode. Pass: Samsung shows Do not disturb on; a call from a starred contact
-  rings; a normal app notification is silent.
-- [ ] **State is restored.**
-  Try with DND off before docking, and again with DND already on. Pass: leaving dock mode puts it back exactly
-  as it was in each case, including after force-stopping AuraDock while docked.
+- [ ] **Granting access.**
+  Dashboard > Focus > "Allow Do Not Disturb access". Pass: Samsung's access list opens (it may be called "Do not disturb
+  access" or "Modes access"), AuraDock is listed, switching it on and pressing Back returns to the Focus page showing
+  "Ready: Do Not Disturb turns on when you dock".
+- [ ] **DND turns on when docked, in the app and in the screensaver.**
+  With Do Not Disturb off, tap "Dock now" (then separately let the screensaver start). Pass: the Do Not Disturb icon shows
+  in the status bar / the quick-settings tile turns on while the dock is showing, within a second of docking.
+- [ ] **Starred contacts really ring, others do not.**
+  Star a contact (Contacts > favourites). Dock the phone and call it from another phone: Pass: the call from the starred
+  contact rings; a call from a non-starred number is silent; an alarm (set a 2-minute one) still rings; a WhatsApp/SMS
+  message makes no sound.
+- [ ] **Your own settings come back exactly.**
+  First set Do Not Disturb up your way (for example allow "Calls from favourites" and "Alarms", and some "Hide
+  notifications" options), leave it OFF, dock, undock. Pass: open the DND settings: every choice is as before. (Android may
+  show two internal flag bits differently; the visible options must be identical.)
+- [ ] **Never overwrites your own DND.**
+  Turn Do Not Disturb on yourself (and, separately, a Samsung mode such as Sleep or Driving). Dock, undock. Pass: it is on
+  the whole time and is still on afterwards, with your settings untouched.
+- [ ] **You change it while docked.**
+  Dock, then switch Do Not Disturb off yourself from the shade. Undock. Pass: it stays off (AuraDock does not switch it back
+  on or "restore" anything over your choice).
+- [ ] **Modes and Routines.**
+  With a Samsung routine that turns a mode on/off at a time (for example Bedtime at 22:00), dock across that time.
+  Pass: the routine is not broken, and after undocking the phone is in the state the routine left it, not an old one. Also
+  note whether a mode named "AuraDock" appears in Modes while docked (newer Android) and disappears after.
+- [ ] **Force-stop while docked.**
+  Dock (DND on), then Settings > Apps > AuraDock > Force stop. Pass: DND is still on right after (nothing can restore it
+  yet); open AuraDock: DND is off again within a second.
+- [ ] **Reboot while docked.**
+  Dock via the screensaver, restart the phone. Pass: after the phone is up (without opening AuraDock) DND is off.
+- [ ] **"Focus while docked" switch.**
+  Turn it off in Focus settings: docking leaves DND alone; turn it off while docked: DND is restored at once.
+- [ ] **Ringer mode is untouched.**
+  Phone on vibrate or silent before docking: Pass: same after undocking.
+- [ ] **Task reminders while docked.**
+  A task reminder due while docked is silent (Do Not Disturb blocks it); it appears when you undock. This is expected;
+  record whether it is acceptable.
+- [ ] **Quick re-dock does not flicker.**
+  Dock, undock, and dock again within 3 seconds. Pass: DND stays on throughout (the restore waits 3 seconds).

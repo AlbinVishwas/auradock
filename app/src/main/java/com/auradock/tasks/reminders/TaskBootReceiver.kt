@@ -2,6 +2,7 @@ package com.auradock.tasks.reminders
 
 import android.content.Context
 import android.content.Intent
+import com.auradock.focus.DockFocusController
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -17,6 +18,7 @@ import javax.inject.Inject
 @AndroidEntryPoint
 class TaskBootReceiver : HiltBroadcastReceiver() {
     @Inject lateinit var scheduler: TaskAlarmScheduler
+    @Inject lateinit var dockFocus: DockFocusController
 
     override fun onReceive(context: Context, intent: Intent) {
         super.onReceive(context, intent)
@@ -24,6 +26,7 @@ class TaskBootReceiver : HiltBroadcastReceiver() {
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 scheduler.rescheduleAll()
+                dockFocus.refresh() // after a restart no dock is showing: undo any Do Not Disturb we had switched on
             } finally {
                 pending.finish()
             }

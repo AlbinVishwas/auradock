@@ -8,6 +8,8 @@
     <!-- Task reminders: show notifications (Android 13+), fire at the exact minute (Android 12+, user-granted),
          and set the alarms again after a restart. -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <!-- Focus while docked: lets AuraDock appear in the system's "Do Not Disturb access" list; the user grants it there. -->
+    <uses-permission android:name="android.permission.ACCESS_NOTIFICATION_POLICY" />
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 

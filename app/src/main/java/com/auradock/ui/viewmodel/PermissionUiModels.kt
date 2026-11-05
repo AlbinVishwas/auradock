@@ -7,6 +7,7 @@ sealed class PermissionAction {
     data object RequestNotificationPermission : PermissionAction()
     data object RequestLocationPermission : PermissionAction()
     data object OpenExactAlarmSettings : PermissionAction()
+    data object OpenDndAccessSettings : PermissionAction()
 }
 
 enum class CalendarPermissionUiState {
