@@ -118,3 +118,28 @@ class DockOrientationGate {
     /** The first-reading deadline passed. */
     fun onTimeout(): GateDecision = if (showing) GateDecision.Wait else GateDecision.Finish
 }
+
+/**
+ * A short record of what the gate saw, so a screensaver that closed (or never opened) can be explained from
+ * the log afterwards. Keeps the first [MAX_KEPT] readings with the time each arrived and how it was read.
+ */
+class GateTrace(private val startMillis: Long) {
+    private val samples = mutableListOf<String>()
+    private var count = 0
+
+    fun onSample(nowMillis: Long, x: Float, y: Float, z: Float, read: PhysicalOrientation) {
+        count++
+        if (samples.size < MAX_KEPT) {
+            samples += "+${nowMillis - startMillis}ms (%.1f, %.1f, %.1f)=%s".format(java.util.Locale.ROOT, x, y, z, read)
+        }
+    }
+
+    /** One line for the log: the decision, how long the gate took, and the readings it used. */
+    fun describe(nowMillis: Long, decision: String, stable: PhysicalOrientation?): String =
+        "gate $decision after ${nowMillis - startMillis}ms; samples=$count, stable=${stable ?: "none"}; " +
+            if (samples.isEmpty()) "no sensor readings arrived" else samples.joinToString("; ")
+
+    private companion object {
+        const val MAX_KEPT = 8
+    }
+}

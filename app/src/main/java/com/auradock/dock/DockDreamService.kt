@@ -10,6 +10,7 @@ import android.hardware.SensorManager
 import android.hardware.display.DisplayManager
 import android.os.Handler
 import android.os.Looper
+import android.os.SystemClock
 import android.service.dreams.DreamService
 import android.util.Log
 import android.view.Display
@@ -72,15 +73,26 @@ class DockDreamService : DreamService(), LifecycleOwner, SavedStateRegistryOwner
     private var shownOrientation by mutableStateOf<PhysicalOrientation?>(null)
     private var displayRotationDegrees by mutableIntStateOf(0)
 
+    private var trace = GateTrace(SystemClock.elapsedRealtime())
+    private var lastStable: PhysicalOrientation? = null
+    private var sensorSlowed = false
+    private var finishing = false
+
     private val firstReadingTimeout = Runnable {
-        Log.d(TAG, "no stable reading within ${FIRST_READING_TIMEOUT_MS}ms")
+        Log.d(TAG, trace.describe(SystemClock.elapsedRealtime(), "timeout", lastStable))
         apply(gate.onTimeout())
     }
 
     private val sensorListener = object : SensorEventListener {
         override fun onSensorChanged(event: SensorEvent) {
-            val raw = classifyOrientation(event.values[0], event.values[1], event.values[2])
-            stabilizer.onSample(raw)?.let { apply(gate.onStableOrientation(it)) }
+            if (finishing) return // finish() is asynchronous; readings keep arriving until the service stops
+            val (x, y, z) = event.values
+            val raw = classifyOrientation(x, y, z)
+            trace.onSample(SystemClock.elapsedRealtime(), x, y, z, raw)
+            stabilizer.onSample(raw)?.let {
+                lastStable = it
+                apply(gate.onStableOrientation(it))
+            }
         }
 
         override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) = Unit
@@ -145,7 +157,10 @@ class DockDreamService : DreamService(), LifecycleOwner, SavedStateRegistryOwner
             finish()
             return
         }
-        sensorManager.registerListener(sensorListener, accelerometer, SensorManager.SENSOR_DELAY_UI)
+        trace = GateTrace(SystemClock.elapsedRealtime())
+        finishing = false
+        val registered = sensorManager.registerListener(sensorListener, accelerometer, SensorManager.SENSOR_DELAY_GAME)
+        Log.d(TAG, "gate started: accelerometer registered=$registered")
         handler.postDelayed(firstReadingTimeout, FIRST_READING_TIMEOUT_MS)
     }
 
@@ -153,16 +168,20 @@ class DockDreamService : DreamService(), LifecycleOwner, SavedStateRegistryOwner
         when (decision) {
             GateDecision.Wait -> Unit
             GateDecision.Finish -> {
-                Log.d(TAG, "finish: not docked in landscape")
+                if (finishing) return
+                finishing = true
+                Log.d(TAG, trace.describe(SystemClock.elapsedRealtime(), "finish (not landscape)", lastStable))
                 finish()
             }
             is GateDecision.Show -> {
                 handler.removeCallbacks(firstReadingTimeout)
+                slowDownSensor()
                 displayRotationDegrees = currentDisplayRotationDegrees()
                 if (shownOrientation != decision.orientation) {
                     Log.d(
                         TAG,
-                        "show: ${decision.orientation}, window rotation $displayRotationDegrees, " +
+                        trace.describe(SystemClock.elapsedRealtime(), "show ${decision.orientation}", lastStable) +
+                            "; window rotation $displayRotationDegrees, " +
                             "content turned ${contentRotationDegrees(decision.orientation, displayRotationDegrees)}"
                     )
                 }
@@ -170,6 +189,16 @@ class DockDreamService : DreamService(), LifecycleOwner, SavedStateRegistryOwner
                 dockFocus.setActive(DockSource.DREAM, true) // the dock is really showing: Do Not Disturb on
             }
         }
+    }
+
+    /** The decision is made; only the occasional left/right switch matters from here, so read the sensor less often. */
+    private fun slowDownSensor() {
+        if (sensorSlowed) return
+        sensorSlowed = true
+        val sensorManager = getSystemService(SensorManager::class.java) ?: return
+        val accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER) ?: return
+        sensorManager.unregisterListener(sensorListener)
+        sensorManager.registerListener(sensorListener, accelerometer, SensorManager.SENSOR_DELAY_UI)
     }
 
     /** How far the system has rotated the window: 0, 90, 180 or 270 (Surface.ROTATION_x times 90). */
@@ -192,6 +221,6 @@ class DockDreamService : DreamService(), LifecycleOwner, SavedStateRegistryOwner
 
     private companion object {
         const val TAG = "DockDream"
-        const val FIRST_READING_TIMEOUT_MS = 1000L
+        const val FIRST_READING_TIMEOUT_MS = 2000L
     }
 }

@@ -157,4 +157,23 @@ class OrientationGateTest {
             gate.onStableOrientation(PhysicalOrientation.LANDSCAPE_RIGHT)
         )
     }
+
+    // ── trace ─────────────────────────────────────────────────────────────────
+
+    @Test
+    fun `trace names the decision, the timing and the readings used`() {
+        val trace = GateTrace(startMillis = 1000)
+        trace.onSample(1100, 0.1f, 9.8f, 0.7f, PhysicalOrientation.PORTRAIT)
+        val line = trace.describe(1300, "finish (not landscape)", PhysicalOrientation.PORTRAIT)
+        assertEquals(
+            "gate finish (not landscape) after 300ms; samples=1, stable=PORTRAIT; +100ms (0.1, 9.8, 0.7)=PORTRAIT",
+            line
+        )
+    }
+
+    @Test
+    fun `trace says so when no reading arrived`() {
+        val line = GateTrace(0).describe(2000, "timeout", null)
+        assertEquals("gate timeout after 2000ms; samples=0, stable=none; no sensor readings arrived", line)
+    }
 }
