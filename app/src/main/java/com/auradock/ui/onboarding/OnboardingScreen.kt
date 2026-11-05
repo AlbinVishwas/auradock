@@ -14,6 +14,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -38,6 +39,8 @@ private enum class Step { WELCOME, SCREENSAVER, PERMISSIONS, TEMPLATE }
 fun OnboardingScreen(
     template: DockTemplate,
     dockState: DockUiState,
+    permissionGranted: (SetupPermission) -> Boolean,
+    onAllowPermission: (SetupPermission) -> Unit,
     onOpenScreensaverSettings: () -> Unit,
     onPickTemplate: (DockTemplate) -> Unit,
     onFinish: () -> Unit,
@@ -45,6 +48,7 @@ fun OnboardingScreen(
 ) {
     var stepIndex by rememberSaveable { mutableIntStateOf(0) }
     val step = Step.entries[stepIndex]
+    var skipped by rememberSaveable { mutableStateOf(listOf<String>()) } // SetupPermission names the user tapped Skip on
     BackHandler(enabled = stepIndex > 0) { stepIndex-- }
 
     when (step) {
@@ -94,8 +98,19 @@ fun OnboardingScreen(
                 )
                 QuickActionButton(text = "Open screensaver settings", onClick = onOpenScreensaverSettings, isActive = true)
             }
+            if (step == Step.PERMISSIONS) {
+                SetupPermission.entries.forEach { permission ->
+                    PermissionCard(
+                        permission = permission,
+                        granted = permissionGranted(permission),
+                        onAllow = { onAllowPermission(permission) },
+                        skipped = permission.name in skipped,
+                        onSkip = { skipped = skipped + permission.name }
+                    )
+                }
+            }
             Spacer(Modifier.height(8.dp))
-            QuickActionButton(text = if (step == Step.WELCOME) "Get started" else "Next", onClick = { stepIndex++ })
+            QuickActionButton(text = when (step) { Step.WELCOME -> "Get started"; Step.PERMISSIONS -> "Continue"; else -> "Next" }, onClick = { stepIndex++ })
         }
     }
 }

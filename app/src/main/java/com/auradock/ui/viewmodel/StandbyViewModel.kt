@@ -119,6 +119,28 @@ class StandbyViewModel @Inject constructor(
         }
     }
 
+    private val _postNotificationsGranted = MutableStateFlow(notificationsAllowed())
+    /** True if AuraDock may show notifications (always true before Android 13, unless switched off in settings). */
+    val postNotificationsGranted: StateFlow<Boolean> = _postNotificationsGranted.asStateFlow()
+    private var postNotificationsBlocked = false // the system will not ask again: only app settings can allow it
+
+    private fun notificationsAllowed() = androidx.core.app.NotificationManagerCompat.from(context).areNotificationsEnabled()
+
+    fun refreshPostNotifications() {
+        _postNotificationsGranted.value = notificationsAllowed()
+    }
+
+    fun onPostNotificationsResult(granted: Boolean, permanentlyDenied: Boolean) {
+        postNotificationsBlocked = !granted && permanentlyDenied
+        refreshPostNotifications()
+    }
+
+    /** The user tapped "Allow" for notifications: the system dialog, or app settings once the dialog will not show. */
+    fun requestPostNotifications() {
+        val canAsk = android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU && !postNotificationsBlocked
+        _permissionActions.tryEmit(if (canAsk) PermissionAction.RequestNotificationPermission else PermissionAction.OpenAppSettings)
+    }
+
     fun setTaskDone(task: TaskEntity, done: Boolean) {
         viewModelScope.launch { taskRepository.setDone(task.id, done) }
     }

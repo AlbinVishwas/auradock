@@ -55,6 +55,8 @@ import com.auradock.ui.focus.FocusSettingsScreen
 import com.auradock.permissions.openNotificationAccessSettings
 import com.auradock.permissions.openScreensaverSettings
 import com.auradock.ui.onboarding.OnboardingScreen
+import com.auradock.ui.onboarding.SetupPermission
+import com.auradock.ui.viewmodel.CalendarPermissionUiState
 import com.auradock.ui.screens.TemplateGalleryScreen
 import com.auradock.ui.screens.dashboard.DashboardScreen
 import com.auradock.ui.theme.AuraDockTheme
@@ -103,6 +105,7 @@ class MainActivity : ComponentActivity() {
                 val showMessageText by standbyViewModel.showMessageText.collectAsState()
                 val locationPermissionState by standbyViewModel.locationPermissionState.collectAsState()
                 val calendarPermissionState by standbyViewModel.calendarPermissionState.collectAsState()
+                val postNotificationsGranted by standbyViewModel.postNotificationsGranted.collectAsState()
                 val onboardingDone by standbyViewModel.onboardingDone.collectAsState()
                 // which page is open: "dashboard", "templates" or "focus"
                 var page by rememberSaveable { mutableStateOf("dashboard") }
@@ -130,7 +133,11 @@ class MainActivity : ComponentActivity() {
                 }
                 val notificationPermissionLauncher = rememberLauncherForActivityResult(
                     contract = ActivityResultContracts.RequestPermission()
-                ) { /* nothing to do: without it, reminders are saved but no notification is shown */ }
+                ) { granted ->
+                    val permanentlyDenied = !granted &&
+                        !ActivityCompat.shouldShowRequestPermissionRationale(this@MainActivity, Manifest.permission.POST_NOTIFICATIONS)
+                    standbyViewModel.onPostNotificationsResult(granted, permanentlyDenied)
+                }
 
                 LaunchedEffect(Unit) {
                     standbyViewModel.permissionActions.collect { action ->
@@ -207,6 +214,26 @@ class MainActivity : ComponentActivity() {
                         "onboarding" -> OnboardingScreen(
                             template = currentTemplate,
                             dockState = DockUiState(timeMillis, weather.usableAt(timeMillis), todayEvents.orEmpty(), tasks.orEmpty()),
+                            permissionGranted = { permission ->
+                                when (permission) {
+                                    SetupPermission.CALENDAR -> calendarPermissionState == CalendarPermissionUiState.GRANTED
+                                    SetupPermission.NOTIFICATION_ACCESS -> hasNotificationAccess
+                                    SetupPermission.DND_ACCESS -> dndAccessGranted
+                                    SetupPermission.LOCATION -> locationPermissionState == CalendarPermissionUiState.GRANTED
+                                    SetupPermission.POST_NOTIFICATIONS -> postNotificationsGranted
+                                    SetupPermission.EXACT_ALARMS -> exactAlarmsAllowed
+                                }
+                            },
+                            onAllowPermission = { permission ->
+                                when (permission) {
+                                    SetupPermission.CALENDAR -> standbyViewModel.requestCalendarPermission()
+                                    SetupPermission.NOTIFICATION_ACCESS -> standbyViewModel.openNotificationSettings()
+                                    SetupPermission.DND_ACCESS -> standbyViewModel.openDndAccessSettings()
+                                    SetupPermission.LOCATION -> standbyViewModel.requestLocationPermission()
+                                    SetupPermission.POST_NOTIFICATIONS -> standbyViewModel.requestPostNotifications()
+                                    SetupPermission.EXACT_ALARMS -> standbyViewModel.openExactAlarmSettings()
+                                }
+                            },
                             onOpenScreensaverSettings = { openScreensaverSettings(this@MainActivity) },
                             onPickTemplate = { standbyViewModel.setTemplate(it) },
                             onFinish = { standbyViewModel.finishOnboarding() }
@@ -315,6 +342,8 @@ class MainActivity : ComponentActivity() {
         super.onResume()
         standbyViewModel.refreshExactAlarmAccess() // the user may have just allowed it in settings
         standbyViewModel.refreshDndAccess()        // ...or just allowed Do Not Disturb access
+        standbyViewModel.refreshPostNotifications()
+        standbyViewModel.refreshLocationPermission()
         standbyViewModel.refreshCalendarPermission()
         standbyViewModel.updateNotificationAccess(isNotificationAccessEnabled(this))
     }
