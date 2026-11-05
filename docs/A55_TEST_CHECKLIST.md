@@ -6,6 +6,34 @@ Items marked *(not built yet)* are known needs for planned steps; the feature mu
 
 Emulator notes that explain some of these items are in the "Why" lines.
 
+## How to install the APK
+
+For testers. AuraDock is not on the Play Store yet, so it is installed from a file (`AuraDock-0.1.0.apk`). Menu names
+vary a little between One UI versions; the idea is the same.
+
+1. **Get the file onto the phone.** Download it from the link you were sent (Chrome saves it to Downloads), or copy it
+   over USB. Open the **My Files** app and tap the APK, or tap "Open" on Chrome's download notification.
+2. **Allow installs from that app (first time only).** Samsung shows "For your security, your phone is not allowed to
+   install unknown apps from this source". Tap **Settings**, switch on **Allow from this source** (for Chrome or My Files,
+   whichever you opened the file with), press back, and tap **Install**. The same switch is under
+   Settings > Apps > (the app) > Install unknown apps, or Settings > Security and privacy > More security settings >
+   Install unknown apps.
+3. **If the install is blocked by Auto Blocker.** Newer One UI turns on Auto Blocker, which stops installs from
+   outside the stores. Go to Settings > Security and privacy > **Auto Blocker** and switch it off (or switch off only
+   "Block installation of apps from unauthorized sources" if you see that option), then try again. You can switch it
+   back on afterwards.
+4. **If Google Play Protect asks.** A "Scan app?" or "App blocked" box can appear. Choose **More details > Install
+   anyway** (or **Scan app** and then install). The app is signed by us but is not on Play, so Play Protect does not
+   recognise it.
+5. **Open AuraDock** and follow the setup. Every permission can be skipped and allowed later from the dashboard's
+   **Setup** button.
+6. **Keep it running.** Settings > Battery > Background usage limits: make sure AuraDock is not in "Sleeping apps" or
+   "Deep sleeping apps" (add it to **Never sleeping apps**). Otherwise task reminders can arrive late or not at all.
+7. **Updating.** Install the new APK over the old one: your tasks and settings stay. It only works because every build
+   is signed with the same key; if the install says "App not installed", uninstall first (that deletes your tasks) and
+   report it.
+8. **Report** the version shown by Settings > Apps > AuraDock (it starts with 0.1.0) with anything you find.
+
 ## Screensaver (DockDreamService)
 
 - [ ] **AuraDock appears in the screensaver picker.**
