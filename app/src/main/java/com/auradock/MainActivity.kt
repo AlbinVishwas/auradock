@@ -53,6 +53,8 @@ import com.auradock.permissions.openDndAccessSettings
 import com.auradock.permissions.openExactAlarmSettings
 import com.auradock.ui.focus.FocusSettingsScreen
 import com.auradock.permissions.openNotificationAccessSettings
+import com.auradock.permissions.openScreensaverSettings
+import com.auradock.ui.onboarding.OnboardingScreen
 import com.auradock.ui.screens.TemplateGalleryScreen
 import com.auradock.ui.screens.dashboard.DashboardScreen
 import com.auradock.ui.theme.AuraDockTheme
@@ -101,6 +103,7 @@ class MainActivity : ComponentActivity() {
                 val showMessageText by standbyViewModel.showMessageText.collectAsState()
                 val locationPermissionState by standbyViewModel.locationPermissionState.collectAsState()
                 val calendarPermissionState by standbyViewModel.calendarPermissionState.collectAsState()
+                val onboardingDone by standbyViewModel.onboardingDone.collectAsState()
                 // which page is open: "dashboard", "templates" or "focus"
                 var page by rememberSaveable { mutableStateOf("dashboard") }
                 LaunchedEffect(page) { if (page == "focus") standbyViewModel.loadApps() }
@@ -172,6 +175,7 @@ class MainActivity : ComponentActivity() {
 
                 val targetState = when {
                     dockVisible -> "dock"
+                    !onboardingDone -> "onboarding"
                     page == "templates" -> "gallery"
                     page == "focus" -> "focus"
                     else -> "dashboard"
@@ -199,6 +203,14 @@ class MainActivity : ComponentActivity() {
                         ) {
                             DockScreen(dockData = dockData, window = this@MainActivity.window)
                         }
+
+                        "onboarding" -> OnboardingScreen(
+                            template = currentTemplate,
+                            dockState = DockUiState(timeMillis, weather.usableAt(timeMillis), todayEvents.orEmpty(), tasks.orEmpty()),
+                            onOpenScreensaverSettings = { openScreensaverSettings(this@MainActivity) },
+                            onPickTemplate = { standbyViewModel.setTemplate(it) },
+                            onFinish = { standbyViewModel.finishOnboarding() }
+                        )
 
                         "gallery" -> TemplateGalleryScreen(
                             selected = currentTemplate,

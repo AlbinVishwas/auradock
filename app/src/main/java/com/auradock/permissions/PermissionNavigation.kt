@@ -52,3 +52,15 @@ fun openExactAlarmSettings(context: Context) {
         )
     }
 }
+
+/**
+ * Opens the system's screensaver settings. Some makers do not handle the direct page, so fall back to the display
+ * settings, where the screensaver entry lives.
+ */
+fun openScreensaverSettings(context: Context) {
+    try {
+        context.startActivity(Intent(Settings.ACTION_DREAM_SETTINGS).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+    } catch (e: android.content.ActivityNotFoundException) {
+        context.startActivity(Intent(Settings.ACTION_DISPLAY_SETTINGS).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+    }
+}

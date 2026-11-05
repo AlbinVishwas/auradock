@@ -11,6 +11,7 @@ import com.auradock.focus.AppEntry
 import com.auradock.focus.DndController
 import com.auradock.focus.DockFocusController
 import com.auradock.focus.FocusSettings
+import com.auradock.onboarding.OnboardingState
 import com.auradock.permissions.canScheduleExactAlarms
 import com.auradock.dock.DockTemplate
 import com.auradock.dock.TemplateRepository
@@ -49,6 +50,7 @@ class StandbyViewModel @Inject constructor(
     private val focusSettings: FocusSettings,
     private val dndController: DndController,
     private val dockFocus: DockFocusController,
+    private val onboardingState: OnboardingState,
     minuteClock: MinuteClock
 ) : ViewModel() {
 
@@ -208,6 +210,11 @@ class StandbyViewModel @Inject constructor(
     suspend fun appIcon(packageName: String): androidx.compose.ui.graphics.ImageBitmap? = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
         appCatalog.icon(packageName)?.toBitmap(96, 96)?.asImageBitmap()
     }
+
+    /** False until the first-launch walkthrough has been finished. */
+    val onboardingDone: StateFlow<Boolean> = onboardingState.done
+
+    fun finishOnboarding() = onboardingState.complete()
 
     fun enterDock() = dockMode.update { it.enterManual() }
     fun dismissDock() = dockMode.update { it.dismiss(standbyState.value) }
