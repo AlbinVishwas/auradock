@@ -70,7 +70,8 @@ fun TaskSheet(
         is24Hour = DateFormat.is24HourFormat(context)
     )
     val focus = remember { FocusRequester() }
-    LaunchedEffect(Unit) { focus.requestFocus() }
+    // The field can be gone again (for example the screen turned) before this runs, and requesting focus then throws.
+    LaunchedEffect(Unit) { runCatching { focus.requestFocus() } }
 
     val canSave = cleanTitle(title) != null
     fun save() {
