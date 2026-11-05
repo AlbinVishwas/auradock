@@ -24,6 +24,12 @@ import android.os.PowerManager
 import android.os.SystemClock
 import android.util.Log
 import androidx.core.app.NotificationCompat
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.LifecycleRegistry
+import androidx.savedstate.SavedStateRegistry
+import androidx.savedstate.SavedStateRegistryController
+import androidx.savedstate.SavedStateRegistryOwner
 import com.auradock.MainActivity
 import com.auradock.R
 import com.auradock.dock.DockWatchLogic
@@ -43,11 +49,17 @@ import javax.inject.Inject
  * does the job. The readings are never stored or sent anywhere.
  */
 @AndroidEntryPoint
-class DockWatcherService : Service() {
+class DockWatcherService : Service(), LifecycleOwner, SavedStateRegistryOwner {
 
     @Inject lateinit var controller: DockWatcherController
     @Inject lateinit var dockFocus: DockFocusController
 
+    private val lifecycleRegistry = LifecycleRegistry(this)
+    private val savedStateController = SavedStateRegistryController.create(this)
+    override val lifecycle: Lifecycle get() = lifecycleRegistry
+    override val savedStateRegistry: SavedStateRegistry get() = savedStateController.savedStateRegistry
+
+    private lateinit var overlay: PillOverlay
     private val handler = Handler(Looper.getMainLooper())
     private val logic = DockWatchLogic()
     private var sampling = false
@@ -81,6 +93,18 @@ class DockWatcherService : Service() {
 
     override fun onCreate() {
         super.onCreate()
+        savedStateController.performAttach()
+        savedStateController.performRestore(null)
+        lifecycleRegistry.currentState = Lifecycle.State.RESUMED
+        overlay = PillOverlay(
+            context = this,
+            owner = this,
+            onTap = { apply(logic.onPillTapped()) },
+            onCancel = {
+                logic.onCancel()
+                apply(WatchOutput(null))
+            }
+        )
         goForeground()
         val filter = IntentFilter().apply {
             addAction(Intent.ACTION_SCREEN_ON)
@@ -103,6 +127,8 @@ class DockWatcherService : Service() {
 
     override fun onDestroy() {
         stopSampling()
+        overlay.release()
+        lifecycleRegistry.currentState = Lifecycle.State.DESTROYED
         runCatching { unregisterReceiver(receiver) }
         super.onDestroy()
     }
@@ -147,7 +173,9 @@ class DockWatcherService : Service() {
     }
 
     /** Shows [pill] (null hides it). */
-    private fun showPill(pill: Pill?) = Unit
+    private fun showPill(pill: Pill?) {
+        if (pill == null) overlay.hide() else overlay.show(pill)
+    }
 
     private fun launchDock() {
         Log.d(TAG, "opening the dock")

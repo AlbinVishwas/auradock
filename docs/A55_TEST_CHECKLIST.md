@@ -8,7 +8,7 @@ Emulator notes that explain some of these items are in the "Why" lines.
 
 ## How to install the APK
 
-For testers. AuraDock is not on the Play Store yet, so it is installed from a file (`AuraDock-0.1.1.apk`). Menu names
+For testers. AuraDock is not on the Play Store yet, so it is installed from a file (`AuraDock-0.1.2.apk`). Menu names
 vary a little between One UI versions; the idea is the same.
 
 1. **Get the file onto the phone.** Download it from the link you were sent (Chrome saves it to Downloads), or copy it
@@ -32,7 +32,7 @@ vary a little between One UI versions; the idea is the same.
 7. **Updating.** Install the new APK over the old one: your tasks and settings stay. It only works because every build
    is signed with the same key; if the install says "App not installed", uninstall first (that deletes your tasks) and
    report it.
-8. **Report** the version shown by Settings > Apps > AuraDock (it starts with 0.1.1) with anything you find.
+8. **Report** the version shown by Settings > Apps > AuraDock (it starts with 0.1.2) with anything you find.
 
 ## Screensaver (DockDreamService)
 
@@ -317,3 +317,37 @@ vary a little between One UI versions; the idea is the same.
 - [ ] Strip keeps drifting with the clock (no fixed bright pixels); check for burn-in after a night of docking.
 - [ ] Privacy: with the toggle off, nothing of a message body is visible from across the room; Samsung "Hide content on lock screen" is not what controls this, AuraDock's own toggle is.
 - [ ] Still shows after the phone has been docked overnight with Samsung battery management on (listener not put to sleep).
+
+## Dock from anywhere (optional background watcher, 0.1.2)
+Setup: Focus settings > "Dock from anywhere" on, allow "Display over other apps". Set AuraDock to "Never sleeping".
+Watch decisions with `adb logcat -s DockWatcher` (lines like `pill: Countdown(secondsLeft=4)`, `opening the dock`).
+- [ ] **Turning it on.** The switch sends you to "Display over other apps"; after allowing it and coming back the card says
+  "On." and the notification "AuraDock is ready to dock" appears (quiet, no sound). Off again: the notification goes.
+- [ ] **Onboarding step.** After the screensaver step there is an optional "Dock from anywhere" step; Next skips it.
+- [ ] **Charging, landscape, still.** Put the phone sideways on the charger in any app (try Chrome and the home screen).
+  Pass: after about 3 s a black pill "Docking in 5…" slides up; after 5 s the dock opens, upright.
+- [ ] **Tap the pill.** Docks at once. **Cancel** does not dock.
+- [ ] **Not charging.** Same, unplugged: "Switch to dock?" appears, tap docks, it hides itself after about 6 s.
+- [ ] **Quiet after Cancel.** After Cancel (or the offer timing out), leave the phone on the stand and read something for a
+  few minutes. Pass: the pill does not come back. Pick the phone up and put it back, or turn it to portrait and back:
+  the pill comes again.
+- [ ] **Hand-held.** Hold the phone sideways in your hand (landscape, typing, scrolling) for a minute. Pass: no pill.
+  If it appears, note how still you were (the stillness limit may need loosening).
+- [ ] **A real stand that wobbles.** Tap the screen on the stand (scroll a page, type). Pass: tapping does not make it
+  think the phone was picked up and re-show the pill after a Cancel. If it does, note it (the pickup limit needs raising).
+- [ ] **Portrait and flat.** Upright on the stand, and lying flat on a desk: no pill, ever.
+- [ ] **YouTube in landscape on the charger.** Play a video full screen, sideways, on the charger. Pass: no pill while it
+  plays. Pause it: the pill may appear (that is expected). Also try a muted video and a Spotify track: record what happens
+  (a muted video may still show the pill; Cancel then keeps it quiet).
+- [ ] **Phone call.** Be on a call with the phone sideways and still. Pass: no pill.
+- [ ] **Already docked.** With the dock or the screensaver showing, no pill. Close the dock by touch while on the stand:
+  no pill comes straight back.
+- [ ] **Screen off.** Turn the screen off: logcat shows `not watching (screen off)`; on again: `watching`.
+- [ ] **Reboot.** With the feature on, restart the phone and unlock. Pass: the notification returns without opening the app.
+  (If it does not, note it: Samsung may block the start.)
+- [ ] **Samsung background launch.** From another app, the dock opens when the countdown ends or the pill is tapped. If
+  Samsung blocks it (the pill goes but nothing opens), note it.
+- [ ] **Battery, one hour.** Fully charge, unplug, set the screen to stay on (or use the phone normally) for one hour with
+  the feature ON; note the battery %. Repeat for an hour with it OFF (same use). Check Settings > Battery > AuraDock for its
+  share. Pass: the difference is small (a point or two); record both numbers.
+- [ ] **Turning it off** stops the service (notification gone) and the pill never appears again.
