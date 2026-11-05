@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <title>AuraDock mark</title>
+  <rect width="1024" height="1024" fill="#000000"/>
+  <!-- the phone, lying sideways -->
+  <rect x="192" y="296" width="640" height="360" rx="72" fill="none" stroke="#FFFFFF" stroke-width="56" stroke-linejoin="round"/>
+  <!-- the aura -->
+  <circle cx="408" cy="476" r="88" fill="#FF5A4E"/>
+  <!-- the dock -->
+  <rect x="352" y="708" width="320" height="48" rx="14" fill="#FFFFFF"/>
+</svg>

@@ -198,7 +198,7 @@ class DockWatcherService : Service(), LifecycleOwner, SavedStateRegistryOwner {
             this, 0, Intent(this, MainActivity::class.java), PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
         )
         val notification: Notification = NotificationCompat.Builder(this, CHANNEL_ID)
-            .setSmallIcon(R.drawable.ic_stat_dock)
+            .setSmallIcon(R.drawable.ic_stat_auradock)
             .setContentTitle("AuraDock is ready to dock")
             .setContentText("Tap to open. Turn off in Focus settings.")
             .setContentIntent(open)

@@ -34,7 +34,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:label="AuraDock"
         android:supportsRtl="true"
-        android:theme="@style/Theme.AppCompat.DayNight.NoActionBar">
+        android:theme="@style/Theme.AuraDock">
 
         <activity
             android:name=".MainActivity"

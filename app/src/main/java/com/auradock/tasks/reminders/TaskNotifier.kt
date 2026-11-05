@@ -47,7 +47,7 @@ class TaskNotifier @Inject constructor(
         )
         val dueText = task.dueAt?.let { "Due " + DateFormat.getTimeFormat(context).format(Date(it)) } ?: "Due now"
         val notification = NotificationCompat.Builder(context, CHANNEL_ID)
-            .setSmallIcon(R.drawable.ic_stat_task)
+            .setSmallIcon(R.drawable.ic_stat_auradock)
             .setContentTitle(task.title)
             .setContentText(dueText)
             .setCategory(NotificationCompat.CATEGORY_REMINDER)
