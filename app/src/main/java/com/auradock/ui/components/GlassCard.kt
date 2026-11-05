@@ -1,5 +1,7 @@
 package com.auradock.ui.components
 
+import com.auradock.ui.theme.AuraDockSizes
+import com.auradock.ui.theme.AuraDockRadii
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
@@ -38,14 +40,14 @@ import com.auradock.ui.theme.AuraDockSpacing
  * ```
  *
  * @param modifier      Caller-supplied sizing / positioning modifier.
- * @param cornerRadius  Override corner radius if needed (default 28 dp).
+ * @param cornerRadius  Override corner radius if needed (default AuraDockRadii.widget).
  * @param padding       Internal content padding (default 20 dp).
  * @param content       Slot for widget content.
  */
 @Composable
 fun GlassCard(
     modifier     : Modifier  = Modifier,
-    cornerRadius : Dp        = 28.dp,
+    cornerRadius : Dp        = AuraDockRadii.widget,
     padding      : Dp        = AuraDockSpacing.CardPadding,
     content      : @Composable BoxScope.() -> Unit
 ) {
@@ -65,7 +67,7 @@ fun GlassCard(
                 )
             )
             .border(
-                width = 1.dp,
+                width = AuraDockSizes.line,
                 color = AuraDockColors.GlassBorder,        // white 12%
                 shape = shape
             )

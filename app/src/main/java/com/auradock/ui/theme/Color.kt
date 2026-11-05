@@ -1,0 +1,109 @@
+package com.auradock.ui.theme
+
+import androidx.compose.ui.graphics.Color
+
+/**
+ * Every colour AuraDock uses. Nothing outside this file writes a colour literal (see docs/DESIGN.md).
+ *
+ * Two layers: the raw palette ([AuraDockPalette]: black, the grey scale, white, coral and its tint), and the meaning each colour
+ * is given in the app ([AuraDockColors]). Screens use the meaning, so a redesign can re-point a meaning at another palette entry.
+ */
+object AuraDockPalette {
+    val Black = Color(0xFF000000)
+
+    // The grey scale, darkest to lightest. The number is roughly how far it is from white.
+    val Grey950 = Color(0xFF0D0D0D)
+    val Grey900 = Color(0xFF141414)
+    val Grey850 = Color(0xFF2A2A2A)
+    val Grey800 = Color(0xFF3F3F3F)
+    val Grey750 = Color(0xFF444444)
+    val Grey700 = Color(0xFF5E5E5E)
+    val Grey650 = Color(0xFF666666)
+    val Grey600 = Color(0xFF6E6E6E)
+    val Grey550 = Color(0xFF727272)
+    val Grey500 = Color(0xFF8A8A8A)
+    val Grey400 = Color(0xFFAAAAAA)
+    val Grey200 = Color(0xFFD2D2D2)
+    val White = Color(0xFFFFFFFF)
+
+    /** The brand colour: the aura in the logo. */
+    val Coral = Color(0xFFFF5A4E)
+
+    /** A lighter, softer coral for text and fills that sit on black. */
+    val Salmon = Color(0xFFFF9A90)
+
+    // Translucent whites, for lines and glass on black.
+    val White5 = Color(0x0AFFFFFF)
+    val White8 = Color(0x14FFFFFF)
+    val White9 = Color(0x17FFFFFF)
+    val White12 = Color(0x1FFFFFFF)
+    val White15 = Color(0x26FFFFFF)
+    val White20 = Color(0x33FFFFFF)
+    val White40 = Color(0x66FFFFFF)
+
+    // Colours with a job of their own, kept from the first designs.
+    val Blue = Color(0xFF2979FF)
+    val Cyan = Color(0xFF4FC3F7)
+    val Amber = Color(0xFFFFB300)
+    val Green = Color(0xFF4CAF50)
+    val DarkRed = Color(0xFF8E2A2A)
+    val DimBlueGrey = Color(0xFF55616A)
+    val OldGold = Color(0xFFB8892D)
+    val AppBlue = Color(0xFF3A4A5A)
+    val NightBlue = Color(0xFF151A20)
+}
+
+object AuraDockColors {
+    // Surfaces
+    /** Pure ambient black: the stage everything sits on. */
+    val Background = AuraDockPalette.Black
+    /** Deep surface for cards. */
+    val Surface = AuraDockPalette.Grey950
+    /** Raised surface: bottom sheets. */
+    val SurfaceRaised = AuraDockPalette.Grey900
+    val GlassCardTop = AuraDockPalette.White9
+    val GlassCardBottom = AuraDockPalette.White5
+    val GlassBorder = AuraDockPalette.White12
+    val Divider = AuraDockPalette.White15
+    /** A hairline between columns on the dock. */
+    val DockDivider = AuraDockPalette.White8
+
+    // Text
+    val OnBackground = AuraDockPalette.White
+    val OnSurfaceVariant = AuraDockPalette.Grey400
+    /** Text that is switched off (an unavailable row). */
+    val OnDisabled = AuraDockPalette.Grey700
+
+    // Brand
+    val Coral = AuraDockPalette.Coral
+    val CoralTint = AuraDockPalette.Salmon
+
+    // Accents and states
+    val ClockGlow = AuraDockPalette.Cyan
+    val AccentBlue = AuraDockPalette.Blue
+    val AccentAmber = AuraDockPalette.Amber
+    val Success = AuraDockPalette.Green
+    val Danger = AuraDockPalette.DarkRed
+    val Overdue = AuraDockPalette.Amber
+
+    // The dock: quieter greys for text that must not glare in a dark room.
+    val DockLabel = AuraDockPalette.Grey600
+    val DockText = AuraDockPalette.Grey200
+    val DockOverdue = AuraDockPalette.OldGold
+    val DimDigits = AuraDockPalette.Grey500
+    val DimColon = AuraDockPalette.DimBlueGrey
+    val DimLabel = AuraDockPalette.Grey650
+    val StripText = AuraDockPalette.Grey550
+    val StripTextDim = AuraDockPalette.Grey800
+
+    // The docking pill and the onboarding animation
+    val PillBackground = AuraDockPalette.Black
+    val PillText = AuraDockPalette.White
+    val PillBorder = AuraDockPalette.White20
+    val IllustrationStand = AuraDockPalette.Grey750
+    val IllustrationPhone = AuraDockPalette.Grey850
+    val IllustrationApp = AuraDockPalette.AppBlue
+    val IllustrationAppLine = AuraDockPalette.White40
+    val IllustrationDimScreen = AuraDockPalette.NightBlue
+    val IllustrationRingTrack = AuraDockPalette.White20
+}

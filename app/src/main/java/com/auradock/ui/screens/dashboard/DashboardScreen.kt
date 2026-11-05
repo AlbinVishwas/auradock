@@ -28,11 +28,6 @@ import androidx.compose.ui.platform.LocalContext
 import java.util.Date
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.auradock.data.CalendarEvent
 import com.auradock.ui.components.QuickActionButton
 import com.auradock.time.formatDashboardDate
@@ -50,41 +45,58 @@ import com.auradock.ui.weather.WeatherIcon
 import com.auradock.tasks.TaskEntity
 import com.auradock.ui.tasks.TaskCard
 import com.auradock.ui.tasks.TaskSheet
+import com.auradock.ui.theme.AuraDockGallery
+import com.auradock.ui.theme.AuraDockSizes
 import com.auradock.ui.theme.AuraDockTheme
 import com.auradock.ui.theme.LocalAuraDockSpacing
 import com.auradock.ui.viewmodel.CalendarPermissionUiState
 
+/** Everything the dashboard shows. The ViewModel's flows are folded into this by DashboardRoute. */
+data class DashboardUiState(
+    val template: DockTemplate,
+    val timeMillis: Long,
+    val weather: Weather? = null,
+    val locationPermission: CalendarPermissionUiState = CalendarPermissionUiState.GRANTED,
+    /** Null until the first load finishes. */
+    val events: List<CalendarEvent>? = emptyList(),
+    /** Null until the first load finishes. */
+    val tasks: List<TaskEntity>? = emptyList(),
+    val exactAlarmsAllowed: Boolean = true,
+    val calendarPermission: CalendarPermissionUiState = CalendarPermissionUiState.DENIED
+)
+
+/** What the user can do on the dashboard. */
+data class DashboardActions(
+    val onEnableWeather: () -> Unit = {},
+    val onAllowExactAlarms: () -> Unit = {},
+    val onSaveTask: (id: Long?, title: String, dueAt: Long?) -> Unit = { _, _, _ -> },
+    val onToggleTask: (TaskEntity) -> Unit = {},
+    val onDeleteTask: (TaskEntity) -> Unit = {},
+    val onOpenTemplates: () -> Unit = {},
+    val onOpenFocus: () -> Unit = {},
+    val onOpenSetup: () -> Unit = {},
+    val onDockNow: () -> Unit = {},
+    val onEnableCalendarAccess: () -> Unit = {}
+)
+
+/** The "today" screen. Stateless: draws [state] and reports taps through [actions]. */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun DashboardScreen(
-    currentTemplate: DockTemplate,
-    timeMillis: Long,
-    modifier: Modifier = Modifier,
-    weather: Weather? = null,
-    locationPermissionState: CalendarPermissionUiState = CalendarPermissionUiState.GRANTED,
-    onEnableWeather: () -> Unit = {},
-    todayEvents: List<CalendarEvent>? = emptyList(),
-    tasks: List<TaskEntity>? = emptyList(),
-    exactAlarmsAllowed: Boolean = true,
-    onAllowExactAlarms: () -> Unit = {},
-    onSaveTask: (id: Long?, title: String, dueAt: Long?) -> Unit = { _, _, _ -> },
-    onToggleTask: (TaskEntity) -> Unit = {},
-    onDeleteTask: (TaskEntity) -> Unit = {},
-    calendarPermissionState: CalendarPermissionUiState = CalendarPermissionUiState.DENIED,
-    onOpenTemplates: () -> Unit = {},
-    onOpenFocus: () -> Unit = {},
-    onOpenSetup: () -> Unit = {},
-    onDockNow: () -> Unit = {},
-    onEnableCalendarAccess: () -> Unit = {}
+    state: DashboardUiState,
+    actions: DashboardActions,
+    modifier: Modifier = Modifier
 ) {
     val spacing = LocalAuraDockSpacing.current
     val context = LocalContext.current
+    val timeMillis = state.timeMillis
+    val tasks = state.tasks
 
     val dateText = formatDashboardDate(timeMillis)
     Column(
         modifier = modifier
             .fillMaxSize()
-            .background(Color.Black)
+            .background(AuraDockColors.Background)
             .verticalScroll(rememberScrollState())
             .padding(horizontal = spacing.lg),
         verticalArrangement = Arrangement.Top
@@ -92,20 +104,19 @@ fun DashboardScreen(
         Text(
             text = greetingFor(timeMillis),
             modifier = Modifier.padding(top = spacing.xl),
-            color = Color.White,
-            fontSize = 32.sp,
-            fontWeight = FontWeight.SemiBold
+            color = AuraDockColors.OnBackground,
+            style = AuraDockTypography.ScreenTitle
         )
 
         Text(
             text = dateText,
-            color = Color.Gray,
-            fontSize = 14.sp,
+            color = AuraDockColors.OnSurfaceVariant,
+            style = AuraDockTypography.WidgetLabel,
             modifier = Modifier.padding(top = spacing.xs)
         )
 
         Spacer(modifier = Modifier.height(spacing.sm))
-        WeatherRow(weather = weather, permission = locationPermissionState, onEnable = onEnableWeather)
+        WeatherRow(weather = state.weather, permission = state.locationPermission, onEnable = actions.onEnableWeather)
 
         Spacer(modifier = Modifier.height(spacing.lg))
 
@@ -119,8 +130,8 @@ fun DashboardScreen(
             formatTime = { timeFormat.format(Date(it)) },
             onAdd = { sheetTaskId = NEW_TASK },
             onEdit = { sheetTaskId = it.id },
-            onToggle = onToggleTask,
-            onDelete = onDeleteTask,
+            onToggle = actions.onToggleTask,
+            onDelete = actions.onDeleteTask,
             modifier = Modifier.fillMaxWidth()
         )
         sheetTaskId?.let { id ->
@@ -128,10 +139,10 @@ fun DashboardScreen(
             TaskSheet(
                 task = editing,
                 nowMillis = timeMillis,
-                exactAlarmsAllowed = exactAlarmsAllowed,
-                onAllowExactAlarms = onAllowExactAlarms,
+                exactAlarmsAllowed = state.exactAlarmsAllowed,
+                onAllowExactAlarms = actions.onAllowExactAlarms,
                 onSave = { title, dueAt ->
-                    onSaveTask(editing?.id, title, dueAt)
+                    actions.onSaveTask(editing?.id, title, dueAt)
                     sheetTaskId = null
                 },
                 onDismiss = { sheetTaskId = null }
@@ -140,8 +151,8 @@ fun DashboardScreen(
 
         Spacer(modifier = Modifier.height(spacing.lg))
         val summary = buildTodaySummary(
-            events = todayEvents,
-            permission = calendarPermissionState,
+            events = state.events,
+            permission = state.calendarPermission,
             formatTime = { timeFormat.format(Date(it)) }
         )
         TodaySnapshotCard(
@@ -150,7 +161,7 @@ fun DashboardScreen(
             items = summary.lines,
             emptyStateText = summary.emptyText,
             actionText = summary.actionText,
-            onAction = onEnableCalendarAccess
+            onAction = actions.onEnableCalendarAccess
         )
 
         Spacer(modifier = Modifier.height(spacing.lg))
@@ -161,9 +172,9 @@ fun DashboardScreen(
             horizontalArrangement = Arrangement.spacedBy(spacing.md),
             verticalArrangement = Arrangement.spacedBy(spacing.sm)
         ) {
-            QuickActionButton(text = "Templates", onClick = onOpenTemplates)
-            QuickActionButton(text = "Focus", onClick = onOpenFocus)
-            QuickActionButton(text = "Setup", onClick = onOpenSetup)
+            QuickActionButton(text = "Templates", onClick = actions.onOpenTemplates)
+            QuickActionButton(text = "Focus", onClick = actions.onOpenFocus)
+            QuickActionButton(text = "Setup", onClick = actions.onOpenSetup)
         }
 
         Spacer(modifier = Modifier.height(spacing.lg))
@@ -178,25 +189,17 @@ fun DashboardScreen(
                 modifier = Modifier.weight(1f)
             ) {
                 // Lay the template out at a realistic landscape size, then shrink it to fit the card.
-                ScaledPreview(designWidth = 800.dp) {
+                ScaledPreview(designWidth = AuraDockGallery.previewDesignWidth) {
                     DockContent(
-                        template = currentTemplate,
-                        state = DockUiState(timeMillis, weather, todayEvents.orEmpty(), tasks.orEmpty())
+                        template = state.template,
+                        state = DockUiState(timeMillis, state.weather, state.events.orEmpty(), tasks.orEmpty())
                     )
                 }
             }
-            QuickActionButton(text = "Dock now", onClick = onDockNow, isActive = true)
+            QuickActionButton(text = "Dock now", onClick = actions.onDockNow, isActive = true)
         }
 
         Spacer(modifier = Modifier.height(spacing.xl))
-    }
-}
-
-@Preview(showBackground = true, backgroundColor = 0xFF000000)
-@Composable
-private fun DashboardScreenPreview() {
-    AuraDockTheme {
-        DashboardScreen(currentTemplate = DockTemplate.CLASSIC, timeMillis = System.currentTimeMillis())
     }
 }
 
@@ -208,7 +211,7 @@ private fun WeatherRow(weather: Weather?, permission: CalendarPermissionUiState,
     val spacing = LocalAuraDockSpacing.current
     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(spacing.sm)) {
         if (weather != null) {
-            WeatherIcon(weather.condition.icon, AuraDockColors.OnSurfaceVariant, size = 22.dp)
+            WeatherIcon(weather.condition.icon, AuraDockColors.OnSurfaceVariant, size = AuraDockSizes.weatherIconSmall)
             Text(
                 text = temperatureLabel(weather.temperatureC) + "  " + conditionLine(weather),
                 style = AuraDockTypography.WidgetLabel,

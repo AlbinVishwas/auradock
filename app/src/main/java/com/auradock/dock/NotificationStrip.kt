@@ -1,15 +1,15 @@
 package com.auradock.dock
 
+import com.auradock.ui.theme.AuraDockTypography
+import com.auradock.ui.theme.AuraDockColors
+import com.auradock.ui.theme.AuraDockDockLayout
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.auradock.data.NotificationItem
 
 /**
@@ -34,14 +34,14 @@ fun stripLines(items: List<NotificationItem>, showText: Boolean): List<String> =
 fun NotificationStrip(lines: List<String>, dimmed: Boolean, modifier: Modifier = Modifier) {
     if (lines.isEmpty()) return
     Column(
-        modifier = modifier.padding(horizontal = 48.dp, vertical = 20.dp),
+        modifier = modifier.padding(horizontal = AuraDockDockLayout.stripPadding, vertical = AuraDockDockLayout.stripVertical),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         lines.forEach { line ->
             Text(
                 text = line,
-                color = if (dimmed) Color(0xFF3F3F3F) else Color(0xFF727272),
-                fontSize = 14.sp,
+                color = if (dimmed) AuraDockColors.StripTextDim else AuraDockColors.StripText,
+                style = AuraDockTypography.DockStrip,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )

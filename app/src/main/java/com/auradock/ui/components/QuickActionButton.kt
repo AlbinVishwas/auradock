@@ -1,5 +1,8 @@
 package com.auradock.ui.components
 
+import com.auradock.ui.theme.AuraDockMotion
+import com.auradock.ui.theme.AuraDockSizes
+import com.auradock.ui.theme.AuraDockRadii
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.clickable
@@ -25,7 +28,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.tooling.preview.Preview
+import com.auradock.ui.preview.PreviewComponent
 import androidx.compose.ui.unit.dp
 import com.auradock.ui.theme.AuraDockColors
 import com.auradock.ui.theme.AuraDockTheme
@@ -42,19 +45,19 @@ fun QuickActionButton(
     contentColor: Color = AuraDockColors.OnSurfaceVariant
 ) {
     val spacing = LocalAuraDockSpacing.current
-    val shape = RoundedCornerShape(999.dp)
+    val shape = RoundedCornerShape(AuraDockRadii.pill)
     val background = if (isActive) AuraDockColors.AccentBlue else AuraDockColors.Surface
     val interactionSource = remember { MutableInteractionSource() }
     val resolvedContentColor = if (isActive) AuraDockColors.OnBackground else contentColor
     val isPressed by interactionSource.collectIsPressedAsState()
     val scale by animateFloatAsState(
         targetValue = if (isPressed) 0.97f else 1f,
-        animationSpec = tween(durationMillis = 110),
+        animationSpec = tween(durationMillis = AuraDockMotion.Press),
         label = "buttonScale"
     )
     val shadowElevation by animateFloatAsState(
         targetValue = if (isPressed) 2f else if (isActive) 8f else 4f,
-        animationSpec = tween(durationMillis = 180),
+        animationSpec = tween(durationMillis = AuraDockMotion.PressRelease),
         label = "buttonElevation"
     )
 
@@ -64,8 +67,8 @@ fun QuickActionButton(
                 scaleX = scale
                 scaleY = scale
             }
-            .height(48.dp)
-            .defaultMinSize(minHeight = 48.dp)
+            .height(AuraDockSizes.button)
+            .defaultMinSize(minHeight = AuraDockSizes.button)
             .clickable(
                 interactionSource = interactionSource,
                 indication = rememberRipple(bounded = true),
@@ -74,7 +77,7 @@ fun QuickActionButton(
         shape = shape,
         color = background,
         contentColor = resolvedContentColor,
-        tonalElevation = 0.dp,
+        tonalElevation = AuraDockSizes.none,
         shadowElevation = shadowElevation.dp
     ) {
         Row(
@@ -85,7 +88,7 @@ fun QuickActionButton(
                 Icon(
                     imageVector = icon,
                     contentDescription = null,
-                    modifier = Modifier.size(18.dp)
+                    modifier = Modifier.size(AuraDockSizes.iconSmall)
                 )
                 Spacer(modifier = Modifier.width(spacing.sm))
             }
@@ -100,7 +103,7 @@ fun QuickActionButton(
     }
 }
 
-@Preview(showBackground = true, backgroundColor = 0xFF000000)
+@PreviewComponent
 @Composable
 private fun QuickActionButtonPreview() {
     AuraDockTheme {

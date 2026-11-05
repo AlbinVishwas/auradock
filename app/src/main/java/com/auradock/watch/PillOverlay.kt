@@ -1,5 +1,11 @@
 package com.auradock.watch
 
+import com.auradock.ui.theme.AuraDockTypography
+import com.auradock.ui.theme.AuraDockSpacing
+import com.auradock.ui.theme.AuraDockSizes
+import com.auradock.ui.theme.AuraDockRadii
+import com.auradock.ui.theme.AuraDockMotion
+import com.auradock.ui.theme.AuraDockColors
 import android.content.Context
 import android.graphics.PixelFormat
 import android.os.Handler
@@ -8,8 +14,6 @@ import android.util.Log
 import android.view.Gravity
 import android.view.WindowManager
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.Spring
-import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -31,17 +35,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.ComposeView
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.setViewTreeLifecycleOwner
 import androidx.savedstate.SavedStateRegistryOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
 import com.auradock.dock.Pill
-
-private val Coral = Color(0xFFFF6B5E)
 
 /**
  * The "Dock from anywhere" pill, drawn in a small window over whatever app is on screen (needs "Display over other apps").
@@ -99,7 +97,7 @@ class PillOverlay(
             PixelFormat.TRANSLUCENT
         ).apply {
             gravity = Gravity.BOTTOM or Gravity.CENTER_HORIZONTAL
-            y = (context.resources.displayMetrics.density * 72).toInt()
+            y = (context.resources.displayMetrics.density * AuraDockSizes.pillBottomOffsetDp).toInt()
         }
         return runCatching { windowManager.addView(composeView, params) }
             .onSuccess { view = composeView }
@@ -120,7 +118,7 @@ class PillOverlay(
 }
 
 @Composable
-private fun PillContent(pill: Pill?, visible: Boolean, onTap: () -> Unit, onCancel: () -> Unit) {
+internal fun PillContent(pill: Pill?, visible: Boolean, onTap: () -> Unit, onCancel: () -> Unit) {
     // Keep drawing the last pill while it slides away, after the state has already gone back to "none".
     var lastPill by remember { mutableStateOf<Pill?>(null) }
     if (pill != null) lastPill = pill
@@ -128,44 +126,42 @@ private fun PillContent(pill: Pill?, visible: Boolean, onTap: () -> Unit, onCanc
 
     AnimatedVisibility(
         visible = visible,
-        enter = slideInVertically(spring(dampingRatio = 0.65f, stiffness = Spring.StiffnessMediumLow)) { it } + fadeIn(tween(150)),
-        exit = slideOutVertically(tween(250)) { it } + fadeOut(tween(250))
+        enter = slideInVertically(AuraDockMotion.softSpring()) { it } + fadeIn(tween(AuraDockMotion.Fast)),
+        exit = slideOutVertically(tween(AuraDockMotion.Standard)) { it } + fadeOut(tween(AuraDockMotion.Standard))
     ) {
         Surface(
-            color = Color.Black,
-            contentColor = Color.White,
-            shape = RoundedCornerShape(percent = 50),
-            border = BorderStroke(1.dp, Color(0x33FFFFFF)),
-            shadowElevation = 8.dp,
-            modifier = Modifier.padding(8.dp).clickable(onClick = onTap) // the whole pill docks
+            color = AuraDockColors.PillBackground,
+            contentColor = AuraDockColors.PillText,
+            shape = RoundedCornerShape(AuraDockRadii.pill),
+            border = BorderStroke(AuraDockSizes.line, AuraDockColors.PillBorder),
+            shadowElevation = AuraDockSizes.elevationPill,
+            modifier = Modifier.padding(AuraDockSpacing.sm).clickable(onClick = onTap) // the whole pill docks
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.padding(start = 24.dp, end = 8.dp, top = 6.dp, bottom = 6.dp)
+                modifier = Modifier.padding(start = AuraDockSpacing.lg, end = AuraDockSpacing.sm, top = AuraDockSpacing.xs, bottom = AuraDockSpacing.xs)
             ) {
                 when (shown) {
                     is Pill.Countdown -> {
-                        Text("Docking in ${shown.secondsLeft}…", color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Medium)
-                        Spacer(Modifier.width(16.dp))
+                        Text("Docking in ${shown.secondsLeft}…", color = AuraDockColors.PillText, style = AuraDockTypography.PillText)
+                        Spacer(Modifier.width(AuraDockSpacing.md))
                         Text(
                             text = "Cancel",
-                            color = Coral,
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.SemiBold,
+                            color = AuraDockColors.Coral,
+                            style = AuraDockTypography.PillAction,
                             modifier = Modifier
                                 .clickable(onClick = onCancel) // a separate target: Cancel does not dock
-                                .padding(horizontal = 16.dp, vertical = 10.dp)
+                                .padding(horizontal = AuraDockSpacing.md, vertical = AuraDockSpacing.smd)
                         )
                     }
                     Pill.Offer -> {
-                        Text("Switch to dock?", color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Medium)
-                        Spacer(Modifier.width(16.dp))
+                        Text("Switch to dock?", color = AuraDockColors.PillText, style = AuraDockTypography.PillText)
+                        Spacer(Modifier.width(AuraDockSpacing.md))
                         Text(
                             text = "Dock",
-                            color = Coral,
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.SemiBold,
-                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp)
+                            color = AuraDockColors.Coral,
+                            style = AuraDockTypography.PillAction,
+                            modifier = Modifier.padding(horizontal = AuraDockSpacing.md, vertical = AuraDockSpacing.smd)
                         )
                     }
                 }

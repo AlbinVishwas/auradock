@@ -18,86 +18,91 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.auradock.dock.DockTemplate
-import com.auradock.dock.DockUiState
 import com.auradock.ui.components.QuickActionButton
 import com.auradock.ui.focus.DockFromAnywhereCard
 import com.auradock.ui.screens.TemplateGalleryScreen
 import com.auradock.ui.theme.AuraDockColors
+import com.auradock.ui.screens.TemplateGalleryUiState
+import com.auradock.ui.theme.AuraDockSpacing
 import com.auradock.ui.theme.AuraDockTypography
 
 private enum class Step { WELCOME, SCREENSAVER, DOCK_ANYWHERE, PERMISSIONS, TEMPLATE }
 
+/** What the first-launch walkthrough shows. */
+data class OnboardingUiState(
+    val granted: Set<SetupPermission>,
+    val screensaverSelected: Boolean,
+    val dockFromAnywhere: Boolean,
+    val overlayGranted: Boolean,
+    /** The last step: pick a template. */
+    val gallery: TemplateGalleryUiState
+)
+
+/** What the user can do in the walkthrough. */
+data class OnboardingActions(
+    val onAllowPermission: (SetupPermission) -> Unit = {},
+    val onOpenScreensaverSettings: () -> Unit = {},
+    val onOpenDisplaySettings: () -> Unit = {},
+    val onToggleDockFromAnywhere: (Boolean) -> Unit = {},
+    val onAllowOverlay: () -> Unit = {},
+    val onPickTemplate: (DockTemplate) -> Unit = {},
+    /** Runs after the template is picked; the caller saves that the walkthrough is done and shows the dashboard. */
+    val onFinish: () -> Unit = {}
+)
+
 /**
- * The first-launch walkthrough: Welcome, set as screensaver, permissions, pick a template. [onFinish] runs after the
- * template is picked; the caller saves that the walkthrough is done and shows the dashboard.
+ * The first-launch walkthrough: Welcome, dock explanation and screensaver, "Dock from anywhere", permissions, pick a template.
+ * Only the current step and the permissions marked Skip are remembered here, because they are about this screen alone.
  */
 @Composable
 fun OnboardingScreen(
-    template: DockTemplate,
-    dockState: DockUiState,
-    permissionGranted: (SetupPermission) -> Boolean,
-    onAllowPermission: (SetupPermission) -> Unit,
-    screensaverSelected: Boolean,
-    onOpenScreensaverSettings: () -> Unit,
-    onOpenDisplaySettings: () -> Unit,
-    dockFromAnywhere: Boolean,
-    overlayGranted: Boolean,
-    onToggleDockFromAnywhere: (Boolean) -> Unit,
-    onAllowOverlay: () -> Unit,
-    onPickTemplate: (DockTemplate) -> Unit,
-    onFinish: () -> Unit,
-    modifier: Modifier = Modifier
+    state: OnboardingUiState,
+    actions: OnboardingActions,
+    modifier: Modifier = Modifier,
+    initialStep: Int = 0
 ) {
-    var stepIndex by rememberSaveable { mutableIntStateOf(0) }
+    var stepIndex by rememberSaveable { mutableIntStateOf(initialStep) }
     val step = Step.entries[stepIndex]
     var skipped by rememberSaveable { mutableStateOf(listOf<String>()) } // SetupPermission names the user tapped Skip on
     BackHandler(enabled = stepIndex > 0) { stepIndex-- }
 
     when (step) {
         Step.TEMPLATE -> TemplateGalleryScreen(
-            selected = template,
-            state = dockState,
+            state = state.gallery,
             modifier = modifier,
-            onApplyClick = {
-                onPickTemplate(it)
-                onFinish()
+            onApply = {
+                actions.onPickTemplate(it)
+                actions.onFinish()
             }
         )
 
         else -> Column(
             modifier = modifier
                 .fillMaxSize()
-                .background(Color.Black)
+                .background(AuraDockColors.Background)
                 .verticalScroll(rememberScrollState())
-                .padding(horizontal = 24.dp, vertical = 48.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+                .padding(horizontal = AuraDockSpacing.lg, vertical = AuraDockSpacing.xxl),
+            verticalArrangement = Arrangement.spacedBy(AuraDockSpacing.md)
         ) {
             if (step == Step.SCREENSAVER) {
                 DockExplainer(
-                    screensaverSelected = screensaverSelected,
-                    onChooseScreensaver = onOpenScreensaverSettings,
-                    onSetScreenTimeout = onOpenDisplaySettings
+                    screensaverSelected = state.screensaverSelected,
+                    onChooseScreensaver = actions.onOpenScreensaverSettings,
+                    onSetScreenTimeout = actions.onOpenDisplaySettings
                 )
             } else if (step == Step.DOCK_ANYWHERE) {
                 Text(
                     text = "Dock from anywhere (optional)",
-                    color = Color.White,
-                    fontSize = 30.sp,
-                    lineHeight = 36.sp,
-                    fontWeight = FontWeight.SemiBold
+                    color = AuraDockColors.OnBackground,
+                    style = AuraDockTypography.ScreenTitle
                 )
-                DockFromAnywhereCard(dockFromAnywhere, overlayGranted, onToggleDockFromAnywhere, onAllowOverlay)
+                DockFromAnywhereCard(state.dockFromAnywhere, state.overlayGranted, actions.onToggleDockFromAnywhere, actions.onAllowOverlay)
             } else {
                 Text(
                     text = if (step == Step.WELCOME) "Welcome to AuraDock" else "Permissions",
-                    color = Color.White,
-                    fontSize = 32.sp,
-                    fontWeight = FontWeight.SemiBold
+                    color = AuraDockColors.OnBackground,
+                    style = AuraDockTypography.ScreenTitle
                 )
                 Text(
                     text = if (step == Step.WELCOME) {
@@ -105,7 +110,7 @@ fun OnboardingScreen(
                     } else {
                         "AuraDock asks for a few things so its features work. You can skip any of them and allow them later."
                     },
-                    style = AuraDockTypography.WidgetPrimary,
+                    style = AuraDockTypography.Body,
                     color = AuraDockColors.OnSurfaceVariant
                 )
             }
@@ -113,14 +118,14 @@ fun OnboardingScreen(
                 SetupPermission.entries.forEach { permission ->
                     PermissionCard(
                         permission = permission,
-                        granted = permissionGranted(permission),
-                        onAllow = { onAllowPermission(permission) },
+                        granted = permission in state.granted,
+                        onAllow = { actions.onAllowPermission(permission) },
                         skipped = permission.name in skipped,
                         onSkip = { skipped = skipped + permission.name }
                     )
                 }
             }
-            Spacer(Modifier.height(8.dp))
+            Spacer(Modifier.height(AuraDockSpacing.sm))
             QuickActionButton(text = when (step) { Step.WELCOME -> "Get started"; Step.PERMISSIONS -> "Continue"; else -> "Next" }, onClick = { stepIndex++ })
         }
     }

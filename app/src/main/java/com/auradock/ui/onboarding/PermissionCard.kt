@@ -1,5 +1,6 @@
 package com.auradock.ui.onboarding
 
+import com.auradock.ui.theme.AuraDockSpacing
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -26,8 +27,6 @@ enum class SetupPermission(val title: String, val why: String) {
     EXACT_ALARMS("Exact alarms", "Makes task reminders fire on the minute instead of a few minutes late.")
 }
 
-private val Granted = Color(0xFF4CAF50)
-
 /**
  * One permission: why it is needed, a checkmark once granted, and "Allow" (plus "Skip" when [onSkip] is given, as in the
  * walkthrough). A skipped card keeps "Allow", so the user can still change their mind.
@@ -53,14 +52,14 @@ fun PermissionCard(
                 color = AuraDockColors.OnBackground,
                 modifier = Modifier.weight(1f)
             )
-            if (granted) Text(text = "✓ Allowed", style = AuraDockTypography.WidgetLabel, color = Granted)
+            if (granted) Text(text = "✓ Allowed", style = AuraDockTypography.WidgetLabel, color = AuraDockColors.Success)
             else if (skipped) Text(text = "Skipped", style = AuraDockTypography.WidgetLabel, color = AuraDockColors.OnSurfaceVariant)
         }
-        Spacer(Modifier.height(8.dp))
+        Spacer(Modifier.height(AuraDockSpacing.sm))
         Text(text = permission.why, style = AuraDockTypography.Caption, color = AuraDockColors.OnSurfaceVariant)
         if (!granted) {
-            Spacer(Modifier.height(12.dp))
-            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            Spacer(Modifier.height(AuraDockSpacing.smd))
+            Row(horizontalArrangement = Arrangement.spacedBy(AuraDockSpacing.smd)) {
                 QuickActionButton(text = "Allow", onClick = onAllow, isActive = true)
                 if (onSkip != null && !skipped) QuickActionButton(text = "Skip", onClick = onSkip)
             }

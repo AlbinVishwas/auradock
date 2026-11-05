@@ -53,7 +53,13 @@ import com.auradock.permissions.openAppSettings
 import com.auradock.permissions.openDndAccessSettings
 import com.auradock.permissions.openExactAlarmSettings
 import com.auradock.permissions.openOverlaySettings
-import com.auradock.ui.focus.FocusSettingsScreen
+import com.auradock.ui.routes.DashboardRoute
+import com.auradock.ui.routes.FocusSettingsRoute
+import com.auradock.ui.routes.Navigation
+import com.auradock.ui.routes.OnboardingRoute
+import com.auradock.ui.routes.SetupRoute
+import com.auradock.ui.routes.SystemSettings
+import com.auradock.ui.routes.TemplateGalleryRoute
 import com.auradock.permissions.openNotificationAccessSettings
 import com.auradock.permissions.openScreensaverSettings
 import com.auradock.ui.onboarding.OnboardingScreen
@@ -62,6 +68,7 @@ import com.auradock.ui.onboarding.SetupScreen
 import com.auradock.ui.viewmodel.CalendarPermissionUiState
 import com.auradock.ui.screens.TemplateGalleryScreen
 import com.auradock.ui.screens.dashboard.DashboardScreen
+import com.auradock.ui.theme.AuraDockMotion
 import com.auradock.ui.theme.AuraDockTheme
 import com.auradock.ui.viewmodel.PermissionAction
 import com.auradock.ui.viewmodel.StandbyViewModel
@@ -96,28 +103,10 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             AuraDockTheme {
-                val currentTemplate by standbyViewModel.currentTemplate.collectAsState()
-                val timeMillis by standbyViewModel.currentTimeMillis.collectAsState()
                 val dockVisible by standbyViewModel.dockVisible.collectAsState()
-                val todayEvents by standbyViewModel.todayEvents.collectAsState()
-                val tasks by standbyViewModel.tasks.collectAsState()
-                val exactAlarmsAllowed by standbyViewModel.exactAlarmsAllowed.collectAsState()
-                val weather by standbyViewModel.weather.collectAsState()
-                val focusWhileDocked by standbyViewModel.focusWhileDocked.collectAsState()
-                val dndAccessGranted by standbyViewModel.dndAccessGranted.collectAsState()
-                val hasNotificationAccess by standbyViewModel.hasNotificationAccess.collectAsState()
-                val apps by standbyViewModel.apps.collectAsState()
-                val pickedApps by standbyViewModel.pickedApps.collectAsState()
-                val showMessageText by standbyViewModel.showMessageText.collectAsState()
-                val locationPermissionState by standbyViewModel.locationPermissionState.collectAsState()
-                val calendarPermissionState by standbyViewModel.calendarPermissionState.collectAsState()
-                val postNotificationsGranted by standbyViewModel.postNotificationsGranted.collectAsState()
-                val dockFromAnywhere by standbyViewModel.dockFromAnywhere.collectAsState()
-                val overlayGranted by standbyViewModel.overlayGranted.collectAsState()
                 val onboardingDone by standbyViewModel.onboardingDone.collectAsState()
                 // which page is open: "dashboard", "templates", "focus" or "setup"
                 var page by rememberSaveable { mutableStateOf("dashboard") }
-                LaunchedEffect(page) { if (page == "focus") standbyViewModel.loadApps() }
                 val calendarPermissionLauncher = rememberLauncherForActivityResult(
                     contract = ActivityResultContracts.RequestPermission()
                 ) { granted ->
@@ -187,27 +176,6 @@ class MainActivity : ComponentActivity() {
                     }
                 }
 
-                val permissionGranted: (SetupPermission) -> Boolean = { permission ->
-                    when (permission) {
-                        SetupPermission.CALENDAR -> calendarPermissionState == CalendarPermissionUiState.GRANTED
-                        SetupPermission.NOTIFICATION_ACCESS -> hasNotificationAccess
-                        SetupPermission.DND_ACCESS -> dndAccessGranted
-                        SetupPermission.LOCATION -> locationPermissionState == CalendarPermissionUiState.GRANTED
-                        SetupPermission.POST_NOTIFICATIONS -> postNotificationsGranted
-                        SetupPermission.EXACT_ALARMS -> exactAlarmsAllowed
-                    }
-                }
-                val onAllowPermission: (SetupPermission) -> Unit = { permission ->
-                    when (permission) {
-                        SetupPermission.CALENDAR -> standbyViewModel.requestCalendarPermission()
-                        SetupPermission.NOTIFICATION_ACCESS -> standbyViewModel.openNotificationSettings()
-                        SetupPermission.DND_ACCESS -> standbyViewModel.openDndAccessSettings()
-                        SetupPermission.LOCATION -> standbyViewModel.requestLocationPermission()
-                        SetupPermission.POST_NOTIFICATIONS -> standbyViewModel.requestPostNotifications()
-                        SetupPermission.EXACT_ALARMS -> standbyViewModel.openExactAlarmSettings()
-                    }
-                }
-
                 DockOrientation(dockVisible)
                 DockWindowMode(dockVisible)
                 BackHandler(enabled = dockVisible) { standbyViewModel.dismissDock() }
@@ -222,12 +190,24 @@ class MainActivity : ComponentActivity() {
                     else -> "dashboard"
                 }
 
+                val system = SystemSettings(
+                    screensaverSelected = screensaverSelected,
+                    openScreensaverSettings = { openScreensaverSettings(this@MainActivity) },
+                    openDisplaySettings = { openDisplaySettings(this@MainActivity) }
+                )
+                val navigation = Navigation(
+                    openTemplates = { page = "templates" },
+                    openFocus = { page = "focus" },
+                    openSetup = { page = "setup" },
+                    backToDashboard = { page = "dashboard" }
+                )
+
                 AnimatedContent(
                     targetState = targetState,
                     transitionSpec = {
-                        (fadeIn(animationSpec = tween(260)) + scaleIn(initialScale = 0.985f, animationSpec = tween(260)))
+                        (fadeIn(animationSpec = tween(AuraDockMotion.ScreenIn)) + scaleIn(initialScale = 0.985f, animationSpec = tween(AuraDockMotion.ScreenIn)))
                             .togetherWith(
-                                fadeOut(animationSpec = tween(200)) + scaleOut(targetScale = 0.99f, animationSpec = tween(200))
+                                fadeOut(animationSpec = tween(AuraDockMotion.ScreenOut)) + scaleOut(targetScale = 0.99f, animationSpec = tween(AuraDockMotion.ScreenOut))
                             )
                     },
                     label = "rootModeTransition"
@@ -245,78 +225,11 @@ class MainActivity : ComponentActivity() {
                             DockScreen(dockData = dockData, window = this@MainActivity.window)
                         }
 
-                        "onboarding" -> OnboardingScreen(
-                            template = currentTemplate,
-                            dockState = DockUiState(timeMillis, weather.usableAt(timeMillis), todayEvents.orEmpty(), tasks.orEmpty()),
-                            permissionGranted = permissionGranted,
-                            onAllowPermission = onAllowPermission,
-                            screensaverSelected = screensaverSelected,
-                            onOpenScreensaverSettings = { openScreensaverSettings(this@MainActivity) },
-                            onOpenDisplaySettings = { openDisplaySettings(this@MainActivity) },
-                            dockFromAnywhere = dockFromAnywhere,
-                            overlayGranted = overlayGranted,
-                            onToggleDockFromAnywhere = { standbyViewModel.setDockFromAnywhere(it) },
-                            onAllowOverlay = { standbyViewModel.openOverlaySettings() },
-                            onPickTemplate = { standbyViewModel.setTemplate(it) },
-                            onFinish = { standbyViewModel.finishOnboarding() }
-                        )
-
-                        "gallery" -> TemplateGalleryScreen(
-                            selected = currentTemplate,
-                            state = DockUiState(timeMillis, weather.usableAt(timeMillis), todayEvents.orEmpty(), tasks.orEmpty()),
-                            onApplyClick = {
-                                standbyViewModel.setTemplate(it)
-                                page = "dashboard"
-                            }
-                        )
-
-                        "setup" -> SetupScreen(
-                            permissionGranted = permissionGranted,
-                            onAllowPermission = onAllowPermission,
-                            screensaverSelected = screensaverSelected,
-                            onOpenScreensaverSettings = { openScreensaverSettings(this@MainActivity) },
-                            onOpenDisplaySettings = { openDisplaySettings(this@MainActivity) }
-                        )
-
-                        "focus" -> FocusSettingsScreen(
-                            focusWhileDocked = focusWhileDocked,
-                            hasDndAccess = dndAccessGranted,
-                            onToggleFocus = { standbyViewModel.setFocusWhileDocked(it) },
-                            onOpenDndSettings = { standbyViewModel.openDndAccessSettings() },
-                            hasNotificationAccess = hasNotificationAccess,
-                            onOpenNotificationAccess = { standbyViewModel.openNotificationSettings() },
-                            apps = apps,
-                            pickedApps = pickedApps,
-                            onToggleApp = { standbyViewModel.toggleApp(it) },
-                            showMessageText = showMessageText,
-                            onToggleMessageText = { standbyViewModel.setShowMessageText(it) },
-                            dockFromAnywhere = dockFromAnywhere,
-                            overlayGranted = overlayGranted,
-                            onToggleDockFromAnywhere = { standbyViewModel.setDockFromAnywhere(it) },
-                            onAllowOverlay = { standbyViewModel.openOverlaySettings() },
-                            loadIcon = { standbyViewModel.appIcon(it) }
-                        )
-
-                        else -> DashboardScreen(
-                            currentTemplate = currentTemplate,
-                            timeMillis = timeMillis,
-                            weather = weather.usableAt(timeMillis),
-                            locationPermissionState = locationPermissionState,
-                            onEnableWeather = { standbyViewModel.requestLocationPermission() },
-                            todayEvents = todayEvents,
-                            tasks = tasks,
-                            exactAlarmsAllowed = exactAlarmsAllowed,
-                            onAllowExactAlarms = { standbyViewModel.openExactAlarmSettings() },
-                            onSaveTask = { id, title, dueAt -> standbyViewModel.saveTask(id, title, dueAt) },
-                            onToggleTask = { standbyViewModel.setTaskDone(it, !it.done) },
-                            onDeleteTask = { standbyViewModel.deleteTask(it) },
-                            calendarPermissionState = calendarPermissionState,
-                            onOpenTemplates = { page = "templates" },
-                            onOpenFocus = { page = "focus" },
-                            onOpenSetup = { page = "setup" },
-                            onDockNow = { standbyViewModel.enterDock() },
-                            onEnableCalendarAccess = { standbyViewModel.requestCalendarPermission() }
-                        )
+                        "onboarding" -> OnboardingRoute(standbyViewModel, system)
+                        "gallery" -> TemplateGalleryRoute(standbyViewModel, navigation)
+                        "setup" -> SetupRoute(standbyViewModel, system)
+                        "focus" -> FocusSettingsRoute(standbyViewModel)
+                        else -> DashboardRoute(standbyViewModel, navigation)
                     }
                 }
             }

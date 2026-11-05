@@ -10,48 +10,56 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.auradock.ui.theme.AuraDockColors
+import com.auradock.ui.theme.AuraDockSpacing
 import com.auradock.ui.theme.AuraDockTypography
 
-/** Every permission with its current status, so ones skipped in the walkthrough can be allowed later. */
+/** What the Setup page shows. */
+data class SetupUiState(
+    /** The permissions that are currently allowed. */
+    val granted: Set<SetupPermission>,
+    val screensaverSelected: Boolean
+)
+
+/** What the user can do on the Setup page. */
+data class SetupActions(
+    val onAllowPermission: (SetupPermission) -> Unit = {},
+    val onOpenScreensaverSettings: () -> Unit = {},
+    val onOpenDisplaySettings: () -> Unit = {}
+)
+
+/** How docking works, and every permission with its current status, so ones skipped in the walkthrough can be allowed later. */
 @Composable
 fun SetupScreen(
-    permissionGranted: (SetupPermission) -> Boolean,
-    onAllowPermission: (SetupPermission) -> Unit,
-    screensaverSelected: Boolean,
-    onOpenScreensaverSettings: () -> Unit,
-    onOpenDisplaySettings: () -> Unit,
+    state: SetupUiState,
+    actions: SetupActions,
     modifier: Modifier = Modifier
 ) {
     Column(
         modifier = modifier
             .fillMaxSize()
-            .background(Color.Black)
+            .background(AuraDockColors.Background)
             .verticalScroll(rememberScrollState())
-            .padding(horizontal = 24.dp, vertical = 32.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
+            .padding(horizontal = AuraDockSpacing.lg, vertical = AuraDockSpacing.xl),
+        verticalArrangement = Arrangement.spacedBy(AuraDockSpacing.smd)
     ) {
-        Text(text = "Setup", color = Color.White, fontSize = 32.sp, fontWeight = FontWeight.SemiBold)
+        Text(text = "Setup", color = AuraDockColors.OnBackground, style = AuraDockTypography.ScreenTitle)
         Text(
             text = "Everything AuraDock can use. Each one is optional; the app works without it and just shows less.",
             style = AuraDockTypography.Caption,
             color = AuraDockColors.OnSurfaceVariant
         )
         DockExplainer(
-            screensaverSelected = screensaverSelected,
-            onChooseScreensaver = onOpenScreensaverSettings,
-            onSetScreenTimeout = onOpenDisplaySettings,
+            screensaverSelected = state.screensaverSelected,
+            onChooseScreensaver = actions.onOpenScreensaverSettings,
+            onSetScreenTimeout = actions.onOpenDisplaySettings,
             showTitle = false
         )
         SetupPermission.entries.forEach { permission ->
             PermissionCard(
                 permission = permission,
-                granted = permissionGranted(permission),
-                onAllow = { onAllowPermission(permission) }
+                granted = permission in state.granted,
+                onAllow = { actions.onAllowPermission(permission) }
             )
         }
     }

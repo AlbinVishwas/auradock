@@ -1,5 +1,8 @@
 package com.auradock.ui.tasks
 
+import com.auradock.ui.theme.AuraDockMotion
+import com.auradock.ui.theme.AuraDockSizes
+import com.auradock.ui.theme.AuraDockRadii
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
@@ -43,9 +46,6 @@ import com.auradock.ui.theme.AuraDockColors
 import com.auradock.ui.theme.AuraDockTypography
 import com.auradock.ui.theme.LocalAuraDockSpacing
 
-private val Overdue = Color(0xFFFFB300)
-private val DeleteRed = Color(0xFF8E2A2A)
-
 /**
  * The dashboard's "Today" task list: add, tick off (tap the circle), edit (tap the title), delete (swipe).
  *
@@ -66,9 +66,9 @@ fun TaskCard(
     val spacing = LocalAuraDockSpacing.current
     Surface(
         modifier = modifier,
-        shape = RoundedCornerShape(16.dp),
+        shape = RoundedCornerShape(AuraDockRadii.card),
         color = AuraDockColors.Surface,
-        tonalElevation = 0.dp
+        tonalElevation = AuraDockSizes.none
     ) {
         Column(modifier = Modifier.padding(spacing.md)) {
             Row(
@@ -124,6 +124,7 @@ private fun TaskRow(
     onToggle: () -> Unit,
     onDelete: () -> Unit
 ) {
+    val spacing = LocalAuraDockSpacing.current
     val dismissState = rememberSwipeToDismissBoxState(
         confirmValueChange = { value ->
             if (value == SwipeToDismissBoxValue.EndToStart) {
@@ -144,12 +145,12 @@ private fun TaskRow(
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
-                        .clip(RoundedCornerShape(12.dp))
-                        .background(DeleteRed)
-                        .padding(end = 20.dp),
+                        .clip(RoundedCornerShape(AuraDockRadii.control))
+                        .background(AuraDockColors.Danger)
+                        .padding(end = spacing.mdl),
                     contentAlignment = Alignment.CenterEnd
                 ) {
-                    Text(text = "Delete", color = Color.White, style = AuraDockTypography.WidgetLabel)
+                    Text(text = "Delete", color = AuraDockColors.OnBackground, style = AuraDockTypography.WidgetLabel)
                 }
             }
         }
@@ -158,29 +159,29 @@ private fun TaskRow(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .clip(RoundedCornerShape(12.dp))
+                .clip(RoundedCornerShape(AuraDockRadii.control))
                 .background(AuraDockColors.Surface) // opaque base so nothing shows through when swiping
-                .background(if (highlight) Overdue.copy(alpha = 0.14f) else Color.Transparent)
-                .padding(start = 2.dp, end = 12.dp),
+                .background(if (highlight) AuraDockColors.Overdue.copy(alpha = 0.14f) else Color.Transparent)
+                .padding(start = spacing.xxs, end = spacing.smd),
             verticalAlignment = Alignment.CenterVertically
         ) {
             CheckCircle(done = task.done, highlight = highlight, onClick = onToggle)
-            Spacer(Modifier.width(4.dp))
+            Spacer(Modifier.width(spacing.xs))
             StrikeText(
                 text = task.title,
                 struck = task.done,
                 modifier = Modifier
                     .weight(1f, fill = false)
                     .clickable(onClick = onEdit)
-                    .padding(vertical = 12.dp)
+                    .padding(vertical = spacing.smd)
             )
             Spacer(Modifier.weight(0.01f))
             if (dueLabel != null) {
-                Spacer(Modifier.width(12.dp))
+                Spacer(Modifier.width(spacing.smd))
                 Text(
                     text = dueLabel,
                     style = AuraDockTypography.Caption,
-                    color = if (highlight) Overdue else AuraDockColors.OnSurfaceVariant
+                    color = if (highlight) AuraDockColors.Overdue else AuraDockColors.OnSurfaceVariant
                 )
             }
         }
@@ -192,38 +193,38 @@ private fun TaskRow(
 private fun CheckCircle(done: Boolean, highlight: Boolean, onClick: () -> Unit) {
     val fill by animateColorAsState(
         targetValue = if (done) AuraDockColors.AccentBlue else Color.Transparent,
-        animationSpec = tween(220),
+        animationSpec = AuraDockMotion.tween(AuraDockMotion.Check),
         label = "checkFill"
     )
-    val tick by animateFloatAsState(if (done) 1f else 0f, tween(220), label = "checkTick")
+    val tick by animateFloatAsState(if (done) 1f else 0f, AuraDockMotion.tween(AuraDockMotion.Check), label = "checkTick")
     val ring = when {
         done -> AuraDockColors.AccentBlue
-        highlight -> Overdue
+        highlight -> AuraDockColors.Overdue
         else -> AuraDockColors.OnSurfaceVariant
     }
     Box(
         modifier = Modifier
-            .size(44.dp)
+            .size(AuraDockSizes.touchTarget)
             .clip(CircleShape)
             .clickable(onClick = onClick),
         contentAlignment = Alignment.Center
     ) {
         Box(
             modifier = Modifier
-                .size(24.dp)
+                .size(AuraDockSizes.icon)
                 .clip(CircleShape)
                 .background(fill)
-                .border(2.dp, ring, CircleShape)
+                .border(AuraDockSizes.lineThick, ring, CircleShape)
                 .drawWithContent {
                     drawContent()
                     if (tick > 0f) {
                         val w = size.width
                         val h = size.height
-                        val stroke = 2.dp.toPx()
+                        val stroke = AuraDockSizes.lineThick.toPx()
                         val a = Offset(w * 0.28f, h * 0.52f)
                         val b = Offset(w * 0.44f, h * 0.68f)
                         val c = Offset(w * 0.74f, h * 0.34f)
-                        val color = Color.White.copy(alpha = tick)
+                        val color = AuraDockColors.OnBackground.copy(alpha = tick)
                         drawLine(color, a, b, stroke, StrokeCap.Round)
                         drawLine(color, b, c, stroke, StrokeCap.Round)
                     }
@@ -235,12 +236,12 @@ private fun CheckCircle(done: Boolean, highlight: Boolean, onClick: () -> Unit) 
 /** Task title; when [struck] a line draws across it left to right and the text fades a little. */
 @Composable
 private fun StrikeText(text: String, struck: Boolean, modifier: Modifier = Modifier) {
-    val progress by animateFloatAsState(if (struck) 1f else 0f, tween(280), label = "strike")
-    val alpha by animateFloatAsState(if (struck) 0.5f else 1f, tween(280), label = "strikeFade")
+    val progress by animateFloatAsState(if (struck) 1f else 0f, AuraDockMotion.tween(AuraDockMotion.Strike), label = "strike")
+    val alpha by animateFloatAsState(if (struck) 0.5f else 1f, AuraDockMotion.tween(AuraDockMotion.Strike), label = "strikeFade")
     Text(
         text = text,
         style = AuraDockTypography.WidgetLabel,
-        color = Color.White.copy(alpha = alpha),
+        color = AuraDockColors.OnBackground.copy(alpha = alpha),
         maxLines = 2,
         overflow = TextOverflow.Ellipsis,
         modifier = modifier.drawWithContent {
@@ -248,10 +249,10 @@ private fun StrikeText(text: String, struck: Boolean, modifier: Modifier = Modif
             if (progress > 0f) {
                 val y = size.height / 2f
                 drawLine(
-                    color = Color.White.copy(alpha = 0.55f),
+                    color = AuraDockColors.OnBackground.copy(alpha = 0.55f),
                     start = Offset(0f, y),
                     end = Offset(size.width * progress, y),
-                    strokeWidth = 1.5.dp.toPx()
+                    strokeWidth = AuraDockSizes.strikeLine.toPx()
                 )
             }
         }

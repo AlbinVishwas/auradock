@@ -1,5 +1,6 @@
 package com.auradock.dock
 
+import com.auradock.ui.theme.AuraDockMotion
 import android.util.Log
 import android.view.Window
 import android.view.WindowManager
@@ -48,7 +49,7 @@ fun DockScreen(dockData: DockData, window: Window?, modifier: Modifier = Modifie
     var visible by remember { mutableStateOf(false) }
     LaunchedEffect(Unit) { visible = true }
 
-    AnimatedVisibility(visible = visible, enter = fadeIn(animationSpec = tween(320))) {
+    AnimatedVisibility(visible = visible, enter = fadeIn(animationSpec = tween(AuraDockMotion.DockFade))) {
         BurnInProtection(modifier = modifier) { drift ->
             DockContent(
                 template = template,

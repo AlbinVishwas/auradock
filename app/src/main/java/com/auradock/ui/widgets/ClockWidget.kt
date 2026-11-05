@@ -1,5 +1,7 @@
 package com.auradock.ui.widgets
 
+import com.auradock.ui.theme.AuraDockMotion
+import com.auradock.ui.theme.AuraDockSizes
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Text
@@ -26,7 +28,7 @@ import java.util.*
  *
  * | Layer | Technique | Purpose |
  * |-------|-----------|---------|
- * | Ghost glow | `Modifier.blur(18.dp)` on a duplicate `Text` | Soft ambient halo around digits |
+ * | Ghost glow | `Modifier.blur(AuraDockSizes.blurGlow)` on a duplicate `Text` | Soft ambient halo around digits |
  * | Colon blink | `infiniteRepeatable` step-function alpha | Rhythmic clock feel, 1 s period |
  * | Minute crossfade | `animateFloatAsState` 0→1 on minute change | Smooth digit swap without jitter |
  *
@@ -50,9 +52,9 @@ fun ClockWidget(
     showDate   : Boolean = true,
     modifier   : Modifier = Modifier
 ) {
-    val digitColor = if (dimmed) DimDigits else Color.White
-    val colonColor = if (dimmed) DimColon else AuraDockColors.ClockGlow
-    val labelColor = if (dimmed) DimLabel else AuraDockColors.OnSurfaceVariant
+    val digitColor = if (dimmed) AuraDockColors.DimDigits else AuraDockColors.OnBackground
+    val colonColor = if (dimmed) AuraDockColors.DimColon else AuraDockColors.ClockGlow
+    val labelColor = if (dimmed) AuraDockColors.DimLabel else AuraDockColors.OnSurfaceVariant
     // ── Time components (recomputed only when millis cross a minute boundary) ─
     val calendar = remember(timeMillis) {
         Calendar.getInstance().apply { timeInMillis = timeMillis }
@@ -76,7 +78,7 @@ fun ClockWidget(
         initialValue  = 0.85f,
         targetValue   = 0.25f,
         animationSpec = infiniteRepeatable(
-            animation  = tween(durationMillis = 500, easing = StepEasing),
+            animation  = tween(durationMillis = AuraDockMotion.ColonBlink, easing = StepEasing),
             repeatMode = RepeatMode.Reverse
         ),
         label = "colonAlpha"
@@ -99,7 +101,7 @@ fun ClockWidget(
 
     val minuteAlpha by animateFloatAsState(
         targetValue   = minuteAlphaTarget,
-        animationSpec = tween(durationMillis = 350, easing = FastOutSlowInEasing),
+        animationSpec = tween(durationMillis = AuraDockMotion.MinuteSwap, easing = AuraDockMotion.Easing),
         label         = "minuteFade"
     )
 
@@ -107,7 +109,7 @@ fun ClockWidget(
         initialValue = 0.28f,
         targetValue = 0.42f,
         animationSpec = infiniteRepeatable(
-            animation = tween(durationMillis = 5200, easing = FastOutSlowInEasing),
+            animation = tween(durationMillis = AuraDockMotion.ClockDrift, easing = AuraDockMotion.Easing),
             repeatMode = RepeatMode.Reverse
         ),
         label = "glowBreathAlpha"
@@ -135,7 +137,7 @@ fun ClockWidget(
                                 alpha = glowBreath * minuteAlpha
                             )
                         ),
-                        modifier = Modifier.blur(20.dp)
+                        modifier = Modifier.blur(AuraDockSizes.blurGlow)
                     )
                 }
 
@@ -154,7 +156,7 @@ fun ClockWidget(
                         style = AuraDockTypography.ClockDisplay.copy(
                             color = colonColor.copy(alpha = colonAlpha)
                         ),
-                        modifier = Modifier.padding(horizontal = 2.dp)
+                        modifier = Modifier.padding(horizontal = AuraDockSpacing.xxs)
                     )
 
                     // Minute — fades in on each tick
@@ -170,14 +172,10 @@ fun ClockWidget(
                         Spacer(Modifier.width(AuraDockSpacing.sm))
                         Text(
                             text  = amPmStr,
-                            style = AuraDockTypography.Caption.copy(
-                                color      = labelColor,
-                                fontSize   = 18.sp,
-                                fontWeight = FontWeight.Light
-                            ),
+                            style = AuraDockTypography.ClockMeridiem.copy(color = labelColor),
                             modifier = Modifier
                                 .align(Alignment.Bottom)
-                                .padding(bottom = 16.dp)
+                                .padding(bottom = AuraDockSpacing.md)
                         )
                     }
                 }
@@ -187,12 +185,7 @@ fun ClockWidget(
             if (showDate) {
                 Text(
                     text  = dateStr,
-                    style = AuraDockTypography.WidgetLabel.copy(
-                        color         = labelColor,
-                        letterSpacing = 2.sp,
-                        fontWeight    = FontWeight.Light,
-                        fontSize      = 13.sp
-                    )
+                    style = AuraDockTypography.ClockCaption.copy(color = labelColor)
                 )
             }
         }
@@ -203,10 +196,5 @@ fun ClockWidget(
 // Private easing — step function for colon blink (no interpolation between
 // visible and invisible; mimics physical clock colon behaviour).
 // ─────────────────────────────────────────────────────────────────────────────
-
-// Dimmed (OLED night) palette: nothing is pure white.
-private val DimDigits = Color(0xFF8A8A8A)
-private val DimColon = Color(0xFF55616A)
-private val DimLabel = Color(0xFF666666)
 
 private val StepEasing = Easing { fraction -> if (fraction < 1f) 0f else 1f }

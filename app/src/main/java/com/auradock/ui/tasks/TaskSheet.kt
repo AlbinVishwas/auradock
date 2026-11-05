@@ -1,5 +1,6 @@
 package com.auradock.ui.tasks
 
+import com.auradock.ui.theme.AuraDockSpacing
 import android.text.format.DateFormat
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -82,21 +83,21 @@ fun TaskSheet(
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
-        containerColor = Color(0xFF141414),
-        contentColor = Color.White
+        containerColor = AuraDockColors.SurfaceRaised,
+        contentColor = AuraDockColors.OnBackground
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 24.dp)
+                .padding(horizontal = AuraDockSpacing.lg)
                 .navigationBarsPadding()
-                .padding(bottom = 24.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+                .padding(bottom = AuraDockSpacing.lg),
+            verticalArrangement = Arrangement.spacedBy(AuraDockSpacing.md)
         ) {
             Text(
                 text = if (task == null) "New task" else "Edit task",
                 style = AuraDockTypography.WidgetPrimary,
-                color = Color.White
+                color = AuraDockColors.OnBackground
             )
             OutlinedTextField(
                 value = title,
@@ -109,7 +110,7 @@ fun TaskSheet(
                     .fillMaxWidth()
                     .focusRequester(focus)
             )
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            Row(horizontalArrangement = Arrangement.spacedBy(AuraDockSpacing.sm)) {
                 FilterChip(
                     selected = !hasTime,
                     onClick = { hasTime = false },
@@ -133,7 +134,7 @@ fun TaskSheet(
                     QuickActionButton(text = "Allow exact alarms", onClick = onAllowExactAlarms)
                 }
             }
-            Spacer(Modifier.height(4.dp))
+            Spacer(Modifier.height(AuraDockSpacing.xs))
             QuickActionButton(
                 text = if (task == null) "Add task" else "Save",
                 onClick = { if (canSave) save() },

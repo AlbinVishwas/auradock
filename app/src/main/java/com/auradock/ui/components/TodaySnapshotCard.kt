@@ -1,5 +1,7 @@
 package com.auradock.ui.components
 
+import com.auradock.ui.theme.AuraDockSizes
+import com.auradock.ui.theme.AuraDockRadii
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
@@ -9,7 +11,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
+import com.auradock.ui.preview.PreviewComponent
 import androidx.compose.ui.unit.dp
 import com.auradock.ui.theme.AuraDockColors
 import com.auradock.ui.theme.AuraDockTheme
@@ -29,9 +31,9 @@ fun TodaySnapshotCard(
 
     Surface(
         modifier = modifier,
-        shape = RoundedCornerShape(16.dp),
+        shape = RoundedCornerShape(AuraDockRadii.card),
         color = AuraDockColors.Surface,
-        tonalElevation = 0.dp
+        tonalElevation = AuraDockSizes.none
     ) {
         Column(modifier = Modifier.padding(spacing.md)) {
             Text(
@@ -66,7 +68,7 @@ fun TodaySnapshotCard(
     }
 }
 
-@Preview(showBackground = true, backgroundColor = 0xFF000000)
+@PreviewComponent
 @Composable
 private fun TodaySnapshotCardPreview() {
     AuraDockTheme {
@@ -79,7 +81,7 @@ private fun TodaySnapshotCardPreview() {
     }
 }
 
-@Preview(showBackground = true, backgroundColor = 0xFF000000)
+@PreviewComponent
 @Composable
 private fun TodaySnapshotCardEmptyPreview() {
     AuraDockTheme {

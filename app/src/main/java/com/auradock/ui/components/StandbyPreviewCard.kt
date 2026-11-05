@@ -1,5 +1,7 @@
 package com.auradock.ui.components
 
+import com.auradock.ui.theme.AuraDockSizes
+import com.auradock.ui.theme.AuraDockRadii
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
@@ -9,7 +11,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.tooling.preview.Preview
+import com.auradock.ui.preview.PreviewComponent
 import androidx.compose.ui.unit.dp
 import com.auradock.ui.theme.AuraDockColors
 import com.auradock.ui.theme.AuraDockTheme
@@ -25,16 +27,16 @@ fun StandbyPreviewCard(
     modifier: Modifier = Modifier,
     content: @Composable BoxScope.() -> Unit
 ) {
-    val shape = RoundedCornerShape(28.dp)
+    val shape = RoundedCornerShape(AuraDockRadii.widget)
     val selectionModifier = if (selected) {
         Modifier
             .shadow(
-                elevation = 16.dp,
+                elevation = AuraDockSizes.elevationCard,
                 shape = shape,
                 ambientColor = AuraDockColors.AccentBlue,
                 spotColor = AuraDockColors.AccentBlue
             )
-            .border(width = 1.dp, color = AuraDockColors.AccentBlue, shape = shape)
+            .border(width = AuraDockSizes.line, color = AuraDockColors.AccentBlue, shape = shape)
     } else {
         Modifier
     }
@@ -75,7 +77,7 @@ fun ScaledPreview(
     }
 }
 
-@Preview(showBackground = true, backgroundColor = 0xFF000000)
+@PreviewComponent
 @Composable
 private fun StandbyPreviewCardPreview() {
     AuraDockTheme {

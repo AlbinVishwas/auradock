@@ -5,3 +5,13 @@
 The locked V1 spec is in [docs/V1_SPEC.md](docs/V1_SPEC.md). Read it before starting feature work.
 Anything under its "Out of V1" heading (AI layouts, voice, widget customization, recurring tasks,
 Quick Settings tile, Play Store release) is not to be built or extended in V1.
+
+## Implementing designs
+Any work that changes how a screen looks (including a Claude Design handoff) follows [docs/DESIGN.md](docs/DESIGN.md). In short:
+- A handoff in `docs/design/handoff/` is an HTML **reference**, not code to copy. Implement it in Jetpack Compose with the tokens in
+  `ui/theme/` (`Color.kt`, `Type.kt`, `Dimens.kt`, `Motion.kt`). Never add a WebView or HTML to the app.
+- No colour, font, size, spacing or duration literals outside `ui/theme/`. If a design needs one that has no token, or conflicts with
+  the tokens, ask the owner before adding it.
+- Restyle only the stateless `XScreen` composables; their ViewModel wiring is in `ui/routes/Routes.kt` and stays untouched.
+- Keep the `@Preview`s (full, empty, permission-missing) up to date.
+

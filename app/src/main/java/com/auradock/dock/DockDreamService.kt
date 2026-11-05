@@ -1,5 +1,6 @@
 package com.auradock.dock
 
+import com.auradock.ui.theme.AuraDockColors
 import android.content.res.Configuration
 import android.graphics.Color as AndroidColor
 import android.graphics.drawable.ColorDrawable
@@ -125,7 +126,7 @@ class DockDreamService : DreamService(), LifecycleOwner, SavedStateRegistryOwner
                 AuraDockTheme {
                     val shown = shownOrientation
                     if (shown == null) {
-                        Box(Modifier.fillMaxSize().background(Color.Black)) // waiting for the sensor
+                        Box(Modifier.fillMaxSize().background(AuraDockColors.Background)) // waiting for the sensor
                     } else {
                         RotatedContent(contentRotationDegrees(shown, displayRotationDegrees)) {
                             DockScreen(dockData = dockData, window = window)

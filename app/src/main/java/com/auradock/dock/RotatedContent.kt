@@ -1,5 +1,6 @@
 package com.auradock.dock
 
+import com.auradock.ui.theme.AuraDockColors
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -23,7 +24,7 @@ import androidx.compose.ui.unit.min
  */
 @Composable
 fun RotatedContent(degrees: Int, content: @Composable () -> Unit) {
-    BoxWithConstraints(Modifier.fillMaxSize().background(Color.Black)) {
+    BoxWithConstraints(Modifier.fillMaxSize().background(AuraDockColors.Background)) {
         val longSide = max(maxWidth, maxHeight)
         val shortSide = min(maxWidth, maxHeight)
         Box(

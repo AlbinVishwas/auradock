@@ -1,5 +1,8 @@
 package com.auradock.ui.screens
 
+import com.auradock.ui.theme.AuraDockTypography
+import com.auradock.ui.theme.AuraDockRadii
+import com.auradock.ui.theme.AuraDockGallery
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -19,14 +22,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.auradock.dock.DockContent
 import com.auradock.dock.DockTemplate
 import com.auradock.dock.DockUiState
@@ -35,19 +33,25 @@ import com.auradock.ui.components.GlassCard
 import com.auradock.ui.components.QuickActionButton
 import com.auradock.ui.theme.AuraDockColors
 import com.auradock.ui.theme.AuraDockSpacing
-import com.auradock.ui.theme.AuraDockTheme
 import kotlin.math.abs
 
-/** Pick one of the available dock templates. [selected] is the one currently in use. */
+/** What the gallery shows: which template is in use, the data every thumbnail is drawn with, and the templates to pick from. */
+data class TemplateGalleryUiState(
+    val selected: DockTemplate,
+    val dockState: DockUiState,
+    val templates: List<DockTemplate> = DockTemplate.available
+)
+
+/** Pick one of the available dock templates. Stateless apart from which page the pager is on. */
 @Composable
 @OptIn(ExperimentalFoundationApi::class)
 fun TemplateGalleryScreen(
-    selected: DockTemplate,
-    state: DockUiState,
-    modifier: Modifier = Modifier,
-    templates: List<DockTemplate> = DockTemplate.available,
-    onApplyClick: (DockTemplate) -> Unit = {}
+    state: TemplateGalleryUiState,
+    onApply: (DockTemplate) -> Unit,
+    modifier: Modifier = Modifier
 ) {
+    val selected = state.selected
+    val templates = state.templates
     val pagerState = rememberPagerState(
         initialPage = templates.indexOf(selected).coerceAtLeast(0),
         pageCount = { templates.size }
@@ -58,15 +62,14 @@ fun TemplateGalleryScreen(
     Column(
         modifier = modifier
             .fillMaxSize()
-            .background(Color.Black)
+            .background(AuraDockColors.Background)
             .padding(horizontal = AuraDockSpacing.lg, vertical = AuraDockSpacing.xl),
         verticalArrangement = Arrangement.spacedBy(AuraDockSpacing.lg)
     ) {
         Text(
             text = "Templates",
-            color = Color.White,
-            fontSize = 32.sp,
-            fontWeight = FontWeight.SemiBold
+            color = AuraDockColors.OnBackground,
+            style = AuraDockTypography.ScreenTitle
         )
 
         Box(
@@ -77,8 +80,8 @@ fun TemplateGalleryScreen(
         ) {
             HorizontalPager(
                 state = pagerState,
-                contentPadding = PaddingValues(horizontal = 64.dp),
-                pageSpacing = 16.dp,
+                contentPadding = PaddingValues(horizontal = AuraDockGallery.pageInset),
+                pageSpacing = AuraDockSpacing.md,
                 modifier = Modifier.fillMaxWidth()
             ) { page ->
                 val pageOffset = (
@@ -89,7 +92,7 @@ fun TemplateGalleryScreen(
 
                 TemplateCard(
                     template = templates[page],
-                    state = state,
+                    state = state.dockState,
                     inUse = templates[page] == selected,
                     modifier = Modifier.graphicsLayer {
                         scaleX = scale
@@ -105,7 +108,7 @@ fun TemplateGalleryScreen(
             text = if (shown == selected) "In use" else "Use ${shown.label}",
             onClick = {
                 haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                onApplyClick(shown)
+                onApply(shown)
             },
             modifier = Modifier.fillMaxWidth(),
             isActive = shown != selected
@@ -124,8 +127,8 @@ private fun TemplateCard(
         modifier = modifier
             .fillMaxWidth()
             .aspectRatio(0.72f),
-        cornerRadius = 24.dp,
-        padding = 18.dp
+        cornerRadius = AuraDockRadii.cardLarge,
+        padding = AuraDockGallery.cardPadding
     ) {
         Column(
             modifier = Modifier.fillMaxSize(),
@@ -142,9 +145,9 @@ private fun TemplateCard(
                     modifier = Modifier
                         .fillMaxWidth()
                         .aspectRatio(16f / 9f)
-                        .clip(RoundedCornerShape(16.dp))
+                        .clip(RoundedCornerShape(AuraDockRadii.card))
                 ) {
-                    ScaledPreview(designWidth = 800.dp) {
+                    ScaledPreview(designWidth = AuraDockGallery.previewDesignWidth) {
                         DockContent(template = template, state = state)
                     }
                 }
@@ -153,27 +156,18 @@ private fun TemplateCard(
             Row(horizontalArrangement = Arrangement.spacedBy(AuraDockSpacing.sm)) {
                 Text(
                     text = template.label,
-                    color = Color.White,
-                    fontSize = 18.sp,
-                    fontWeight = if (inUse) FontWeight.SemiBold else FontWeight.Medium
+                    color = AuraDockColors.OnBackground,
+                    style = if (inUse) AuraDockTypography.TitleStrong else AuraDockTypography.Title
                 )
                 if (inUse) {
-                    Text(text = "· in use", color = AuraDockColors.ClockGlow, fontSize = 14.sp)
+                    Text(text = "· in use", color = AuraDockColors.ClockGlow, style = AuraDockTypography.WidgetLabel)
                 }
             }
             Text(
                 text = template.description,
                 color = AuraDockColors.OnSurfaceVariant,
-                fontSize = 14.sp
+                style = AuraDockTypography.WidgetLabel
             )
         }
-    }
-}
-
-@Preview(showBackground = true, backgroundColor = 0xFF000000)
-@Composable
-private fun TemplateGalleryScreenPreview() {
-    AuraDockTheme {
-        TemplateGalleryScreen(selected = DockTemplate.CLASSIC, state = DockUiState(System.currentTimeMillis()))
     }
 }

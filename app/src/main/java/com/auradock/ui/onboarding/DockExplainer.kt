@@ -1,5 +1,9 @@
 package com.auradock.ui.onboarding
 
+import com.auradock.ui.theme.AuraDockRadii
+import com.auradock.ui.theme.AuraDockIllustration
+import com.auradock.ui.theme.AuraDockSpacing
+import com.auradock.ui.theme.AuraDockMotion
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.LinearEasing
@@ -22,20 +26,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.auradock.ui.components.QuickActionButton
 import com.auradock.ui.theme.AuraDockColors
 import com.auradock.ui.theme.AuraDockTypography
 import kotlinx.coroutines.delay
-
-private val Coral = Color(0xFFFF6B5E)
-private const val FRAME_MS = 2200L
 
 private val CAPTIONS = listOf("Place it sideways on a charger", "The screen times out", "AuraDock appears")
 
@@ -50,58 +48,58 @@ fun DockAnimation(modifier: Modifier = Modifier) {
     LaunchedEffect(Unit) {
         while (true) {
             ring.snapTo(0f)
-            if (frame == 1) ring.animateTo(1f, tween(FRAME_MS.toInt(), easing = LinearEasing))
-            else delay(FRAME_MS)
+            if (frame == 1) ring.animateTo(1f, tween(AuraDockMotion.IllustrationFrame, easing = LinearEasing))
+            else delay(AuraDockMotion.IllustrationFrame.toLong())
             frame = (frame + 1) % 3
         }
     }
-    Column(modifier = modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        Box(Modifier.fillMaxWidth().height(150.dp), contentAlignment = Alignment.Center) {
-            Crossfade(targetState = frame, animationSpec = tween(400), label = "dockFrame") { shown ->
-                Box(Modifier.fillMaxWidth().height(150.dp), contentAlignment = Alignment.Center) {
-                    Canvas(Modifier.fillMaxWidth().height(150.dp)) { drawFrame(shown, ring.value) }
-                    if (shown == 2) Text("10:42", color = Color.White, fontSize = 28.sp, fontWeight = FontWeight.Light)
+    Column(modifier = modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(AuraDockSpacing.sm)) {
+        Box(Modifier.fillMaxWidth().height(AuraDockIllustration.height), contentAlignment = Alignment.Center) {
+            Crossfade(targetState = frame, animationSpec = tween(AuraDockMotion.Slow), label = "dockFrame") { shown ->
+                Box(Modifier.fillMaxWidth().height(AuraDockIllustration.height), contentAlignment = Alignment.Center) {
+                    Canvas(Modifier.fillMaxWidth().height(AuraDockIllustration.height)) { drawFrame(shown, ring.value) }
+                    if (shown == 2) Text("10:42", color = AuraDockColors.OnBackground, style = AuraDockTypography.IllustrationClock)
                 }
             }
         }
-        Crossfade(targetState = frame, animationSpec = tween(400), label = "dockCaption") {
+        Crossfade(targetState = frame, animationSpec = tween(AuraDockMotion.Slow), label = "dockCaption") {
             Text(CAPTIONS[it], style = AuraDockTypography.Caption, color = AuraDockColors.OnSurfaceVariant)
         }
     }
 }
 
 private fun DrawScope.drawFrame(frame: Int, ringProgress: Float) {
-    val phoneW = 200.dp.toPx()
-    val phoneH = 96.dp.toPx()
+    val phoneW = AuraDockIllustration.phoneWidth.toPx()
+    val phoneH = AuraDockIllustration.phoneHeight.toPx()
     val left = (size.width - phoneW) / 2
-    val top = 18.dp.toPx()
-    val radius = CornerRadius(14.dp.toPx())
+    val top = AuraDockIllustration.top.toPx()
+    val radius = CornerRadius(AuraDockIllustration.phoneRadius.toPx())
 
     // The stand: a small foot and a lip the phone rests on.
-    val standY = top + phoneH + 4.dp.toPx()
-    drawRoundRect(Color(0xFF444444), Offset(left + phoneW * 0.25f, standY), Size(phoneW * 0.5f, 8.dp.toPx()), CornerRadius(4.dp.toPx()))
-    drawRoundRect(Color(0xFF444444), Offset(left + phoneW * 0.35f, standY - 8.dp.toPx()), Size(phoneW * 0.3f, 8.dp.toPx()))
+    val standY = top + phoneH + AuraDockIllustration.standGap.toPx()
+    drawRoundRect(AuraDockColors.IllustrationStand, Offset(left + phoneW * 0.25f, standY), Size(phoneW * 0.5f, AuraDockIllustration.standHeight.toPx()), CornerRadius(AuraDockIllustration.standCorner.toPx()))
+    drawRoundRect(AuraDockColors.IllustrationStand, Offset(left + phoneW * 0.35f, standY - AuraDockIllustration.standHeight.toPx()), Size(phoneW * 0.3f, AuraDockIllustration.standHeight.toPx()))
 
     // The phone, sideways.
-    drawRoundRect(Color(0xFF2A2A2A), Offset(left, top), Size(phoneW, phoneH), radius)
-    val screenTopLeft = Offset(left + 4.dp.toPx(), top + 4.dp.toPx())
-    val screenSize = Size(phoneW - 8.dp.toPx(), phoneH - 8.dp.toPx())
-    val screenRadius = CornerRadius(10.dp.toPx())
+    drawRoundRect(AuraDockColors.IllustrationPhone, Offset(left, top), Size(phoneW, phoneH), radius)
+    val screenTopLeft = Offset(left + AuraDockIllustration.bezel.toPx(), top + AuraDockIllustration.bezel.toPx())
+    val screenSize = Size(phoneW - 2 * AuraDockIllustration.bezel.toPx(), phoneH - 2 * AuraDockIllustration.bezel.toPx())
+    val screenRadius = CornerRadius(AuraDockIllustration.screenRadius.toPx())
     when (frame) {
         0 -> { // an ordinary app, bright
-            drawRoundRect(Color(0xFF3A4A5A), screenTopLeft, screenSize, screenRadius)
+            drawRoundRect(AuraDockColors.IllustrationApp, screenTopLeft, screenSize, screenRadius)
             for (i in 0..2) {
-                drawRoundRect(Color(0x66FFFFFF), Offset(screenTopLeft.x + 14.dp.toPx(), screenTopLeft.y + (14 + i * 18).dp.toPx()), Size((110 - i * 25).dp.toPx(), 8.dp.toPx()), CornerRadius(4.dp.toPx()))
+                drawRoundRect(AuraDockColors.IllustrationAppLine, Offset(screenTopLeft.x + AuraDockIllustration.appLineInset.toPx(), screenTopLeft.y + (AuraDockIllustration.appLineInset + AuraDockIllustration.appLineStep * i).toPx()), Size((AuraDockIllustration.appLineWidth - AuraDockIllustration.appLineShrink * i).toPx(), AuraDockIllustration.appLineHeight.toPx()), CornerRadius(AuraDockIllustration.standCorner.toPx()))
             }
         }
         1 -> { // dimming, with the timer ring
-            drawRoundRect(Color(0xFF151A20), screenTopLeft, screenSize, screenRadius)
-            val ringSize = 40.dp.toPx()
+            drawRoundRect(AuraDockColors.IllustrationDimScreen, screenTopLeft, screenSize, screenRadius)
+            val ringSize = AuraDockIllustration.ring.toPx()
             val ringTopLeft = Offset(size.width / 2 - ringSize / 2, top + phoneH / 2 - ringSize / 2)
-            drawArc(Color(0x33FFFFFF), 0f, 360f, false, ringTopLeft, Size(ringSize, ringSize), style = Stroke(3.dp.toPx()))
-            drawArc(Coral, -90f, 360f * ringProgress, false, ringTopLeft, Size(ringSize, ringSize), style = Stroke(3.dp.toPx(), cap = StrokeCap.Round))
+            drawArc(AuraDockColors.IllustrationRingTrack, 0f, 360f, false, ringTopLeft, Size(ringSize, ringSize), style = Stroke(AuraDockIllustration.ringStroke.toPx()))
+            drawArc(AuraDockColors.Coral, -90f, 360f * ringProgress, false, ringTopLeft, Size(ringSize, ringSize), style = Stroke(AuraDockIllustration.ringStroke.toPx(), cap = StrokeCap.Round))
         }
-        else -> drawRoundRect(Color.Black, screenTopLeft, screenSize, screenRadius) // the dock; the clock is drawn on top
+        else -> drawRoundRect(AuraDockColors.Background, screenTopLeft, screenSize, screenRadius) // the dock; the clock is drawn on top
     }
 }
 
@@ -117,16 +115,15 @@ fun DockExplainer(
     modifier: Modifier = Modifier,
     showTitle: Boolean = true
 ) {
-    Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(16.dp)) {
+    Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(AuraDockSpacing.md)) {
         if (showTitle) {
-            Text("Dock it, and AuraDock appears", color = Color.White, fontSize = 30.sp, lineHeight = 36.sp, fontWeight = FontWeight.SemiBold)
+            Text("Dock it, and AuraDock appears", color = AuraDockColors.OnBackground, style = AuraDockTypography.ScreenTitle)
         }
         Text(
             text = "Place your phone sideways on a charger. When the screen times out, AuraDock takes over automatically. " +
                 "Upright or lying flat? It stays out of the way.",
-            color = AuraDockColors.OnSurfaceVariant,
-            fontSize = 17.sp,
-            lineHeight = 24.sp
+            style = AuraDockTypography.Body,
+            color = AuraDockColors.OnSurfaceVariant
         )
         DockAnimation()
         QuickActionButton(

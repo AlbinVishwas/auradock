@@ -1,5 +1,6 @@
 package com.auradock.ui.weather
 
+import com.auradock.ui.theme.AuraDockSizes
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
@@ -22,7 +23,7 @@ import kotlin.math.sin
  * the dock. Thin strokes also keep it burn-in friendly.
  */
 @Composable
-fun WeatherIcon(kind: WeatherIconKind, color: Color, size: Dp = 32.dp, modifier: Modifier = Modifier) {
+fun WeatherIcon(kind: WeatherIconKind, color: Color, size: Dp = AuraDockSizes.weatherIcon, modifier: Modifier = Modifier) {
     Canvas(modifier.size(size)) {
         val s = this.size.minDimension
         val stroke = Stroke(width = s * 0.07f, cap = StrokeCap.Round)
