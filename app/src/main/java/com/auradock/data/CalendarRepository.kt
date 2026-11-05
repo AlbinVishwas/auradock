@@ -3,7 +3,10 @@ package com.auradock.data
 import android.Manifest
 import android.content.ContentUris
 import android.content.Context
+import android.database.ContentObserver
 import android.content.pm.PackageManager
+import android.os.Handler
+import android.os.Looper
 import android.provider.CalendarContract
 import android.util.Log
 import androidx.core.content.ContextCompat
@@ -12,9 +15,11 @@ import java.time.LocalDate
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.channelFlow
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 
 data class CalendarEvent(
@@ -40,10 +45,29 @@ class CalendarRepository @Inject constructor(
         ) == PackageManager.PERMISSION_GRANTED
     }
 
-    fun observeTodayEvents(): Flow<List<CalendarEvent>> = flow {
-        while (true) {
-            emit(fetchTodayEvents())
-            delay(REFRESH_INTERVAL_MS)
+    /**
+     * Today's events, re-read when the calendar provider reports a change and otherwise once a minute
+     * (the minute tick moves the day on and drops events that have ended).
+     */
+    fun observeTodayEvents(): Flow<List<CalendarEvent>> = channelFlow {
+        val changes = Channel<Unit>(Channel.CONFLATED)
+        val observer = object : ContentObserver(Handler(Looper.getMainLooper())) {
+            override fun onChange(selfChange: Boolean) {
+                changes.trySend(Unit)
+            }
+        }
+        context.contentResolver.registerContentObserver(CalendarContract.CONTENT_URI, true, observer)
+        launch {
+            while (true) {
+                delay(REFRESH_INTERVAL_MS)
+                changes.trySend(Unit)
+            }
+        }
+        send(fetchTodayEvents())
+        try {
+            for (change in changes) send(fetchTodayEvents())
+        } finally {
+            context.contentResolver.unregisterContentObserver(observer)
         }
     }.flowOn(Dispatchers.IO)
 
