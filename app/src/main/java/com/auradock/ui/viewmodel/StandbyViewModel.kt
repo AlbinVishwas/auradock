@@ -22,7 +22,9 @@ import com.auradock.weather.WeatherRepository
 import com.auradock.data.CalendarRepository
 import com.auradock.standby.StandbyState
 import com.auradock.standby.StandbyTriggerManager
+import com.auradock.permissions.canDrawOverOtherApps
 import com.auradock.time.MinuteClock
+import com.auradock.watch.DockWatcherController
 import android.content.Context
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -50,6 +52,7 @@ class StandbyViewModel @Inject constructor(
     private val focusSettings: FocusSettings,
     private val dndController: DndController,
     private val dockFocus: DockFocusController,
+    private val dockWatcher: DockWatcherController,
     private val onboardingState: OnboardingState,
     minuteClock: MinuteClock
 ) : ViewModel() {
@@ -204,6 +207,30 @@ class StandbyViewModel @Inject constructor(
 
     fun openDndAccessSettings() {
         _permissionActions.tryEmit(PermissionAction.OpenDndAccessSettings)
+    }
+
+    // ── Dock from anywhere (background watcher) ───────────────────────────────
+
+    val dockFromAnywhere: StateFlow<Boolean> = focusSettings.dockFromAnywhere
+
+    private val _overlayGranted = MutableStateFlow(canDrawOverOtherApps(context))
+    val overlayGranted: StateFlow<Boolean> = _overlayGranted.asStateFlow()
+
+    /** Turning it on without "Display over other apps" sends the user to that page; the watcher starts once it is allowed. */
+    fun setDockFromAnywhere(enabled: Boolean) {
+        focusSettings.setDockFromAnywhere(enabled)
+        if (enabled && !_overlayGranted.value) _permissionActions.tryEmit(PermissionAction.OpenOverlaySettings)
+        dockWatcher.sync()
+    }
+
+    fun openOverlaySettings() {
+        _permissionActions.tryEmit(PermissionAction.OpenOverlaySettings)
+    }
+
+    /** The user may have just allowed (or taken away) the permission on the system page; also restarts a stopped watcher. */
+    fun refreshOverlayAccess() {
+        _overlayGranted.value = canDrawOverOtherApps(context)
+        dockWatcher.sync()
     }
 
     // ── Apps whose notifications the dock shows ───────────────────────────────

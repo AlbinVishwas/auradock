@@ -12,6 +12,11 @@
     <uses-permission android:name="android.permission.ACCESS_NOTIFICATION_POLICY" />
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <!-- "Dock from anywhere" (optional, off by default): a foreground service watches the motion sensor, and a small pill is
+         drawn over other apps. The user allows "Display over other apps" in system settings. -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
 
     <!-- Lets AuraDock list the apps that have a launcher icon (for choosing which apps' notifications to show on the dock),
          without the restricted QUERY_ALL_PACKAGES permission. -->
@@ -34,6 +39,7 @@
         <activity
             android:name=".MainActivity"
             android:exported="true"
+            android:launchMode="singleTop"
             android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -68,6 +74,16 @@
                 <action android:name="android.service.dreams.DreamService" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
+        </service>
+
+        <!-- "Dock from anywhere": watches the accelerometer while the screen is on. No standard foreground type fits, so specialUse. -->
+        <service
+            android:name=".watch.DockWatcherService"
+            android:exported="false"
+            android:foregroundServiceType="specialUse">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="Reads the accelerometer while the screen is on to notice the phone being set on a stand, then offers AuraDock's dock mode" />
         </service>
 
         <service

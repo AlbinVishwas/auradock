@@ -25,11 +25,12 @@ import androidx.compose.ui.unit.sp
 import com.auradock.dock.DockTemplate
 import com.auradock.dock.DockUiState
 import com.auradock.ui.components.QuickActionButton
+import com.auradock.ui.focus.DockFromAnywhereCard
 import com.auradock.ui.screens.TemplateGalleryScreen
 import com.auradock.ui.theme.AuraDockColors
 import com.auradock.ui.theme.AuraDockTypography
 
-private enum class Step { WELCOME, SCREENSAVER, PERMISSIONS, TEMPLATE }
+private enum class Step { WELCOME, SCREENSAVER, DOCK_ANYWHERE, PERMISSIONS, TEMPLATE }
 
 /**
  * The first-launch walkthrough: Welcome, set as screensaver, permissions, pick a template. [onFinish] runs after the
@@ -44,6 +45,10 @@ fun OnboardingScreen(
     screensaverSelected: Boolean,
     onOpenScreensaverSettings: () -> Unit,
     onOpenDisplaySettings: () -> Unit,
+    dockFromAnywhere: Boolean,
+    overlayGranted: Boolean,
+    onToggleDockFromAnywhere: (Boolean) -> Unit,
+    onAllowOverlay: () -> Unit,
     onPickTemplate: (DockTemplate) -> Unit,
     onFinish: () -> Unit,
     modifier: Modifier = Modifier
@@ -78,6 +83,15 @@ fun OnboardingScreen(
                     onChooseScreensaver = onOpenScreensaverSettings,
                     onSetScreenTimeout = onOpenDisplaySettings
                 )
+            } else if (step == Step.DOCK_ANYWHERE) {
+                Text(
+                    text = "Dock from anywhere (optional)",
+                    color = Color.White,
+                    fontSize = 30.sp,
+                    lineHeight = 36.sp,
+                    fontWeight = FontWeight.SemiBold
+                )
+                DockFromAnywhereCard(dockFromAnywhere, overlayGranted, onToggleDockFromAnywhere, onAllowOverlay)
             } else {
                 Text(
                     text = if (step == Step.WELCOME) "Welcome to AuraDock" else "Permissions",

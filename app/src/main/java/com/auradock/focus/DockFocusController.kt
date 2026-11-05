@@ -5,6 +5,9 @@ import android.os.Handler
 import android.os.Looper
 import android.util.Log
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -25,6 +28,10 @@ class DockFocusController @Inject constructor(
 ) {
     private val prefs = context.getSharedPreferences("auradock_focus_state", Context.MODE_PRIVATE)
     private val active = mutableSetOf<DockSource>()
+    private val _showing = MutableStateFlow(false)
+
+    /** True while any dock (in the app or the screensaver) is on screen. Changes the moment a dock opens or closes. */
+    val showing: StateFlow<Boolean> = _showing.asStateFlow()
     private val handler = Handler(Looper.getMainLooper())
     private var restorePending = false
     private val delayedRefresh = Runnable {
@@ -42,6 +49,7 @@ class DockFocusController @Inject constructor(
     @Synchronized
     fun setActive(source: DockSource, isActive: Boolean) {
         if (isActive) active += source else active -= source
+        _showing.value = active.isNotEmpty()
         handler.removeCallbacks(delayedRefresh)
         restorePending = false
         if (!isActive && active.isEmpty()) {

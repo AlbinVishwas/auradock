@@ -78,3 +78,14 @@ fun isAuraDockScreensaver(context: Context): Boolean {
     val chosen = Settings.Secure.getString(context.contentResolver, "screensaver_components") ?: return false
     return chosen.split(',').any { android.content.ComponentName.unflattenFromString(it.trim())?.packageName == context.packageName }
 }
+
+/** True if the user has allowed "Display over other apps" for AuraDock. */
+fun canDrawOverOtherApps(context: Context): Boolean = Settings.canDrawOverlays(context)
+
+/** Opens the system page where the user can allow AuraDock to display over other apps. */
+fun openOverlaySettings(context: Context) {
+    context.startActivity(
+        Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.fromParts("package", context.packageName, null))
+            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+    )
+}

@@ -51,7 +51,18 @@ class FocusSettings @Inject constructor(
         return true
     }
 
+    private val _dockFromAnywhere = MutableStateFlow(prefs.getBoolean(KEY_ANYWHERE, false))
+
+    /** Off by default: when on, a background service watches for the phone being set on a stand (see DockWatcherService). */
+    val dockFromAnywhere: StateFlow<Boolean> = _dockFromAnywhere.asStateFlow()
+
+    fun setDockFromAnywhere(enabled: Boolean) {
+        _dockFromAnywhere.value = enabled
+        prefs.edit().putBoolean(KEY_ANYWHERE, enabled).apply()
+    }
+
     private companion object {
+        const val KEY_ANYWHERE = "dock_from_anywhere"
         const val KEY_FOCUS = "focus_while_docked"
         const val KEY_APPS = "picked_apps"
         const val KEY_TEXT = "show_message_text"

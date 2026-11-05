@@ -3,6 +3,7 @@ package com.auradock
 import android.Manifest
 import android.content.pm.ActivityInfo
 import android.os.Build
+import android.content.Intent
 import android.os.Bundle
 import android.view.WindowManager
 import androidx.activity.ComponentActivity
@@ -51,6 +52,7 @@ import com.auradock.permissions.openDisplaySettings
 import com.auradock.permissions.openAppSettings
 import com.auradock.permissions.openDndAccessSettings
 import com.auradock.permissions.openExactAlarmSettings
+import com.auradock.permissions.openOverlaySettings
 import com.auradock.ui.focus.FocusSettingsScreen
 import com.auradock.permissions.openNotificationAccessSettings
 import com.auradock.permissions.openScreensaverSettings
@@ -78,6 +80,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        if (savedInstanceState == null) openDockIfAsked(intent)
 
         // Do Not Disturb follows the dock: on while it is showing and this screen is visible, off when it closes or the
         // app goes to the background. The finally block also runs if the Activity is destroyed while docked.
@@ -109,6 +112,8 @@ class MainActivity : ComponentActivity() {
                 val locationPermissionState by standbyViewModel.locationPermissionState.collectAsState()
                 val calendarPermissionState by standbyViewModel.calendarPermissionState.collectAsState()
                 val postNotificationsGranted by standbyViewModel.postNotificationsGranted.collectAsState()
+                val dockFromAnywhere by standbyViewModel.dockFromAnywhere.collectAsState()
+                val overlayGranted by standbyViewModel.overlayGranted.collectAsState()
                 val onboardingDone by standbyViewModel.onboardingDone.collectAsState()
                 // which page is open: "dashboard", "templates", "focus" or "setup"
                 var page by rememberSaveable { mutableStateOf("dashboard") }
@@ -169,6 +174,10 @@ class MainActivity : ComponentActivity() {
 
                             PermissionAction.OpenDndAccessSettings -> {
                                 openDndAccessSettings(this@MainActivity)
+                            }
+
+                            PermissionAction.OpenOverlaySettings -> {
+                                openOverlaySettings(this@MainActivity)
                             }
 
                             PermissionAction.OpenExactAlarmSettings -> {
@@ -244,6 +253,10 @@ class MainActivity : ComponentActivity() {
                             screensaverSelected = screensaverSelected,
                             onOpenScreensaverSettings = { openScreensaverSettings(this@MainActivity) },
                             onOpenDisplaySettings = { openDisplaySettings(this@MainActivity) },
+                            dockFromAnywhere = dockFromAnywhere,
+                            overlayGranted = overlayGranted,
+                            onToggleDockFromAnywhere = { standbyViewModel.setDockFromAnywhere(it) },
+                            onAllowOverlay = { standbyViewModel.openOverlaySettings() },
                             onPickTemplate = { standbyViewModel.setTemplate(it) },
                             onFinish = { standbyViewModel.finishOnboarding() }
                         )
@@ -277,6 +290,10 @@ class MainActivity : ComponentActivity() {
                             onToggleApp = { standbyViewModel.toggleApp(it) },
                             showMessageText = showMessageText,
                             onToggleMessageText = { standbyViewModel.setShowMessageText(it) },
+                            dockFromAnywhere = dockFromAnywhere,
+                            overlayGranted = overlayGranted,
+                            onToggleDockFromAnywhere = { standbyViewModel.setDockFromAnywhere(it) },
+                            onAllowOverlay = { standbyViewModel.openOverlaySettings() },
                             loadIcon = { standbyViewModel.appIcon(it) }
                         )
 
@@ -344,9 +361,24 @@ class MainActivity : ComponentActivity() {
     override fun onStart() {
         super.onStart()
         standbyViewModel.refreshCalendarPermission()
+        standbyViewModel.refreshOverlayAccess()
         standbyViewModel.updateNotificationAccess(isNotificationAccessEnabled(this))
         standbyViewModel.refreshLocationPermission()
         standbyViewModel.refreshWeather() // the app is visible: refreshes only if the weather is 30+ minutes old
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        openDockIfAsked(intent)
+    }
+
+    /** "Dock from anywhere" starts this activity with a request to go straight to the dock. */
+    private fun openDockIfAsked(intent: Intent?) {
+        if (intent?.getBooleanExtra(EXTRA_DOCK_NOW, false) == true) {
+            intent.removeExtra(EXTRA_DOCK_NOW)
+            standbyViewModel.enterDock()
+        }
     }
 
     override fun onResume() {
@@ -358,5 +390,10 @@ class MainActivity : ComponentActivity() {
         standbyViewModel.refreshLocationPermission()
         standbyViewModel.refreshCalendarPermission()
         standbyViewModel.updateNotificationAccess(isNotificationAccessEnabled(this))
+    }
+
+    companion object {
+        /** Set by the dock watcher when it opens AuraDock to show the dock. */
+        const val EXTRA_DOCK_NOW = "com.auradock.extra.DOCK_NOW"
     }
 }

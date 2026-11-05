@@ -13,7 +13,16 @@ Dock mode is landscape-only.
 2. In-app: a "Dock now" button on the dashboard, beside a thumbnail of the current
    template. Opening the app while charging + landscape also enters dock mode
    (existing StandbyTriggerManager behavior).
-No Quick Settings tile, no overlay popup.
+3. Optional, off by default: "Dock from anywhere". A small foreground service watches the
+   accelerometer while the screen is on. Physically landscape and held still for about
+   3 seconds shows a pill over any app: charging gives "Docking in 5..." (tap the pill to dock
+   now, or Cancel); not charging gives "Switch to dock?" (tap to dock, hides after about
+   6 seconds). It stays quiet during audio or video playback, calls, and while the dock or
+   screensaver is showing, and after a Cancel or dismiss until the phone is picked up or
+   turned to portrait. Needs "Display over other apps" and shows a small permanent
+   notification while on. Plan B if Play rejects the overlay: a heads-up notification with a
+   Dock now action.
+No Quick Settings tile.
 
 ## Dashboard (portrait, the "today" screen)
 - Time-based greeting (no name), date, weather

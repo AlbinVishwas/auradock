@@ -53,6 +53,10 @@ fun FocusSettingsScreen(
     onToggleApp: (String) -> Unit,
     showMessageText: Boolean,
     onToggleMessageText: (Boolean) -> Unit,
+    dockFromAnywhere: Boolean,
+    overlayGranted: Boolean,
+    onToggleDockFromAnywhere: (Boolean) -> Unit,
+    onAllowOverlay: () -> Unit,
     loadIcon: suspend (String) -> ImageBitmap?,
     modifier: Modifier = Modifier
 ) {
@@ -109,6 +113,11 @@ fun FocusSettingsScreen(
                     )
                 }
             }
+            Spacer(Modifier.height(12.dp))
+        }
+
+        item {
+            DockFromAnywhereCard(dockFromAnywhere, overlayGranted, onToggleDockFromAnywhere, onAllowOverlay)
             Spacer(Modifier.height(12.dp))
         }
 
@@ -218,5 +227,51 @@ private fun AppIcon(packageName: String, loadIcon: suspend (String) -> ImageBitm
 internal fun SettingsCard(content: @Composable () -> Unit) {
     Surface(shape = RoundedCornerShape(16.dp), color = AuraDockColors.Surface, modifier = Modifier.fillMaxWidth()) {
         Column(modifier = Modifier.padding(16.dp)) { content() }
+    }
+}
+
+/** The "Dock from anywhere" switch with its honest explanation. Used in Focus settings and in onboarding. */
+@Composable
+fun DockFromAnywhereCard(
+    enabled: Boolean,
+    overlayGranted: Boolean,
+    onToggle: (Boolean) -> Unit,
+    onAllowOverlay: () -> Unit
+) {
+    SettingsCard {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Text(
+                text = "Dock from anywhere",
+                style = AuraDockTypography.WidgetPrimary,
+                color = AuraDockColors.OnBackground,
+                modifier = Modifier.weight(1f)
+            )
+            Switch(checked = enabled, onCheckedChange = onToggle)
+        }
+        Spacer(Modifier.height(8.dp))
+        Text(
+            text = "Optional. When you set the phone sideways and still, a small pill appears over any app so you can start " +
+                "the dock without opening AuraDock. It stays out of the way while media plays or you are on a call. " +
+                "This needs \"Display over other apps\", and AuraDock shows a small permanent notification while it is on.",
+            style = AuraDockTypography.Caption,
+            color = AuraDockColors.OnSurfaceVariant
+        )
+        if (enabled && !overlayGranted) {
+            Spacer(Modifier.height(12.dp))
+            Text(
+                text = "Waiting for \"Display over other apps\".",
+                style = AuraDockTypography.WidgetLabel,
+                color = Amber
+            )
+            Spacer(Modifier.height(8.dp))
+            QuickActionButton(text = "Allow display over other apps", onClick = onAllowOverlay, isActive = true)
+        } else if (enabled) {
+            Spacer(Modifier.height(12.dp))
+            Text("On.", style = AuraDockTypography.Caption, color = AuraDockColors.OnSurfaceVariant)
+        }
     }
 }
