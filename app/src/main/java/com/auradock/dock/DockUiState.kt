@@ -1,6 +1,7 @@
 package com.auradock.dock
 
 import com.auradock.data.CalendarEvent
+import com.auradock.data.NotificationItem
 import com.auradock.tasks.TaskEntity
 import com.auradock.weather.Weather
 
@@ -15,5 +16,9 @@ data class DockUiState(
     /** Today's calendar events (empty if there are none or calendar access is off). */
     val events: List<CalendarEvent> = emptyList(),
     /** Today's tasks, as the task list holds them (finished ones included). */
-    val tasks: List<TaskEntity> = emptyList()
+    val tasks: List<TaskEntity> = emptyList(),
+    /** The latest notification from each picked app (empty: no strip). Left empty in previews, which never show real messages. */
+    val notifications: List<NotificationItem> = emptyList(),
+    /** Whether the strip may show the message text itself. Off unless the user turns it on. */
+    val showMessageText: Boolean = false
 )

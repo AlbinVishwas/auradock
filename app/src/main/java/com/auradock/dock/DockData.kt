@@ -5,6 +5,8 @@ import com.auradock.data.CalendarEvent
 import com.auradock.data.CalendarRepository
 import com.auradock.data.NotificationItem
 import com.auradock.data.NotificationRepository
+import com.auradock.data.latestPerApp
+import com.auradock.focus.FocusSettings
 import com.auradock.permissions.isNotificationAccessEnabled
 import com.auradock.tasks.TaskEntity
 import com.auradock.tasks.TaskRepository
@@ -15,6 +17,7 @@ import com.auradock.ui.viewmodel.CalendarPermissionUiState
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combine
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -30,6 +33,7 @@ class DockData @Inject constructor(
     @ApplicationContext private val context: Context,
     private val calendarRepository: CalendarRepository,
     notificationRepository: NotificationRepository,
+    focusSettings: FocusSettings,
     private val minuteClock: MinuteClock,
     templateRepository: TemplateRepository,
     private val weatherRepository: WeatherRepository,
@@ -51,6 +55,11 @@ class DockData @Inject constructor(
 
     val todayEvents: Flow<List<CalendarEvent>> get() = calendarRepository.observeTodayEvents()
     val notifications: StateFlow<List<NotificationItem>> = notificationRepository.items
+
+    /** What the dock strip shows: the latest notification from each picked app. */
+    val stripNotifications: Flow<List<NotificationItem>> =
+        combine(notificationRepository.items, focusSettings.pickedApps, ::latestPerApp)
+    val showMessageText: StateFlow<Boolean> = focusSettings.showMessageText
 
     /** Only GRANTED/DENIED here: asking again (and "permanently denied") needs an Activity. */
     fun calendarPermissionState(): CalendarPermissionUiState =

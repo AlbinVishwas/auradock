@@ -98,6 +98,7 @@ class MainActivity : ComponentActivity() {
                 val hasNotificationAccess by standbyViewModel.hasNotificationAccess.collectAsState()
                 val apps by standbyViewModel.apps.collectAsState()
                 val pickedApps by standbyViewModel.pickedApps.collectAsState()
+                val showMessageText by standbyViewModel.showMessageText.collectAsState()
                 val locationPermissionState by standbyViewModel.locationPermissionState.collectAsState()
                 val calendarPermissionState by standbyViewModel.calendarPermissionState.collectAsState()
                 // which page is open: "dashboard", "templates" or "focus"
@@ -218,6 +219,8 @@ class MainActivity : ComponentActivity() {
                             apps = apps,
                             pickedApps = pickedApps,
                             onToggleApp = { standbyViewModel.toggleApp(it) },
+                            showMessageText = showMessageText,
+                            onToggleMessageText = { standbyViewModel.setShowMessageText(it) },
                             loadIcon = { standbyViewModel.appIcon(it) }
                         )
 

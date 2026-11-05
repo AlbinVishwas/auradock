@@ -25,6 +25,16 @@ class FocusSettings @Inject constructor(
         prefs.edit().putBoolean(KEY_FOCUS, enabled).apply()
     }
 
+    private val _showMessageText = MutableStateFlow(prefs.getBoolean(KEY_TEXT, false))
+
+    /** Off by default: the dock shows who a message is from, not what it says. */
+    val showMessageText: StateFlow<Boolean> = _showMessageText.asStateFlow()
+
+    fun setShowMessageText(show: Boolean) {
+        _showMessageText.value = show
+        prefs.edit().putBoolean(KEY_TEXT, show).apply()
+    }
+
     private val _pickedApps = MutableStateFlow(
         prefs.getString(KEY_APPS, "").orEmpty().split(',').filter { it.isNotBlank() }.take(MAX_PICKED_APPS)
     )
@@ -44,5 +54,6 @@ class FocusSettings @Inject constructor(
     private companion object {
         const val KEY_FOCUS = "focus_while_docked"
         const val KEY_APPS = "picked_apps"
+        const val KEY_TEXT = "show_message_text"
     }
 }

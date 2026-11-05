@@ -51,6 +51,8 @@ fun FocusSettingsScreen(
     apps: List<AppEntry>?,
     pickedApps: List<String>,
     onToggleApp: (String) -> Unit,
+    showMessageText: Boolean,
+    onToggleMessageText: (Boolean) -> Unit,
     loadIcon: suspend (String) -> ImageBitmap?,
     modifier: Modifier = Modifier
 ) {
@@ -129,6 +131,25 @@ fun FocusSettingsScreen(
                     text = "${pickedApps.size} of $MAX_PICKED_APPS chosen",
                     style = AuraDockTypography.WidgetLabel,
                     color = if (pickedApps.size == MAX_PICKED_APPS) AuraDockColors.ClockGlow else AuraDockColors.OnSurfaceVariant
+                )
+                Spacer(Modifier.height(12.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        text = "Show message text on dock",
+                        style = AuraDockTypography.WidgetLabel,
+                        color = AuraDockColors.OnBackground,
+                        modifier = Modifier.weight(1f)
+                    )
+                    Switch(checked = showMessageText, onCheckedChange = onToggleMessageText)
+                }
+                Text(
+                    text = "Off by default: the dock shows the app and who it is from, not what the message says.",
+                    style = AuraDockTypography.Caption,
+                    color = AuraDockColors.OnSurfaceVariant
                 )
                 if (!hasNotificationAccess) {
                     Spacer(Modifier.height(12.dp))

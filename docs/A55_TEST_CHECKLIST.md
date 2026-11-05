@@ -275,3 +275,13 @@ Emulator notes that explain some of these items are in the "Why" lines.
 - [ ] Listener survives Samsung battery management: leave the phone idle and docked for an hour, then post a notification from a picked app; it still arrives in the cache. If not, check Settings > Battery > Background usage limits and set AuraDock to "Never sleeping".
 - [ ] After a reboot, or after toggling notification access off and on, the listener reconnects without opening the app.
 - [ ] Swiping a notification away in the shade removes it from AuraDock too.
+
+## Dock notification strip (step 10b)
+- [ ] With 1 to 3 apps picked, the latest notification from each shows as a small grey line at the bottom of Classic, Focus, Minimal and Productivity, in both the screensaver and "Dock now".
+- [ ] Default shows only "App · sender"; message text appears only after turning on "Show message text on dock", and disappears again when turned off.
+- [ ] The strip is clearly secondary to the clock: readable from about 1 m on the stand in a lit room, not glaring in a dark bedroom (Minimal is dimmer still).
+- [ ] The strip vanishes when nothing is left: dismiss the notification on the phone (or in another room) and check the dock within a few seconds; the clock moves back to centre.
+- [ ] Long names and messages cut off with "…" on one line and never run under the punch-hole or rounded corners in either landscape direction.
+- [ ] Strip keeps drifting with the clock (no fixed bright pixels); check for burn-in after a night of docking.
+- [ ] Privacy: with the toggle off, nothing of a message body is visible from across the room; Samsung "Hide content on lock screen" is not what controls this, AuraDock's own toggle is.
+- [ ] Still shows after the phone has been docked overnight with Samsung battery management on (listener not put to sleep).

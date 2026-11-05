@@ -56,12 +56,26 @@ fun DockContent(template: DockTemplate, state: DockUiState, modifier: Modifier =
             .background(Color.Black),
         contentAlignment = Alignment.Center
     ) {
+        val lines = stripLines(state.notifications, state.showMessageText)
+        // Make room under the template for the strip so the two never overlap (the clock moves up a little).
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(bottom = if (lines.isEmpty()) 0.dp else (24 + 20 * lines.size).dp),
+            contentAlignment = Alignment.Center
+        ) {
         when (template) {
             DockTemplate.MINIMAL -> ClockWidget(timeMillis = state.timeMillis, dimmed = true, showDate = false)
             DockTemplate.FOCUS -> FocusLayout(state)
             DockTemplate.PRODUCTIVITY -> ProductivityLayout(state)
             DockTemplate.CLASSIC -> ClassicLayout(state)
         }
+        }
+        NotificationStrip(
+            lines = lines,
+            dimmed = template == DockTemplate.MINIMAL,
+            modifier = Modifier.align(Alignment.BottomCenter)
+        )
     }
 }
 

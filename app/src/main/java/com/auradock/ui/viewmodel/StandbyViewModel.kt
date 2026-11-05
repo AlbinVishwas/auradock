@@ -188,6 +188,10 @@ class StandbyViewModel @Inject constructor(
 
     val pickedApps: StateFlow<List<String>> = focusSettings.pickedApps
 
+    val showMessageText: StateFlow<Boolean> = focusSettings.showMessageText
+
+    fun setShowMessageText(show: Boolean) = focusSettings.setShowMessageText(show)
+
     private val _apps = MutableStateFlow<List<AppEntry>?>(null)
 
     /** The launchable apps, or null until loaded. */
