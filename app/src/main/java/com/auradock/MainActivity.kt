@@ -68,6 +68,7 @@ import com.auradock.ui.onboarding.SetupScreen
 import com.auradock.ui.viewmodel.CalendarPermissionUiState
 import com.auradock.ui.screens.TemplateGalleryScreen
 import com.auradock.ui.screens.dashboard.DashboardScreen
+import com.auradock.ui.components.DockMorphHost
 import com.auradock.ui.theme.AuraDockMotion
 import com.auradock.ui.theme.AuraDockTheme
 import com.auradock.ui.viewmodel.PermissionAction
@@ -202,13 +203,23 @@ class MainActivity : ComponentActivity() {
                     backToDashboard = { page = "dashboard" }
                 )
 
+                DockMorphHost {
                 AnimatedContent(
                     targetState = targetState,
                     transitionSpec = {
-                        (fadeIn(animationSpec = tween(AuraDockMotion.ScreenIn)) + scaleIn(initialScale = 0.985f, animationSpec = tween(AuraDockMotion.ScreenIn)))
-                            .togetherWith(
-                                fadeOut(animationSpec = tween(AuraDockMotion.ScreenOut)) + scaleOut(targetScale = 0.99f, animationSpec = tween(AuraDockMotion.ScreenOut))
-                            )
+                        val morph = AuraDockMotion.tween<Float>(AuraDockMotion.DockMorph, AuraDockMotion.EasingEmphasized)
+                        when {
+                            // Opening the dock: it grows from its thumbnail size to the full screen.
+                            targetState == "dock" -> (fadeIn(morph) + scaleIn(initialScale = AuraDockMotion.DockMorphScale, animationSpec = morph))
+                                .togetherWith(fadeOut(animationSpec = tween(AuraDockMotion.Fast)))
+                            // Closing it: the reverse, shrinking back to the thumbnail.
+                            initialState == "dock" -> fadeIn(animationSpec = AuraDockMotion.tween(AuraDockMotion.DockMorph, AuraDockMotion.EasingEmphasized))
+                                .togetherWith(fadeOut(morph) + scaleOut(targetScale = AuraDockMotion.DockMorphScale, animationSpec = morph))
+                            else -> (fadeIn(animationSpec = tween(AuraDockMotion.ScreenIn)) + scaleIn(initialScale = 0.985f, animationSpec = tween(AuraDockMotion.ScreenIn)))
+                                .togetherWith(
+                                    fadeOut(animationSpec = tween(AuraDockMotion.ScreenOut)) + scaleOut(targetScale = 0.99f, animationSpec = tween(AuraDockMotion.ScreenOut))
+                                )
+                        }
                     },
                     label = "rootModeTransition"
                 ) { mode ->
@@ -231,6 +242,7 @@ class MainActivity : ComponentActivity() {
                         "focus" -> FocusSettingsRoute(standbyViewModel)
                         else -> DashboardRoute(standbyViewModel, navigation)
                     }
+                }
                 }
             }
         }

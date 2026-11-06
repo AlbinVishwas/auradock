@@ -36,6 +36,9 @@ object AuraDockMotion {
     /** The Dock now morph (container transform from the pill into the dock). */
     const val DockMorph = 450
 
+    /** The dock scales between this fraction of the screen (the size of its thumbnail) and full size when it opens and closes. */
+    const val DockMorphScale = 0.35f
+
     /** Blur to focus: the blur radius content starts at, in dp. */
     const val BlurToFocusRadiusDp = 12
 

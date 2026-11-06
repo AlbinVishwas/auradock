@@ -35,7 +35,10 @@ import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Rect
 import com.auradock.ui.components.BlurIn
+import com.auradock.ui.components.LocalDockMorph
+import com.auradock.ui.components.reportBounds
 import com.auradock.ui.components.GreyTextButton
 import com.auradock.ui.components.PrimaryPill
 import com.auradock.ui.components.QuietPill
@@ -201,7 +204,13 @@ fun DashboardScreen(
                         )
                     }
                 }
-                PrimaryPill(text = "Dock now", onClick = actions.onDockNow)
+                val morph = LocalDockMorph.current
+                var pillBounds by remember { mutableStateOf(Rect.Zero) }
+                PrimaryPill(
+                    text = "Dock now",
+                    onClick = { morph(pillBounds, actions.onDockNow) },
+                    modifier = Modifier.reportBounds { pillBounds = it }
+                )
             }
         }
 
