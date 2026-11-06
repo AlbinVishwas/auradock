@@ -103,6 +103,9 @@ object AuraDockColors {
     // The app's accent (cream) and the text that sits on it.
     val Accent = AuraDockPalette.Cream
     val OnAccent = AuraDockPalette.Black
+
+    /** The scrim behind a sheet: black at 60%. */
+    val Scrim = AuraDockPalette.Black.copy(alpha = AuraDockMotion.ScrimAlpha)
     val Overdue = Accent
 
     // Dock templates only. Never in the app's own UI.

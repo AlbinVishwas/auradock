@@ -15,6 +15,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import com.auradock.ui.components.QuietPill
 import com.auradock.ui.theme.AuraDockColors
 import com.auradock.ui.theme.AuraDockRadii
@@ -41,13 +42,14 @@ fun PermissionCard(
     permission: SetupPermission,
     granted: Boolean,
     onAllow: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    containerColor: Color = AuraDockColors.Surface
 ) {
     Row(
         modifier = modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(AuraDockRadii.card))
-            .background(AuraDockColors.Surface)
+            .background(containerColor)
             .padding(AuraDockSpacing.md),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(AuraDockSpacing.smd)

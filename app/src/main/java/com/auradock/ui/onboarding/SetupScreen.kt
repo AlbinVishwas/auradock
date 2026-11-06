@@ -40,13 +40,13 @@ fun SetupScreen(
             .fillMaxSize()
             .background(AuraDockColors.Background)
             .verticalScroll(rememberScrollState())
-            .padding(horizontal = AuraDockSpacing.lg, vertical = AuraDockSpacing.xl),
+            .padding(horizontal = AuraDockSpacing.mdl, vertical = AuraDockSpacing.xl),
         verticalArrangement = Arrangement.spacedBy(AuraDockSpacing.smd)
     ) {
         Text(text = "Setup", color = AuraDockColors.OnBackground, style = AuraDockTypography.ScreenTitle)
         Text(
             text = "Everything AuraDock can use. Each one is optional; the app works without it and just shows less.",
-            style = AuraDockTypography.Caption,
+            style = AuraDockTypography.Secondary,
             color = AuraDockColors.OnSurfaceVariant
         )
         DockExplainer(

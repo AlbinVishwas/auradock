@@ -38,7 +38,14 @@ import com.auradock.tasks.MAX_TITLE_LENGTH
 import com.auradock.tasks.TaskEntity
 import com.auradock.tasks.cleanTitle
 import com.auradock.tasks.dueTimeToday
-import com.auradock.ui.components.QuickActionButton
+import com.auradock.ui.components.PrimaryPill
+import com.auradock.ui.components.QuietPill
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.BottomSheetDefaults
+import androidx.compose.material3.FilterChipDefaults
+import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.TimePickerDefaults
+import com.auradock.ui.theme.AuraDockRadii
 import com.auradock.ui.theme.AuraDockColors
 import com.auradock.ui.theme.AuraDockTypography
 import java.time.Instant
@@ -74,6 +81,23 @@ fun TaskSheet(
     // The field can be gone again (for example the screen turned) before this runs, and requesting focus then throws.
     LaunchedEffect(Unit) { runCatching { focus.requestFocus() } }
 
+    val chipColors = FilterChipDefaults.filterChipColors(
+        containerColor = AuraDockColors.Field,
+        labelColor = AuraDockColors.OnBackground,
+        selectedContainerColor = AuraDockColors.Accent,
+        selectedLabelColor = AuraDockColors.OnAccent
+    )
+    val timeColors = TimePickerDefaults.colors(
+        timeSelectorSelectedContainerColor = AuraDockColors.Accent,
+        timeSelectorSelectedContentColor = AuraDockColors.OnAccent,
+        timeSelectorUnselectedContainerColor = AuraDockColors.Field,
+        timeSelectorUnselectedContentColor = AuraDockColors.OnBackground,
+        periodSelectorSelectedContainerColor = AuraDockColors.Accent,
+        periodSelectorSelectedContentColor = AuraDockColors.OnAccent,
+        periodSelectorUnselectedContainerColor = AuraDockColors.Field,
+        periodSelectorUnselectedContentColor = AuraDockColors.OnBackground,
+        periodSelectorBorderColor = AuraDockColors.Field
+    )
     val canSave = cleanTitle(title) != null
     fun save() {
         val clean = cleanTitle(title) ?: return
@@ -84,7 +108,10 @@ fun TaskSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
         containerColor = AuraDockColors.SurfaceRaised,
-        contentColor = AuraDockColors.OnBackground
+        contentColor = AuraDockColors.OnBackground,
+        shape = RoundedCornerShape(topStart = AuraDockRadii.sheet, topEnd = AuraDockRadii.sheet),
+        scrimColor = AuraDockColors.Scrim,
+        dragHandle = { BottomSheetDefaults.DragHandle(color = AuraDockColors.Inactive) }
     ) {
         Column(
             modifier = Modifier
@@ -96,7 +123,7 @@ fun TaskSheet(
         ) {
             Text(
                 text = if (task == null) "New task" else "Edit task",
-                style = AuraDockTypography.WidgetPrimary,
+                style = AuraDockTypography.Section,
                 color = AuraDockColors.OnBackground
             )
             OutlinedTextField(
@@ -104,6 +131,16 @@ fun TaskSheet(
                 onValueChange = { if (it.length <= MAX_TITLE_LENGTH) title = it },
                 label = { Text("What needs doing?") },
                 singleLine = true,
+                shape = RoundedCornerShape(AuraDockRadii.control),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedContainerColor = AuraDockColors.Field,
+                    unfocusedContainerColor = AuraDockColors.Field,
+                    focusedBorderColor = AuraDockColors.Accent,
+                    unfocusedBorderColor = AuraDockColors.Field,
+                    focusedLabelColor = AuraDockColors.OnSurfaceVariant,
+                    unfocusedLabelColor = AuraDockColors.OnSurfaceVariant,
+                    cursorColor = AuraDockColors.Accent
+                ),
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
                 keyboardActions = KeyboardActions(onDone = { if (canSave) save() }),
                 modifier = Modifier
@@ -114,16 +151,20 @@ fun TaskSheet(
                 FilterChip(
                     selected = !hasTime,
                     onClick = { hasTime = false },
-                    label = { Text("No time") }
+                    label = { Text("No time", style = AuraDockTypography.Caption) },
+                    colors = chipColors,
+                    border = null
                 )
                 FilterChip(
                     selected = hasTime,
                     onClick = { hasTime = true },
-                    label = { Text("Remind me at…") }
+                    label = { Text("Remind me at…", style = AuraDockTypography.Caption) },
+                    colors = chipColors,
+                    border = null
                 )
             }
             if (hasTime) {
-                TimeInput(state = timeState)
+                TimeInput(state = timeState, colors = timeColors)
                 if (!exactAlarmsAllowed) {
                     // Without the exact-alarm permission Android may deliver the reminder a few minutes late.
                     Text(
@@ -131,15 +172,14 @@ fun TaskSheet(
                         style = AuraDockTypography.Caption,
                         color = AuraDockColors.OnSurfaceVariant
                     )
-                    QuickActionButton(text = "Allow exact alarms", onClick = onAllowExactAlarms)
+                    QuietPill(text = "Allow exact alarms", onClick = onAllowExactAlarms)
                 }
             }
             Spacer(Modifier.height(AuraDockSpacing.xs))
-            QuickActionButton(
+            PrimaryPill(
                 text = if (task == null) "Add task" else "Save",
                 onClick = { if (canSave) save() },
-                isActive = canSave,
-                modifier = Modifier.fillMaxWidth()
+                enabled = canSave
             )
         }
     }

@@ -16,7 +16,10 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Checkbox
+import androidx.compose.ui.draw.clip
+import com.auradock.ui.components.AuraCheckbox
+import com.auradock.ui.onboarding.PermissionCard
+import com.auradock.ui.onboarding.SetupPermission
 import androidx.compose.material3.Surface
 import com.auradock.ui.components.AuraSwitch
 import androidx.compose.material3.Text
@@ -86,8 +89,8 @@ fun FocusSettingsScreen(
         modifier = modifier
             .fillMaxSize()
             .background(AuraDockColors.Background),
-        contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = AuraDockSpacing.lg, vertical = AuraDockSpacing.xl),
-        verticalArrangement = Arrangement.spacedBy(AuraDockSpacing.sm)
+        contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = AuraDockSpacing.mdl, vertical = AuraDockSpacing.xl),
+        verticalArrangement = Arrangement.spacedBy(AuraDockSpacing.xxs)
     ) {
         item {
             Text(text = "Focus", color = AuraDockColors.OnBackground, style = AuraDockTypography.ScreenTitle)
@@ -103,7 +106,7 @@ fun FocusSettingsScreen(
                 ) {
                     Text(
                         text = "Focus while docked",
-                        style = AuraDockTypography.WidgetPrimary,
+                        style = AuraDockTypography.Section,
                         color = AuraDockColors.OnBackground,
                         modifier = Modifier.weight(1f)
                     )
@@ -114,18 +117,12 @@ fun FocusSettingsScreen(
                     text = "While the dock is showing, Do Not Disturb silences everything except alarms and calls from your " +
                         "starred contacts. When the dock closes, your own Do Not Disturb settings are put back exactly as " +
                         "they were. If Do Not Disturb is already on, AuraDock leaves it alone.",
-                    style = AuraDockTypography.Caption,
+                    style = AuraDockTypography.Secondary,
                     color = AuraDockColors.OnSurfaceVariant
                 )
                 if (!hasDndAccess) {
                     Spacer(Modifier.height(AuraDockSpacing.md))
-                    Text(
-                        text = "AuraDock needs Do Not Disturb access to do this (newer Android calls it \"Modes access\").",
-                        style = AuraDockTypography.WidgetLabel,
-                        color = AuraDockColors.Accent
-                    )
-                    Spacer(Modifier.height(AuraDockSpacing.sm))
-                    QuickActionButton(text = "Allow Do Not Disturb access", onClick = actions.onOpenDndSettings, isActive = true)
+                    PermissionCard(SetupPermission.DND_ACCESS, granted = false, onAllow = actions.onOpenDndSettings, containerColor = AuraDockColors.Field)
                 } else if (focusWhileDocked) {
                     Spacer(Modifier.height(AuraDockSpacing.smd))
                     Text(
@@ -147,20 +144,20 @@ fun FocusSettingsScreen(
             SettingsCard {
                 Text(
                     text = "Notifications on the dock",
-                    style = AuraDockTypography.WidgetPrimary,
+                    style = AuraDockTypography.Section,
                     color = AuraDockColors.OnBackground
                 )
                 Spacer(Modifier.height(AuraDockSpacing.sm))
                 Text(
                     text = "Choose up to $MAX_PICKED_APPS apps. The dock shows their latest notification as a small line, " +
                         "so you can see what matters without picking up the phone.",
-                    style = AuraDockTypography.Caption,
+                    style = AuraDockTypography.Secondary,
                     color = AuraDockColors.OnSurfaceVariant
                 )
                 Spacer(Modifier.height(AuraDockSpacing.smd))
                 Text(
-                    text = "${pickedApps.size} of $MAX_PICKED_APPS chosen",
-                    style = AuraDockTypography.WidgetLabel,
+                    text = "${pickedApps.size} of $MAX_PICKED_APPS selected",
+                    style = AuraDockTypography.Body,
                     color = if (pickedApps.size == MAX_PICKED_APPS) AuraDockColors.Accent else AuraDockColors.OnSurfaceVariant
                 )
                 Spacer(Modifier.height(AuraDockSpacing.smd))
@@ -171,7 +168,7 @@ fun FocusSettingsScreen(
                 ) {
                     Text(
                         text = "Show message text on dock",
-                        style = AuraDockTypography.WidgetLabel,
+                        style = AuraDockTypography.Body,
                         color = AuraDockColors.OnBackground,
                         modifier = Modifier.weight(1f)
                     )
@@ -179,18 +176,12 @@ fun FocusSettingsScreen(
                 }
                 Text(
                     text = "Off by default: the dock shows the app and who it is from, not what the message says.",
-                    style = AuraDockTypography.Caption,
+                    style = AuraDockTypography.Secondary,
                     color = AuraDockColors.OnSurfaceVariant
                 )
                 if (!hasNotificationAccess) {
-                    Spacer(Modifier.height(AuraDockSpacing.smd))
-                    Text(
-                        text = "AuraDock needs notification access to read them.",
-                        style = AuraDockTypography.WidgetLabel,
-                        color = AuraDockColors.Accent
-                    )
-                    Spacer(Modifier.height(AuraDockSpacing.sm))
-                    QuickActionButton(text = "Allow notification access", onClick = actions.onOpenNotificationAccess, isActive = true)
+                    Spacer(Modifier.height(AuraDockSpacing.md))
+                    PermissionCard(SetupPermission.NOTIFICATION_ACCESS, granted = false, onAllow = actions.onOpenNotificationAccess, containerColor = AuraDockColors.Field)
                 }
             }
             Spacer(Modifier.height(AuraDockSpacing.xs))
@@ -222,10 +213,10 @@ private fun AppRow(app: AppEntry, picked: Boolean, enabled: Boolean, loadIcon: s
         Text(
             text = app.label,
             color = if (enabled) AuraDockColors.OnBackground else AuraDockColors.OnDisabled,
-            style = AuraDockTypography.Title,
+            style = AuraDockTypography.Body,
             modifier = Modifier.weight(1f)
         )
-        Checkbox(checked = picked, onCheckedChange = null, enabled = enabled)
+        AuraCheckbox(checked = picked, dimmed = !enabled)
     }
 }
 
@@ -237,11 +228,11 @@ private fun AppIcon(packageName: String, loadIcon: suspend (String) -> ImageBitm
         Image(
             bitmap = image,
             contentDescription = null,
-            modifier = Modifier.size(AuraDockSizes.appIcon),
+            modifier = Modifier.size(AuraDockSizes.appTile).clip(RoundedCornerShape(AuraDockRadii.tile)),
             alpha = if (dimmed) 0.4f else 1f
         )
     } else {
-        Box(Modifier.size(AuraDockSizes.appIcon))
+        Box(Modifier.size(AuraDockSizes.appTile).clip(RoundedCornerShape(AuraDockRadii.tile)).background(AuraDockColors.Field))
     }
 }
 
@@ -268,7 +259,7 @@ fun DockFromAnywhereCard(
         ) {
             Text(
                 text = "Dock from anywhere",
-                style = AuraDockTypography.WidgetPrimary,
+                style = AuraDockTypography.Section,
                 color = AuraDockColors.OnBackground,
                 modifier = Modifier.weight(1f)
             )
@@ -279,7 +270,7 @@ fun DockFromAnywhereCard(
             text = "Optional. When you set the phone sideways and still, a small pill appears over any app so you can start " +
                 "the dock without opening AuraDock. It stays out of the way while media plays or you are on a call. " +
                 "This needs \"Display over other apps\", and AuraDock shows a small permanent notification while it is on.",
-            style = AuraDockTypography.Caption,
+            style = AuraDockTypography.Secondary,
             color = AuraDockColors.OnSurfaceVariant
         )
         if (enabled && !overlayGranted) {
