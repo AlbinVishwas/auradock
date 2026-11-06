@@ -41,7 +41,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.auradock.tasks.TaskEntity
 import com.auradock.tasks.isOverdue
-import com.auradock.ui.components.QuickActionButton
+import com.auradock.ui.components.QuietPill
 import com.auradock.ui.theme.AuraDockColors
 import com.auradock.ui.theme.AuraDockTypography
 import com.auradock.ui.theme.LocalAuraDockSpacing
@@ -70,7 +70,7 @@ fun TaskCard(
         color = AuraDockColors.Surface,
         tonalElevation = AuraDockSizes.none
     ) {
-        Column(modifier = Modifier.padding(spacing.md)) {
+        Column(modifier = Modifier.padding(spacing.mdl)) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -78,10 +78,10 @@ fun TaskCard(
             ) {
                 Text(
                     text = "Today",
-                    style = AuraDockTypography.WidgetPrimary,
+                    style = AuraDockTypography.Section,
                     color = AuraDockColors.OnBackground
                 )
-                QuickActionButton(text = "+ Add", onClick = onAdd, isActive = true)
+                QuietPill(text = "+ Add", onClick = onAdd)
             }
             Spacer(Modifier.height(spacing.sm))
 
@@ -90,13 +90,14 @@ fun TaskCard(
             } else if (tasks.isEmpty()) {
                 Text(
                     text = "Nothing planned. Enjoy the quiet.",
-                    style = AuraDockTypography.WidgetLabel,
+                    style = AuraDockTypography.Secondary,
                     color = AuraDockColors.OnSurfaceVariant,
                     modifier = Modifier.padding(vertical = spacing.sm)
                 )
             } else {
                 Column(verticalArrangement = Arrangement.spacedBy(spacing.xs)) {
-                    tasks.forEach { task ->
+                    // Done tasks sink to the bottom; each group keeps its order.
+                    tasks.sortedBy { it.done }.forEach { task ->
                         androidx.compose.runtime.key(task.id) {
                             TaskRow(
                                 task = task,
@@ -161,7 +162,6 @@ private fun TaskRow(
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(AuraDockRadii.control))
                 .background(AuraDockColors.Surface) // opaque base so nothing shows through when swiping
-                .background(if (highlight) AuraDockColors.Overdue.copy(alpha = 0.14f) else Color.Transparent)
                 .padding(start = spacing.xxs, end = spacing.smd),
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -179,9 +179,13 @@ private fun TaskRow(
             if (dueLabel != null) {
                 Spacer(Modifier.width(spacing.smd))
                 Text(
-                    text = dueLabel,
+                    text = if (highlight) "Overdue · $dueLabel" else dueLabel,
                     style = AuraDockTypography.Caption,
-                    color = if (highlight) AuraDockColors.Overdue else AuraDockColors.OnSurfaceVariant
+                    color = when {
+                        highlight -> AuraDockColors.Overdue
+                        task.done -> AuraDockColors.Tertiary
+                        else -> AuraDockColors.OnSurfaceVariant
+                    }
                 )
             }
         }
@@ -192,15 +196,15 @@ private fun TaskRow(
 @Composable
 private fun CheckCircle(done: Boolean, highlight: Boolean, onClick: () -> Unit) {
     val fill by animateColorAsState(
-        targetValue = if (done) AuraDockColors.Accent else Color.Transparent,
+        targetValue = if (done) AuraDockColors.Inactive else Color.Transparent,
         animationSpec = AuraDockMotion.tween(AuraDockMotion.Check),
         label = "checkFill"
     )
     val tick by animateFloatAsState(if (done) 1f else 0f, AuraDockMotion.tween(AuraDockMotion.Check), label = "checkTick")
     val ring = when {
-        done -> AuraDockColors.Accent
+        done -> AuraDockColors.Inactive
         highlight -> AuraDockColors.Overdue
-        else -> AuraDockColors.OnSurfaceVariant
+        else -> AuraDockColors.Outline
     }
     Box(
         modifier = Modifier
@@ -224,7 +228,7 @@ private fun CheckCircle(done: Boolean, highlight: Boolean, onClick: () -> Unit) 
                         val a = Offset(w * 0.28f, h * 0.52f)
                         val b = Offset(w * 0.44f, h * 0.68f)
                         val c = Offset(w * 0.74f, h * 0.34f)
-                        val color = AuraDockColors.OnBackground.copy(alpha = tick)
+                        val color = AuraDockColors.Tertiary.copy(alpha = tick)
                         drawLine(color, a, b, stroke, StrokeCap.Round)
                         drawLine(color, b, c, stroke, StrokeCap.Round)
                     }
@@ -237,11 +241,11 @@ private fun CheckCircle(done: Boolean, highlight: Boolean, onClick: () -> Unit) 
 @Composable
 private fun StrikeText(text: String, struck: Boolean, modifier: Modifier = Modifier) {
     val progress by animateFloatAsState(if (struck) 1f else 0f, AuraDockMotion.tween(AuraDockMotion.Strike), label = "strike")
-    val alpha by animateFloatAsState(if (struck) 0.5f else 1f, AuraDockMotion.tween(AuraDockMotion.Strike), label = "strikeFade")
+    val color by animateColorAsState(if (struck) AuraDockColors.Tertiary else AuraDockColors.OnBackground, AuraDockMotion.tween(AuraDockMotion.Strike), label = "strikeFade")
     Text(
         text = text,
-        style = AuraDockTypography.WidgetLabel,
-        color = AuraDockColors.OnBackground.copy(alpha = alpha),
+        style = AuraDockTypography.Body,
+        color = color,
         maxLines = 2,
         overflow = TextOverflow.Ellipsis,
         modifier = modifier.drawWithContent {
@@ -249,7 +253,7 @@ private fun StrikeText(text: String, struck: Boolean, modifier: Modifier = Modif
             if (progress > 0f) {
                 val y = size.height / 2f
                 drawLine(
-                    color = AuraDockColors.OnBackground.copy(alpha = 0.55f),
+                    color = AuraDockColors.Tertiary,
                     start = Offset(0f, y),
                     end = Offset(size.width * progress, y),
                     strokeWidth = AuraDockSizes.strikeLine.toPx()

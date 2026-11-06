@@ -29,11 +29,20 @@ import java.util.Date
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import com.auradock.data.CalendarEvent
-import com.auradock.ui.components.QuickActionButton
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.defaultMinSize
+import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.draw.clip
+import com.auradock.ui.components.BlurIn
+import com.auradock.ui.components.GreyTextButton
+import com.auradock.ui.components.PrimaryPill
+import com.auradock.ui.components.QuietPill
+import com.auradock.ui.theme.AuraDockRadii
 import com.auradock.time.formatDashboardDate
 import com.auradock.time.greetingFor
 import com.auradock.ui.components.ScaledPreview
-import com.auradock.ui.components.StandbyPreviewCard
 import com.auradock.ui.components.TodaySnapshotCard
 import com.auradock.dock.DockTemplate
 import com.auradock.dock.DockContent
@@ -41,7 +50,6 @@ import com.auradock.dock.DockUiState
 import com.auradock.weather.Weather
 import com.auradock.weather.conditionLine
 import com.auradock.weather.temperatureLabel
-import com.auradock.ui.weather.WeatherIcon
 import com.auradock.tasks.TaskEntity
 import com.auradock.ui.tasks.TaskCard
 import com.auradock.ui.tasks.TaskSheet
@@ -93,47 +101,49 @@ fun DashboardScreen(
     val tasks = state.tasks
 
     val dateText = formatDashboardDate(timeMillis)
+    val timeFormat = remember(context) { DateFormat.getTimeFormat(context) }
+    // Task list add/edit sheet. -1 means "new task"; null means the sheet is closed.
+    var sheetTaskId by rememberSaveable { mutableStateOf<Long?>(null) }
+
     Column(
         modifier = modifier
             .fillMaxSize()
             .background(AuraDockColors.Background)
             .verticalScroll(rememberScrollState())
-            .padding(horizontal = spacing.lg),
+            .padding(horizontal = spacing.mdl),
         verticalArrangement = Arrangement.Top
     ) {
-        Text(
-            text = greetingFor(timeMillis),
-            modifier = Modifier.padding(top = spacing.xl),
-            color = AuraDockColors.OnBackground,
-            style = AuraDockTypography.ScreenTitle
-        )
-
-        Text(
-            text = dateText,
-            color = AuraDockColors.OnSurfaceVariant,
-            style = AuraDockTypography.WidgetLabel,
-            modifier = Modifier.padding(top = spacing.xs)
-        )
-
-        Spacer(modifier = Modifier.height(spacing.sm))
-        WeatherRow(weather = state.weather, permission = state.locationPermission, onEnable = actions.onEnableWeather)
+        // Everything settles in with blur to focus, one row after the other (40 ms apart).
+        BlurIn(index = 0) {
+            Column {
+                Text(
+                    text = greetingFor(timeMillis),
+                    modifier = Modifier.padding(top = spacing.xl),
+                    color = AuraDockColors.OnBackground,
+                    style = AuraDockTypography.ScreenTitle
+                )
+                WeatherRow(
+                    date = dateText,
+                    weather = state.weather,
+                    permission = state.locationPermission,
+                    onEnable = actions.onEnableWeather
+                )
+            }
+        }
 
         Spacer(modifier = Modifier.height(spacing.lg))
-
-        val timeFormat = remember(context) { DateFormat.getTimeFormat(context) }
-
-        // Task list + its add/edit sheet. -1 means "new task"; null means the sheet is closed.
-        var sheetTaskId by rememberSaveable { mutableStateOf<Long?>(null) }
-        TaskCard(
-            tasks = tasks,
-            timeMillis = timeMillis,
-            formatTime = { timeFormat.format(Date(it)) },
-            onAdd = { sheetTaskId = NEW_TASK },
-            onEdit = { sheetTaskId = it.id },
-            onToggle = actions.onToggleTask,
-            onDelete = actions.onDeleteTask,
-            modifier = Modifier.fillMaxWidth()
-        )
+        BlurIn(index = 1) {
+            TaskCard(
+                tasks = tasks,
+                timeMillis = timeMillis,
+                formatTime = { timeFormat.format(Date(it)) },
+                onAdd = { sheetTaskId = NEW_TASK },
+                onEdit = { sheetTaskId = it.id },
+                onToggle = actions.onToggleTask,
+                onDelete = actions.onDeleteTask,
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
         sheetTaskId?.let { id ->
             val editing = tasks?.firstOrNull { it.id == id }
             TaskSheet(
@@ -149,54 +159,63 @@ fun DashboardScreen(
             )
         }
 
-        Spacer(modifier = Modifier.height(spacing.lg))
+        Spacer(modifier = Modifier.height(spacing.md))
         val summary = buildTodaySummary(
             events = state.events,
             permission = state.calendarPermission,
             formatTime = { timeFormat.format(Date(it)) }
         )
-        TodaySnapshotCard(
-            modifier = Modifier.fillMaxWidth(),
-            title = "Calendar",
-            items = summary.lines,
-            emptyStateText = summary.emptyText,
-            actionText = summary.actionText,
-            onAction = actions.onEnableCalendarAccess
-        )
-
-        Spacer(modifier = Modifier.height(spacing.lg))
-
-        // FlowRow wraps buttons onto a new line when they don't fit, so none is squeezed or pushed off-screen.
-        FlowRow(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(spacing.md),
-            verticalArrangement = Arrangement.spacedBy(spacing.sm)
-        ) {
-            QuickActionButton(text = "Templates", onClick = actions.onOpenTemplates)
-            QuickActionButton(text = "Focus", onClick = actions.onOpenFocus)
-            QuickActionButton(text = "Setup", onClick = actions.onOpenSetup)
+        BlurIn(index = 2) {
+            TodaySnapshotCard(
+                modifier = Modifier.fillMaxWidth(),
+                title = "Calendar",
+                items = summary.lines,
+                emptyStateText = summary.emptyText,
+                actionText = summary.actionText,
+                onAction = actions.onEnableCalendarAccess
+            )
         }
 
-        Spacer(modifier = Modifier.height(spacing.lg))
-
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(spacing.md),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            StandbyPreviewCard(
-                selected = true,
-                modifier = Modifier.weight(1f)
+        Spacer(modifier = Modifier.height(spacing.md))
+        // The dock card: a landscape thumbnail of the dock in use, and the one primary pill on this screen.
+        BlurIn(index = 3) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(AuraDockRadii.card))
+                    .background(AuraDockColors.Surface)
+                    .padding(spacing.md),
+                verticalArrangement = Arrangement.spacedBy(spacing.md)
             ) {
-                // Lay the template out at a realistic landscape size, then shrink it to fit the card.
-                ScaledPreview(designWidth = AuraDockGallery.previewDesignWidth) {
-                    DockContent(
-                        template = state.template,
-                        state = DockUiState(timeMillis, state.weather, state.events.orEmpty(), tasks.orEmpty())
-                    )
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .aspectRatio(16f / 9f)
+                        .clip(RoundedCornerShape(AuraDockRadii.control))
+                ) {
+                    // Lay the template out at a realistic landscape size, then shrink it to fit the card.
+                    ScaledPreview(designWidth = AuraDockGallery.previewDesignWidth) {
+                        DockContent(
+                            template = state.template,
+                            state = DockUiState(timeMillis, state.weather, state.events.orEmpty(), tasks.orEmpty())
+                        )
+                    }
                 }
+                PrimaryPill(text = "Dock now", onClick = actions.onDockNow)
             }
-            QuickActionButton(text = "Dock now", onClick = actions.onDockNow, isActive = true)
+        }
+
+        Spacer(modifier = Modifier.height(spacing.md))
+        BlurIn(index = 4) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(spacing.smd),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                QuietPill(text = "Templates", onClick = actions.onOpenTemplates)
+                QuietPill(text = "Focus", onClick = actions.onOpenFocus)
+                GreyTextButton(text = "Setup", onClick = actions.onOpenSetup)
+            }
         }
 
         Spacer(modifier = Modifier.height(spacing.xl))
@@ -205,29 +224,27 @@ fun DashboardScreen(
 
 private const val NEW_TASK = -1L
 
-/** One quiet line under the date: icon, temperature, condition and city, or a dash (with a way to allow location). */
+/** One Secondary line under the title: "Thursday, 5 November · 31° Clear · Navi Mumbai". Without weather, a way to allow location. */
 @Composable
-private fun WeatherRow(weather: Weather?, permission: CalendarPermissionUiState, onEnable: () -> Unit) {
+private fun WeatherRow(date: String, weather: Weather?, permission: CalendarPermissionUiState, onEnable: () -> Unit) {
     val spacing = LocalAuraDockSpacing.current
-    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(spacing.sm)) {
-        if (weather != null) {
-            WeatherIcon(weather.condition.icon, AuraDockColors.OnSurfaceVariant, size = AuraDockSizes.weatherIconSmall)
+    Column(modifier = Modifier.padding(top = spacing.xs)) {
+        Text(
+            text = if (weather != null) "$date · ${temperatureLabel(weather.temperatureC)} ${conditionLine(weather)}" else date,
+            style = AuraDockTypography.Secondary,
+            color = AuraDockColors.OnSurfaceVariant
+        )
+        if (weather == null && permission != CalendarPermissionUiState.GRANTED) {
             Text(
-                text = temperatureLabel(weather.temperatureC) + "  " + conditionLine(weather),
-                style = AuraDockTypography.WidgetLabel,
-                color = AuraDockColors.OnSurfaceVariant
+                text = if (permission == CalendarPermissionUiState.PERMANENTLY_DENIED) "Allow location in Settings for weather"
+                else "Allow location for weather",
+                style = AuraDockTypography.Secondary,
+                color = AuraDockColors.Tertiary,
+                modifier = Modifier
+                    .defaultMinSize(minHeight = AuraDockSizes.touchTarget)
+                    .clickable(onClick = onEnable)
+                    .wrapContentHeight(Alignment.CenterVertically)
             )
-        } else {
-            Text(text = "—", style = AuraDockTypography.WidgetLabel, color = AuraDockColors.OnSurfaceVariant)
-            if (permission != CalendarPermissionUiState.GRANTED) {
-                Text(
-                    text = if (permission == CalendarPermissionUiState.PERMANENTLY_DENIED) "Allow location in Settings for weather"
-                    else "Allow location for weather",
-                    style = AuraDockTypography.Caption,
-                    color = AuraDockColors.Accent,
-                    modifier = Modifier.clickable(onClick = onEnable)
-                )
-            }
         }
     }
 }

@@ -43,5 +43,5 @@ fun formatDashboardDate(
     millis: Long,
     zone: ZoneId = ZoneId.systemDefault(),
     locale: Locale = Locale.getDefault()
-): String = DateTimeFormatter.ofPattern("EEEE • MMMM d", locale)
+): String = DateTimeFormatter.ofPattern("EEEE, d MMMM", locale)
     .format(Instant.ofEpochMilli(millis).atZone(zone))

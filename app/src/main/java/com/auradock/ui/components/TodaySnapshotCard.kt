@@ -35,32 +35,32 @@ fun TodaySnapshotCard(
         color = AuraDockColors.Surface,
         tonalElevation = AuraDockSizes.none
     ) {
-        Column(modifier = Modifier.padding(spacing.md)) {
+        Column(modifier = Modifier.padding(spacing.mdl)) {
             Text(
                 text = title,
-                style = AuraDockTypography.WidgetPrimary,
+                style = AuraDockTypography.Section,
                 color = AuraDockColors.OnBackground
             )
             Spacer(modifier = Modifier.height(spacing.sm))
             if (items.isEmpty()) {
                 if (emptyStateText.isNotBlank()) Text(
                     text = emptyStateText,
-                    style = AuraDockTypography.WidgetLabel,
+                    style = AuraDockTypography.Secondary,
                     color = AuraDockColors.OnSurfaceVariant
                 )
                 if (actionText != null) {
                     Spacer(modifier = Modifier.height(spacing.md))
-                    QuickActionButton(text = actionText, onClick = onAction, isActive = true)
+                    QuietPill(text = actionText, onClick = onAction)
                 }
             } else {
                 items.forEachIndexed { index, item ->
                     Text(
                         text = item,
-                        style = AuraDockTypography.WidgetLabel,
-                        color = AuraDockColors.OnSurfaceVariant
+                        style = AuraDockTypography.Body,
+                        color = AuraDockColors.OnBackground
                     )
                     if (index != items.lastIndex) {
-                        Spacer(modifier = Modifier.height(spacing.xs))
+                        Spacer(modifier = Modifier.height(spacing.sm))
                     }
                 }
             }

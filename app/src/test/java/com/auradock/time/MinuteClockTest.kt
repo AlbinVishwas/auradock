@@ -56,9 +56,9 @@ class MinuteClockTest {
     @Test
     fun `formats the dashboard date in the given zone`() {
         val utc = formatDashboardDate(start, ZoneId.of("UTC"), Locale.US)
-        assertEquals("Thursday • October 22", utc)
+        assertEquals("Thursday, 22 October", utc)
         // 17:47 UTC is already the next day in Auckland (UTC+13 in October)
         val nz = formatDashboardDate(start, ZoneId.of("Pacific/Auckland"), Locale.US)
-        assertEquals("Friday • October 23", nz)
+        assertEquals("Friday, 23 October", nz)
     }
 }
