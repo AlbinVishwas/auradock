@@ -52,7 +52,7 @@ fun PermissionCard(
                 color = AuraDockColors.OnBackground,
                 modifier = Modifier.weight(1f)
             )
-            if (granted) Text(text = "✓ Allowed", style = AuraDockTypography.WidgetLabel, color = AuraDockColors.Success)
+            if (granted) Text(text = "✓ Allowed", style = AuraDockTypography.WidgetLabel, color = AuraDockColors.Accent)
             else if (skipped) Text(text = "Skipped", style = AuraDockTypography.WidgetLabel, color = AuraDockColors.OnSurfaceVariant)
         }
         Spacer(Modifier.height(AuraDockSpacing.sm))

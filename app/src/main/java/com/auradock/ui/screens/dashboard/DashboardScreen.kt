@@ -224,7 +224,7 @@ private fun WeatherRow(weather: Weather?, permission: CalendarPermissionUiState,
                     text = if (permission == CalendarPermissionUiState.PERMANENTLY_DENIED) "Allow location in Settings for weather"
                     else "Allow location for weather",
                     style = AuraDockTypography.Caption,
-                    color = AuraDockColors.AccentBlue,
+                    color = AuraDockColors.Accent,
                     modifier = Modifier.clickable(onClick = onEnable)
                 )
             }

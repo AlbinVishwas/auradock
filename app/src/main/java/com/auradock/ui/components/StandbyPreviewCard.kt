@@ -30,13 +30,7 @@ fun StandbyPreviewCard(
     val shape = RoundedCornerShape(AuraDockRadii.widget)
     val selectionModifier = if (selected) {
         Modifier
-            .shadow(
-                elevation = AuraDockSizes.elevationCard,
-                shape = shape,
-                ambientColor = AuraDockColors.AccentBlue,
-                spotColor = AuraDockColors.AccentBlue
-            )
-            .border(width = AuraDockSizes.line, color = AuraDockColors.AccentBlue, shape = shape)
+            .border(width = AuraDockSizes.line, color = AuraDockColors.Accent, shape = shape)
     } else {
         Modifier
     }

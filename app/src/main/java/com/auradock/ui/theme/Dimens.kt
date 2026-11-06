@@ -11,6 +11,7 @@ object AuraDockSpacing {
     val sm: Dp = 8.dp
     val smd: Dp = 12.dp
     val md: Dp = 16.dp
+    /** The margin at the left and right of every screen: 20 dp. */
     val mdl: Dp = 20.dp
     val lg: Dp = 24.dp
     val xl: Dp = 32.dp
@@ -27,9 +28,14 @@ object AuraDockSpacing {
 /** Rounded corners. */
 object AuraDockRadii {
     val control: Dp = 12.dp
-    val card: Dp = 16.dp
+    /** Cards: 24 dp. */
+    val card: Dp = 24.dp
     val cardLarge: Dp = 24.dp
     val widget: Dp = 28.dp
+    /** The top corners of a bottom sheet: 28 dp. */
+    val sheet: Dp = 28.dp
+    /** An app icon's rounded tile: 28 dp across, with this corner. */
+    val tile: Dp = 8.dp
     val pill: Dp = 999.dp
 }
 
@@ -44,8 +50,19 @@ object AuraDockSizes {
     val weatherIconSmall: Dp = 22.dp
     val weatherIcon: Dp = 32.dp
     val appIcon: Dp = 40.dp
-    val touchTarget: Dp = 44.dp
+    /** The smallest thing you can tap: 48 dp. */
+    val touchTarget: Dp = 48.dp
     val button: Dp = 48.dp
+    /** The primary pill: 56 dp high. One per screen. */
+    val pill: Dp = 56.dp
+    /** An app icon's tile: 28 dp. */
+    val appTile: Dp = 28.dp
+    /** Toggle: track and thumb. */
+    val toggleWidth: Dp = 52.dp
+    val toggleHeight: Dp = 32.dp
+    val toggleThumb: Dp = 24.dp
+    /** Checkbox. */
+    val checkbox: Dp = 24.dp
     val blurGlow: Dp = 20.dp
     val elevationCard: Dp = 16.dp
     val elevationPill: Dp = 8.dp

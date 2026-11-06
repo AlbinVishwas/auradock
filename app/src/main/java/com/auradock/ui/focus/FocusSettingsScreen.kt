@@ -121,7 +121,7 @@ fun FocusSettingsScreen(
                     Text(
                         text = "AuraDock needs Do Not Disturb access to do this (newer Android calls it \"Modes access\").",
                         style = AuraDockTypography.WidgetLabel,
-                        color = AuraDockColors.AccentAmber
+                        color = AuraDockColors.Accent
                     )
                     Spacer(Modifier.height(AuraDockSpacing.sm))
                     QuickActionButton(text = "Allow Do Not Disturb access", onClick = actions.onOpenDndSettings, isActive = true)
@@ -160,7 +160,7 @@ fun FocusSettingsScreen(
                 Text(
                     text = "${pickedApps.size} of $MAX_PICKED_APPS chosen",
                     style = AuraDockTypography.WidgetLabel,
-                    color = if (pickedApps.size == MAX_PICKED_APPS) AuraDockColors.ClockGlow else AuraDockColors.OnSurfaceVariant
+                    color = if (pickedApps.size == MAX_PICKED_APPS) AuraDockColors.Accent else AuraDockColors.OnSurfaceVariant
                 )
                 Spacer(Modifier.height(AuraDockSpacing.smd))
                 Row(
@@ -186,7 +186,7 @@ fun FocusSettingsScreen(
                     Text(
                         text = "AuraDock needs notification access to read them.",
                         style = AuraDockTypography.WidgetLabel,
-                        color = AuraDockColors.AccentAmber
+                        color = AuraDockColors.Accent
                     )
                     Spacer(Modifier.height(AuraDockSpacing.sm))
                     QuickActionButton(text = "Allow notification access", onClick = actions.onOpenNotificationAccess, isActive = true)
@@ -286,7 +286,7 @@ fun DockFromAnywhereCard(
             Text(
                 text = "Waiting for \"Display over other apps\".",
                 style = AuraDockTypography.WidgetLabel,
-                color = AuraDockColors.AccentAmber
+                color = AuraDockColors.Accent
             )
             Spacer(Modifier.height(AuraDockSpacing.sm))
             QuickActionButton(text = "Allow display over other apps", onClick = onAllowOverlay, isActive = true)

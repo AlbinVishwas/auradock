@@ -1,3 +1,5 @@
+> The look is defined by [design/STYLE_GUIDE.md](design/STYLE_GUIDE.md); the tokens below implement it.
+
 # AuraDock design system and how to implement a design
 
 This file is the rulebook for anything that changes how AuraDock looks. Read it before restyling a screen.

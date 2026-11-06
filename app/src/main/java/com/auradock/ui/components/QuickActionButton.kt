@@ -46,9 +46,9 @@ fun QuickActionButton(
 ) {
     val spacing = LocalAuraDockSpacing.current
     val shape = RoundedCornerShape(AuraDockRadii.pill)
-    val background = if (isActive) AuraDockColors.AccentBlue else AuraDockColors.Surface
+    val background = if (isActive) AuraDockColors.Accent else AuraDockColors.Surface
     val interactionSource = remember { MutableInteractionSource() }
-    val resolvedContentColor = if (isActive) AuraDockColors.OnBackground else contentColor
+    val resolvedContentColor = if (isActive) AuraDockColors.OnAccent else contentColor
     val isPressed by interactionSource.collectIsPressedAsState()
     val scale by animateFloatAsState(
         targetValue = if (isPressed) 0.97f else 1f,

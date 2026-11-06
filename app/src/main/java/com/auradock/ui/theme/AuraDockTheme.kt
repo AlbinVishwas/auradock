@@ -21,8 +21,13 @@ private val AuraDarkColorScheme = darkColorScheme(
     onBackground     = AuraDockColors.OnBackground,
     onSurface        = AuraDockColors.OnBackground,
     onSurfaceVariant = AuraDockColors.OnSurfaceVariant,
-    primary          = AuraDockColors.AccentBlue,
-    secondary        = AuraDockColors.ClockGlow,
+    primary          = AuraDockColors.Accent,
+    onPrimary        = AuraDockColors.OnAccent,
+    secondary        = AuraDockColors.Accent,
+    onSecondary      = AuraDockColors.OnAccent,
+    surfaceVariant   = AuraDockColors.Field,
+    outline          = AuraDockColors.Outline,
+    outlineVariant   = AuraDockColors.Inactive,
     surfaceTint      = Color.Transparent,
     scrim            = Color.Black
 )

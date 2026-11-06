@@ -160,7 +160,7 @@ private fun TemplateCard(
                     style = if (inUse) AuraDockTypography.TitleStrong else AuraDockTypography.Title
                 )
                 if (inUse) {
-                    Text(text = "· in use", color = AuraDockColors.ClockGlow, style = AuraDockTypography.WidgetLabel)
+                    Text(text = "· in use", color = AuraDockColors.Accent, style = AuraDockTypography.WidgetLabel)
                 }
             }
             Text(

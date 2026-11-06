@@ -192,13 +192,13 @@ private fun TaskRow(
 @Composable
 private fun CheckCircle(done: Boolean, highlight: Boolean, onClick: () -> Unit) {
     val fill by animateColorAsState(
-        targetValue = if (done) AuraDockColors.AccentBlue else Color.Transparent,
+        targetValue = if (done) AuraDockColors.Accent else Color.Transparent,
         animationSpec = AuraDockMotion.tween(AuraDockMotion.Check),
         label = "checkFill"
     )
     val tick by animateFloatAsState(if (done) 1f else 0f, AuraDockMotion.tween(AuraDockMotion.Check), label = "checkTick")
     val ring = when {
-        done -> AuraDockColors.AccentBlue
+        done -> AuraDockColors.Accent
         highlight -> AuraDockColors.Overdue
         else -> AuraDockColors.OnSurfaceVariant
     }

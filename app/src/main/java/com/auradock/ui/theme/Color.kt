@@ -26,8 +26,24 @@ object AuraDockPalette {
     val Grey200 = Color(0xFFD2D2D2)
     val White = Color(0xFFFFFFFF)
 
-    /** The brand colour: the aura in the logo. */
+    // The style guide's scale (docs/design/STYLE_GUIDE.md), darkest to lightest.
+    val Card = Color(0xFF161616)
+    val Sheet = Color(0xFF1C1C1E)
+    val Field = Color(0xFF262626)
+    val QuietPill = Color(0xFF2E2E2E)
+    val Inactive = Color(0xFF3A3A3A)
+    val Outline = Color(0xFF5C5C5C)
+    val Tertiary = Color(0xFF8A8A8A)
+    val Secondary = Color(0xFFA3A3A3)
+
+    /** The app's accent: a pale cream. The one filled action, toggles, selected states, overdue items, badges. */
+    val Cream = Color(0xFFFEFFED)
+
+    /** Dock templates only (the Bold clock's two tones, and the brand mark): the aura in the logo. */
     val Coral = Color(0xFFFF5A4E)
+
+    /** The lighter coral of the Bold clock. */
+    val CoralLight = Color(0xFFFF8F86)
 
     /** A lighter, softer coral for text and fills that sit on black. */
     val Salmon = Color(0xFFFF9A90)
@@ -57,10 +73,20 @@ object AuraDockColors {
     // Surfaces
     /** Pure ambient black: the stage everything sits on. */
     val Background = AuraDockPalette.Black
-    /** Deep surface for cards. */
-    val Surface = AuraDockPalette.Grey950
+    /** Cards. */
+    val Surface = AuraDockPalette.Card
     /** Raised surface: bottom sheets. */
-    val SurfaceRaised = AuraDockPalette.Grey900
+    val SurfaceRaised = AuraDockPalette.Sheet
+    /** Chips, text fields and other controls that sit on a card. */
+    val Field = AuraDockPalette.Field
+    /** The quiet pill: secondary buttons. */
+    val QuietPill = AuraDockPalette.QuietPill
+    /** Off states: a switched-off toggle track, an empty checkbox, an unavailable control. */
+    val Inactive = AuraDockPalette.Inactive
+    /** Outlines of empty checkboxes and rings. */
+    val Outline = AuraDockPalette.Outline
+    /** Text of done items. */
+    val Tertiary = AuraDockPalette.Tertiary
     val GlassCardTop = AuraDockPalette.White9
     val GlassCardBottom = AuraDockPalette.White5
     val GlassBorder = AuraDockPalette.White12
@@ -70,21 +96,24 @@ object AuraDockColors {
 
     // Text
     val OnBackground = AuraDockPalette.White
-    val OnSurfaceVariant = AuraDockPalette.Grey400
+    val OnSurfaceVariant = AuraDockPalette.Secondary
     /** Text that is switched off (an unavailable row). */
-    val OnDisabled = AuraDockPalette.Grey700
+    val OnDisabled = AuraDockPalette.Outline
 
-    // Brand
+    // The app's accent (cream) and the text that sits on it.
+    val Accent = AuraDockPalette.Cream
+    val OnAccent = AuraDockPalette.Black
+    val Overdue = Accent
+
+    // Dock templates only. Never in the app's own UI.
     val Coral = AuraDockPalette.Coral
+    val CoralLight = AuraDockPalette.CoralLight
     val CoralTint = AuraDockPalette.Salmon
 
-    // Accents and states
+    // Dock clock colours still on their first designs (restyled with the templates).
     val ClockGlow = AuraDockPalette.Cyan
-    val AccentBlue = AuraDockPalette.Blue
-    val AccentAmber = AuraDockPalette.Amber
     val Success = AuraDockPalette.Green
     val Danger = AuraDockPalette.DarkRed
-    val Overdue = AuraDockPalette.Amber
 
     // The dock: quieter greys for text that must not glare in a dark room.
     val DockLabel = AuraDockPalette.Grey600

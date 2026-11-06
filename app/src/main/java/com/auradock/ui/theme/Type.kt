@@ -18,13 +18,17 @@ private fun weightOf(resId: Int, weight: FontWeight) = Font(
 )
 
 private val Weights = listOf(
-    FontWeight.ExtraLight, FontWeight.Light, FontWeight.Normal, FontWeight.Medium, FontWeight.SemiBold, FontWeight.Bold
+    FontWeight.ExtraLight, FontWeight.Light, FontWeight.Normal, FontWeight.Medium, FontWeight.SemiBold, FontWeight.Bold,
+    FontWeight.ExtraBold, FontWeight.Black
 )
 
 /** Display face: the clock, big numbers and screen titles. Rounded, friendly. */
 val NunitoFamily = FontFamily(Weights.map { weightOf(R.font.nunito_variable, it) })
 
-/** UI face: labels, body text, buttons. */
+/** Titles, section headings, buttons and numbers in the app (not on the dock). */
+val MonaSansFamily = FontFamily(Weights.map { weightOf(R.font.mona_sans_variable, it) })
+
+/** UI face: body text and secondary text. */
 val InterFamily = FontFamily(Weights.map { weightOf(R.font.inter_variable, it) })
 
 /**
@@ -32,40 +36,36 @@ val InterFamily = FontFamily(Weights.map { weightOf(R.font.inter_variable, it) }
  * Display styles use Nunito; UI styles use Inter.
  */
 object AuraDockTypography {
-    // ---- Display (Nunito) ----
-    /** 96 sp, extra light: the main clock digits. */
+    // ---- The app (style guide): Mona Sans for titles, headings, buttons and numbers; Inter for reading ----
+    /** Title: Mona Sans ExtraBold 34 / 1.1. The one big line at the top of a screen. */
+    val ScreenTitle = TextStyle(fontFamily = MonaSansFamily, fontWeight = FontWeight.ExtraBold, fontSize = 34.sp, lineHeight = 37.4.sp)
+
+    /** Section: Mona Sans Bold 22. "Today", a card heading. */
+    val Section = TextStyle(fontFamily = MonaSansFamily, fontWeight = FontWeight.Bold, fontSize = 22.sp, lineHeight = 26.sp)
+
+    /** Button and numbers: Mona Sans Bold 18. The text on a pill, a temperature, a time. */
+    val Button = TextStyle(fontFamily = MonaSansFamily, fontWeight = FontWeight.Bold, fontSize = 18.sp, lineHeight = 22.sp)
+
+    /** Body: Inter Medium 16 / 1.4. A task, a row, running text. */
+    val Body = TextStyle(fontFamily = InterFamily, fontWeight = FontWeight.Medium, fontSize = 16.sp, lineHeight = 22.4.sp)
+
+    /** Secondary: Inter Regular 15. Colour it with [AuraDockColors.OnSurfaceVariant]. */
+    val Secondary = TextStyle(fontFamily = InterFamily, fontWeight = FontWeight.Normal, fontSize = 15.sp, lineHeight = 21.sp)
+
+    /** Caption: Inter Medium 13. "Overdue · 11:00 AM". */
+    val Caption = TextStyle(fontFamily = InterFamily, fontWeight = FontWeight.Medium, fontSize = 13.sp, lineHeight = 18.sp)
+
+    // Names the screens used before the style guide. They now map onto the guide's scale.
+    val Title = Button
+    val TitleStrong = Button
+    val WidgetPrimary = Section
+    val PillText = Body
+    val PillAction = Button
+    val WidgetLabel = Caption
+    val CalendarCell = Caption
+
+    /** 96 sp, extra light: the clock on the dashboard's preview (the dock has its own, see below). */
     val ClockDisplay = TextStyle(fontFamily = NunitoFamily, fontWeight = FontWeight.ExtraLight, fontSize = 96.sp, letterSpacing = (-4).sp)
-
-    /** 32 sp, semibold: the title at the top of a screen. */
-    val ScreenTitle = TextStyle(fontFamily = NunitoFamily, fontWeight = FontWeight.SemiBold, fontSize = 32.sp, lineHeight = 38.sp)
-
-    /** 28 sp, light: a primary widget value (temperature, a dash for "no data"). */
-    val WidgetPrimary = TextStyle(fontFamily = NunitoFamily, fontWeight = FontWeight.Light, fontSize = 28.sp, letterSpacing = (-0.5).sp)
-
-    // ---- UI (Inter) ----
-    /** 18 sp, medium: a row or card title. */
-    val Title = TextStyle(fontFamily = InterFamily, fontWeight = FontWeight.Medium, fontSize = 18.sp)
-
-    /** 18 sp, semibold: the same, emphasised (the item in use). */
-    val TitleStrong = TextStyle(fontFamily = InterFamily, fontWeight = FontWeight.SemiBold, fontSize = 18.sp)
-
-    /** 16 sp, regular: running text. */
-    val Body = TextStyle(fontFamily = InterFamily, fontWeight = FontWeight.Normal, fontSize = 16.sp, lineHeight = 24.sp)
-
-    /** 16 sp, medium: the text on the docking pill. */
-    val PillText = TextStyle(fontFamily = InterFamily, fontWeight = FontWeight.Medium, fontSize = 16.sp)
-
-    /** 16 sp, semibold: the action on the docking pill. */
-    val PillAction = TextStyle(fontFamily = InterFamily, fontWeight = FontWeight.SemiBold, fontSize = 16.sp)
-
-    /** 14 sp, medium: widget labels, city name, buttons. */
-    val WidgetLabel = TextStyle(fontFamily = InterFamily, fontWeight = FontWeight.Medium, fontSize = 14.sp, letterSpacing = 0.5.sp)
-
-    /** 12 sp, regular: calendar day cells. */
-    val CalendarCell = TextStyle(fontFamily = InterFamily, fontWeight = FontWeight.Normal, fontSize = 12.sp, letterSpacing = 0.sp)
-
-    /** 10 sp, medium: captions and explanations. */
-    val Caption = TextStyle(fontFamily = InterFamily, fontWeight = FontWeight.Medium, fontSize = 10.sp, letterSpacing = 1.sp)
 
     // ---- The dock (landscape, read from a distance; Nunito, light) ----
     /** 13 sp, light, wide: the date under the clock. */

@@ -27,6 +27,24 @@ object AuraDockMotion {
     const val IllustrationFrame = 2200
     const val ClockDrift = 5200
 
+    /** Blur to focus: how long new content takes to settle in. */
+    const val BlurToFocus = 260
+
+    /** Blur to focus in a list: the delay between one row and the next. */
+    const val Stagger = 40
+
+    /** The Dock now morph (container transform from the pill into the dock). */
+    const val DockMorph = 450
+
+    /** Blur to focus: the blur radius content starts at, in dp. */
+    const val BlurToFocusRadiusDp = 12
+
+    /** Blur to focus: how far content rises while it settles, in dp. */
+    const val BlurToFocusRiseDp = 4
+
+    /** The scrim behind a sheet fades to this much black. */
+    const val ScrimAlpha = 0.6f
+
     val Easing = FastOutSlowInEasing
     val EasingLinear = LinearEasing
     val EasingEmphasized = CubicBezierEasing(0.2f, 0f, 0f, 1f)
@@ -35,8 +53,8 @@ object AuraDockMotion {
     fun <T> tween(durationMillis: Int = Standard, easing: androidx.compose.animation.core.Easing = Easing): TweenSpec<T> =
         androidx.compose.animation.core.tween(durationMillis = durationMillis, easing = easing)
 
-    /** The soft spring with a little overshoot: things that slide in (the docking pill). */
-    fun <T> softSpring(): FiniteAnimationSpec<T> = spring(dampingRatio = 0.65f, stiffness = Spring.StiffnessMediumLow)
+    /** The style guide's spring for sheets, cards and things that slide in (the docking pill): damping 0.9, stiffness 380, about 320 ms. No overshoot. */
+    fun <T> softSpring(): FiniteAnimationSpec<T> = spring(dampingRatio = 0.9f, stiffness = 380f)
 
     /** A calm spring without overshoot: things that settle into place. */
     fun <T> calmSpring(): FiniteAnimationSpec<T> = spring(dampingRatio = Spring.DampingRatioNoBouncy, stiffness = Spring.StiffnessLow)
