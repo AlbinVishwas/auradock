@@ -20,7 +20,9 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
@@ -134,38 +136,39 @@ internal fun PillContent(pill: Pill?, visible: Boolean, onTap: () -> Unit, onCan
             contentColor = AuraDockColors.PillText,
             shape = RoundedCornerShape(AuraDockRadii.pill),
             border = BorderStroke(AuraDockSizes.line, AuraDockColors.PillBorder),
-            shadowElevation = AuraDockSizes.elevationPill,
             modifier = Modifier.padding(AuraDockSpacing.sm).clickable(onClick = onTap) // the whole pill docks
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.padding(start = AuraDockSpacing.lg, end = AuraDockSpacing.sm, top = AuraDockSpacing.xs, bottom = AuraDockSpacing.xs)
+                modifier = Modifier.padding(start = AuraDockSpacing.lg, end = AuraDockSpacing.sm, top = AuraDockSpacing.sm, bottom = AuraDockSpacing.sm)
             ) {
                 when (shown) {
                     is Pill.Countdown -> {
                         Text("Docking in ${shown.secondsLeft}…", color = AuraDockColors.PillText, style = AuraDockTypography.PillText)
                         Spacer(Modifier.width(AuraDockSpacing.md))
-                        Text(
-                            text = "Cancel",
-                            color = AuraDockColors.Coral,
-                            style = AuraDockTypography.PillAction,
-                            modifier = Modifier
-                                .clickable(onClick = onCancel) // a separate target: Cancel does not dock
-                                .padding(horizontal = AuraDockSpacing.md, vertical = AuraDockSpacing.smd)
-                        )
+                        PillAction("Cancel", Modifier.clickable(onClick = onCancel)) // a separate target: Cancel does not dock
                     }
                     Pill.Offer -> {
                         Text("Switch to dock?", color = AuraDockColors.PillText, style = AuraDockTypography.PillText)
                         Spacer(Modifier.width(AuraDockSpacing.md))
-                        Text(
-                            text = "Dock",
-                            color = AuraDockColors.Coral,
-                            style = AuraDockTypography.PillAction,
-                            modifier = Modifier.padding(horizontal = AuraDockSpacing.md, vertical = AuraDockSpacing.smd)
-                        )
+                        PillAction("Dock", Modifier)
                     }
                 }
             }
         }
     }
+}
+
+/** The action on the pill: the cream accent with black text. */
+@Composable
+private fun PillAction(text: String, modifier: Modifier) {
+    Text(
+        text = text,
+        color = AuraDockColors.OnAccent,
+        style = AuraDockTypography.PillAction,
+        modifier = modifier
+            .clip(RoundedCornerShape(AuraDockRadii.pill))
+            .background(AuraDockColors.Accent)
+            .padding(horizontal = AuraDockSpacing.md, vertical = AuraDockSpacing.smd)
+    )
 }
