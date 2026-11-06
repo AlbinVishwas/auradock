@@ -30,7 +30,7 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.unit.dp
-import com.auradock.ui.components.QuickActionButton
+import com.auradock.ui.components.QuietPill
 import com.auradock.ui.theme.AuraDockColors
 import com.auradock.ui.theme.AuraDockTypography
 import kotlinx.coroutines.delay
@@ -97,7 +97,7 @@ private fun DrawScope.drawFrame(frame: Int, ringProgress: Float) {
             val ringSize = AuraDockIllustration.ring.toPx()
             val ringTopLeft = Offset(size.width / 2 - ringSize / 2, top + phoneH / 2 - ringSize / 2)
             drawArc(AuraDockColors.IllustrationRingTrack, 0f, 360f, false, ringTopLeft, Size(ringSize, ringSize), style = Stroke(AuraDockIllustration.ringStroke.toPx()))
-            drawArc(AuraDockColors.Coral, -90f, 360f * ringProgress, false, ringTopLeft, Size(ringSize, ringSize), style = Stroke(AuraDockIllustration.ringStroke.toPx(), cap = StrokeCap.Round))
+            drawArc(AuraDockColors.Accent, -90f, 360f * ringProgress, false, ringTopLeft, Size(ringSize, ringSize), style = Stroke(AuraDockIllustration.ringStroke.toPx(), cap = StrokeCap.Round))
         }
         else -> drawRoundRect(AuraDockColors.Background, screenTopLeft, screenSize, screenRadius) // the dock; the clock is drawn on top
     }
@@ -122,21 +122,24 @@ fun DockExplainer(
         Text(
             text = "Place your phone sideways on a charger. When the screen times out, AuraDock takes over automatically. " +
                 "Upright or lying flat? It stays out of the way.",
-            style = AuraDockTypography.Body,
+            style = AuraDockTypography.Secondary,
             color = AuraDockColors.OnSurfaceVariant
         )
         DockAnimation()
-        QuickActionButton(
-            text = if (screensaverSelected) "✓ AuraDock is your screensaver" else "Choose AuraDock as screensaver",
-            onClick = onChooseScreensaver,
-            isActive = !screensaverSelected
-        )
-        Text("Select AuraDock in the list.", style = AuraDockTypography.Caption, color = AuraDockColors.OnSurfaceVariant)
-        QuickActionButton(text = "Set screen timeout", onClick = onSetScreenTimeout)
-        Text(
-            "A shorter timeout, like 30 seconds, makes AuraDock appear faster.",
-            style = AuraDockTypography.Caption,
-            color = AuraDockColors.OnSurfaceVariant
-        )
+        Column(verticalArrangement = Arrangement.spacedBy(AuraDockSpacing.xs)) {
+            QuietPill(
+                text = if (screensaverSelected) "✓ AuraDock is your screensaver" else "Choose AuraDock as screensaver",
+                onClick = onChooseScreensaver
+            )
+            Text("Select AuraDock in the list.", style = AuraDockTypography.Caption, color = AuraDockColors.OnSurfaceVariant)
+        }
+        Column(verticalArrangement = Arrangement.spacedBy(AuraDockSpacing.xs)) {
+            QuietPill(text = "Set screen timeout", onClick = onSetScreenTimeout)
+            Text(
+                "A shorter timeout, like 30 seconds, makes AuraDock appear faster.",
+                style = AuraDockTypography.Caption,
+                color = AuraDockColors.OnSurfaceVariant
+            )
+        }
     }
 }

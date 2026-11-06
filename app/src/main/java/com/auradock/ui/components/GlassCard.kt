@@ -47,30 +47,17 @@ import com.auradock.ui.theme.AuraDockSpacing
 @Composable
 fun GlassCard(
     modifier     : Modifier  = Modifier,
-    cornerRadius : Dp        = AuraDockRadii.widget,
+    cornerRadius : Dp        = AuraDockRadii.card,
     padding      : Dp        = AuraDockSpacing.CardPadding,
     content      : @Composable BoxScope.() -> Unit
 ) {
     val shape = RoundedCornerShape(cornerRadius)
-    val glassTop = AuraDockColors.GlassCardTop
-    val glassBottom = AuraDockColors.GlassCardBottom
 
+    // Flat, as the style guide says: a solid card, no gradient, no border, no shadow.
     Box(
         modifier = modifier
             .clip(shape)
-            .background(
-                brush = Brush.verticalGradient(
-                    colors = listOf(
-                        glassTop,
-                        glassBottom
-                    )
-                )
-            )
-            .border(
-                width = AuraDockSizes.line,
-                color = AuraDockColors.GlassBorder,        // white 12%
-                shape = shape
-            )
+            .background(AuraDockColors.Surface)
             .padding(padding),
         content = content
     )

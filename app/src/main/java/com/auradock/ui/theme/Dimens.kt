@@ -63,6 +63,16 @@ object AuraDockSizes {
     val toggleThumb: Dp = 24.dp
     /** Checkbox. */
     val checkbox: Dp = 24.dp
+    /** The quiet pill's visible height; its tap area is still [touchTarget]. */
+    val quietPill: Dp = 40.dp
+    /** A progress dot, and the wider dot of the current step. */
+    val dot: Dp = 8.dp
+    val dotCurrent: Dp = 24.dp
+    /** The icon disc on a permission card. */
+    val iconDisc: Dp = 40.dp
+    val checkStroke: Dp = 2.dp
+    /** The logo mark on the welcome step. */
+    val wordmarkMark: Dp = 96.dp
     val blurGlow: Dp = 20.dp
     val elevationCard: Dp = 16.dp
     val elevationPill: Dp = 8.dp
@@ -116,7 +126,7 @@ object AuraDockIllustration {
 
 /** Sizes in the template gallery. */
 object AuraDockGallery {
-    val pageInset: Dp = 64.dp
+    val pageInset: Dp = 40.dp
     val previewDesignWidth: Dp = 800.dp
     val cardPadding: Dp = 18.dp
 }

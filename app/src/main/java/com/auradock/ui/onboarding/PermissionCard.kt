@@ -1,20 +1,25 @@
 package com.auradock.ui.onboarding
 
-import com.auradock.ui.theme.AuraDockSpacing
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.unit.dp
-import com.auradock.ui.components.QuickActionButton
-import com.auradock.ui.focus.SettingsCard
+import androidx.compose.ui.draw.clip
+import com.auradock.ui.components.QuietPill
 import com.auradock.ui.theme.AuraDockColors
+import com.auradock.ui.theme.AuraDockRadii
+import com.auradock.ui.theme.AuraDockSizes
+import com.auradock.ui.theme.AuraDockSpacing
 import com.auradock.ui.theme.AuraDockTypography
 
 /** Everything AuraDock can ask the user for, each with the one-line reason shown on its card. */
@@ -28,41 +33,36 @@ enum class SetupPermission(val title: String, val why: String) {
 }
 
 /**
- * One permission: why it is needed, a checkmark once granted, and "Allow" (plus "Skip" when [onSkip] is given, as in the
- * walkthrough). A skipped card keeps "Allow", so the user can still change their mind.
+ * The style guide's permission card: an icon disc, the title, a one-line reason and an Allow pill. Once allowed, the pill
+ * becomes a "✓ Allowed" label in the accent.
  */
 @Composable
 fun PermissionCard(
     permission: SetupPermission,
     granted: Boolean,
     onAllow: () -> Unit,
-    modifier: Modifier = Modifier,
-    skipped: Boolean = false,
-    onSkip: (() -> Unit)? = null
+    modifier: Modifier = Modifier
 ) {
-    SettingsCard {
-        Row(
-            modifier = modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(AuraDockRadii.card))
+            .background(AuraDockColors.Surface)
+            .padding(AuraDockSpacing.md),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(AuraDockSpacing.smd)
+    ) {
+        Box(
+            modifier = Modifier.size(AuraDockSizes.iconDisc).clip(CircleShape).background(AuraDockColors.Field),
+            contentAlignment = Alignment.Center
         ) {
-            Text(
-                text = permission.title,
-                style = AuraDockTypography.WidgetPrimary,
-                color = AuraDockColors.OnBackground,
-                modifier = Modifier.weight(1f)
-            )
-            if (granted) Text(text = "✓ Allowed", style = AuraDockTypography.WidgetLabel, color = AuraDockColors.Accent)
-            else if (skipped) Text(text = "Skipped", style = AuraDockTypography.WidgetLabel, color = AuraDockColors.OnSurfaceVariant)
+            Text(text = permission.title.first().toString(), style = AuraDockTypography.Button, color = AuraDockColors.OnBackground)
         }
-        Spacer(Modifier.height(AuraDockSpacing.sm))
-        Text(text = permission.why, style = AuraDockTypography.Caption, color = AuraDockColors.OnSurfaceVariant)
-        if (!granted) {
-            Spacer(Modifier.height(AuraDockSpacing.smd))
-            Row(horizontalArrangement = Arrangement.spacedBy(AuraDockSpacing.smd)) {
-                QuickActionButton(text = "Allow", onClick = onAllow, isActive = true)
-                if (onSkip != null && !skipped) QuickActionButton(text = "Skip", onClick = onSkip)
-            }
+        Column(modifier = Modifier.weight(1f)) {
+            Text(text = permission.title, style = AuraDockTypography.Button, color = AuraDockColors.OnBackground)
+            Text(text = permission.why, style = AuraDockTypography.Caption, color = AuraDockColors.OnSurfaceVariant)
         }
+        if (granted) Text(text = "✓ Allowed", style = AuraDockTypography.Caption, color = AuraDockColors.Accent)
+        else QuietPill(text = "Allow", onClick = onAllow)
     }
 }

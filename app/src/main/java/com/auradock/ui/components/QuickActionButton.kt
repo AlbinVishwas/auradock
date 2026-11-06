@@ -42,11 +42,11 @@ fun QuickActionButton(
     modifier: Modifier = Modifier,
     icon: ImageVector? = null,
     isActive: Boolean = false,
-    contentColor: Color = AuraDockColors.OnSurfaceVariant
+    contentColor: Color = AuraDockColors.OnBackground
 ) {
     val spacing = LocalAuraDockSpacing.current
     val shape = RoundedCornerShape(AuraDockRadii.pill)
-    val background = if (isActive) AuraDockColors.Accent else AuraDockColors.Surface
+    val background = if (isActive) AuraDockColors.Accent else AuraDockColors.QuietPill
     val interactionSource = remember { MutableInteractionSource() }
     val resolvedContentColor = if (isActive) AuraDockColors.OnAccent else contentColor
     val isPressed by interactionSource.collectIsPressedAsState()
@@ -54,11 +54,6 @@ fun QuickActionButton(
         targetValue = if (isPressed) 0.97f else 1f,
         animationSpec = tween(durationMillis = AuraDockMotion.Press),
         label = "buttonScale"
-    )
-    val shadowElevation by animateFloatAsState(
-        targetValue = if (isPressed) 2f else if (isActive) 8f else 4f,
-        animationSpec = tween(durationMillis = AuraDockMotion.PressRelease),
-        label = "buttonElevation"
     )
 
     Surface(
@@ -77,8 +72,7 @@ fun QuickActionButton(
         shape = shape,
         color = background,
         contentColor = resolvedContentColor,
-        tonalElevation = AuraDockSizes.none,
-        shadowElevation = shadowElevation.dp
+        tonalElevation = AuraDockSizes.none
     ) {
         Row(
             modifier = Modifier.padding(horizontal = spacing.md),
@@ -94,7 +88,7 @@ fun QuickActionButton(
             }
             Text(
                 text = text,
-                style = AuraDockTypography.WidgetLabel,
+                style = AuraDockTypography.Caption,
                 color = resolvedContentColor,
                 maxLines = 1,
                 softWrap = false

@@ -71,11 +71,7 @@ private fun SetupSomeGranted() = AuraDockTheme {
 
 @PreviewComponent
 @Composable
-private fun PermissionCardNotGranted() = AuraDockTheme { PermissionCard(SetupPermission.CALENDAR, granted = false, onAllow = {}, onSkip = {}) }
-
-@PreviewComponent
-@Composable
-private fun PermissionCardSkipped() = AuraDockTheme { PermissionCard(SetupPermission.LOCATION, granted = false, onAllow = {}, skipped = true, onSkip = {}) }
+private fun PermissionCardNotGranted() = AuraDockTheme { PermissionCard(SetupPermission.CALENDAR, granted = false, onAllow = {}) }
 
 @PreviewComponent
 @Composable

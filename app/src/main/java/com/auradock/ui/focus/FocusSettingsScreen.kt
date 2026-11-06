@@ -18,7 +18,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Switch
+import com.auradock.ui.components.AuraSwitch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -34,6 +34,7 @@ import com.auradock.focus.AppEntry
 import com.auradock.focus.MAX_PICKED_APPS
 import com.auradock.focus.canToggle
 import com.auradock.ui.components.QuickActionButton
+import com.auradock.ui.components.QuietPill
 import com.auradock.ui.theme.AuraDockColors
 import com.auradock.ui.theme.AuraDockRadii
 import com.auradock.ui.theme.AuraDockSizes
@@ -106,7 +107,7 @@ fun FocusSettingsScreen(
                         color = AuraDockColors.OnBackground,
                         modifier = Modifier.weight(1f)
                     )
-                    Switch(checked = focusWhileDocked, onCheckedChange = actions.onToggleFocus)
+                    AuraSwitch(checked = focusWhileDocked, onCheckedChange = actions.onToggleFocus)
                 }
                 Spacer(Modifier.height(AuraDockSpacing.sm))
                 Text(
@@ -174,7 +175,7 @@ fun FocusSettingsScreen(
                         color = AuraDockColors.OnBackground,
                         modifier = Modifier.weight(1f)
                     )
-                    Switch(checked = showMessageText, onCheckedChange = actions.onToggleMessageText)
+                    AuraSwitch(checked = showMessageText, onCheckedChange = actions.onToggleMessageText)
                 }
                 Text(
                     text = "Off by default: the dock shows the app and who it is from, not what the message says.",
@@ -247,7 +248,7 @@ private fun AppIcon(packageName: String, loadIcon: suspend (String) -> ImageBitm
 @Composable
 internal fun SettingsCard(content: @Composable () -> Unit) {
     Surface(shape = RoundedCornerShape(AuraDockRadii.card), color = AuraDockColors.Surface, modifier = Modifier.fillMaxWidth()) {
-        Column(modifier = Modifier.padding(AuraDockSpacing.md)) { content() }
+        Column(modifier = Modifier.padding(AuraDockSpacing.mdl)) { content() }
     }
 }
 
@@ -271,7 +272,7 @@ fun DockFromAnywhereCard(
                 color = AuraDockColors.OnBackground,
                 modifier = Modifier.weight(1f)
             )
-            Switch(checked = enabled, onCheckedChange = onToggle)
+            AuraSwitch(checked = enabled, onCheckedChange = onToggle)
         }
         Spacer(Modifier.height(AuraDockSpacing.sm))
         Text(
@@ -285,11 +286,11 @@ fun DockFromAnywhereCard(
             Spacer(Modifier.height(AuraDockSpacing.smd))
             Text(
                 text = "Waiting for \"Display over other apps\".",
-                style = AuraDockTypography.WidgetLabel,
+                style = AuraDockTypography.Caption,
                 color = AuraDockColors.Accent
             )
             Spacer(Modifier.height(AuraDockSpacing.sm))
-            QuickActionButton(text = "Allow display over other apps", onClick = onAllowOverlay, isActive = true)
+            QuietPill(text = "Allow display over other apps", onClick = onAllowOverlay)
         } else if (enabled) {
             Spacer(Modifier.height(AuraDockSpacing.smd))
             Text("On.", style = AuraDockTypography.Caption, color = AuraDockColors.OnSurfaceVariant)

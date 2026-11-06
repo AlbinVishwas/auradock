@@ -29,8 +29,8 @@ import com.auradock.dock.DockContent
 import com.auradock.dock.DockTemplate
 import com.auradock.dock.DockUiState
 import com.auradock.ui.components.ScaledPreview
-import com.auradock.ui.components.GlassCard
-import com.auradock.ui.components.QuickActionButton
+import com.auradock.ui.components.Badge
+import com.auradock.ui.components.PrimaryPill
 import com.auradock.ui.theme.AuraDockColors
 import com.auradock.ui.theme.AuraDockSpacing
 import kotlin.math.abs
@@ -48,7 +48,10 @@ data class TemplateGalleryUiState(
 fun TemplateGalleryScreen(
     state: TemplateGalleryUiState,
     onApply: (DockTemplate) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    title: String = "Templates",
+    /** Shown above the button (the walkthrough's progress dots). When set, the button always applies, even to the template in use. */
+    footer: (@Composable () -> Unit)? = null
 ) {
     val selected = state.selected
     val templates = state.templates
@@ -63,11 +66,11 @@ fun TemplateGalleryScreen(
         modifier = modifier
             .fillMaxSize()
             .background(AuraDockColors.Background)
-            .padding(horizontal = AuraDockSpacing.lg, vertical = AuraDockSpacing.xl),
+            .padding(horizontal = AuraDockSpacing.mdl, vertical = AuraDockSpacing.lg),
         verticalArrangement = Arrangement.spacedBy(AuraDockSpacing.lg)
     ) {
         Text(
-            text = "Templates",
+            text = title,
             color = AuraDockColors.OnBackground,
             style = AuraDockTypography.ScreenTitle
         )
@@ -104,15 +107,21 @@ fun TemplateGalleryScreen(
         }
 
         val shown = templates[shownIndex]
-        QuickActionButton(
-            text = if (shown == selected) "In use" else "Use ${shown.label}",
-            onClick = {
-                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                onApply(shown)
-            },
+        Column(
             modifier = Modifier.fillMaxWidth(),
-            isActive = shown != selected
-        )
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(AuraDockSpacing.md)
+        ) {
+            footer?.invoke()
+            PrimaryPill(
+                text = if (shown == selected && footer == null) "In use" else if (footer != null) "Continue with ${shown.label}" else "Use ${shown.label}",
+                onClick = {
+                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                    onApply(shown)
+                },
+                enabled = footer != null || shown != selected
+            )
+        }
     }
 }
 
@@ -123,51 +132,29 @@ private fun TemplateCard(
     inUse: Boolean,
     modifier: Modifier = Modifier
 ) {
-    GlassCard(
+    Column(
         modifier = modifier
             .fillMaxWidth()
-            .aspectRatio(0.72f),
-        cornerRadius = AuraDockRadii.cardLarge,
-        padding = AuraDockGallery.cardPadding
+            .clip(RoundedCornerShape(AuraDockRadii.card))
+            .background(AuraDockColors.Surface)
+            .padding(AuraDockGallery.cardPadding),
+        verticalArrangement = Arrangement.spacedBy(AuraDockSpacing.smd)
     ) {
-        Column(
-            modifier = Modifier.fillMaxSize(),
-            verticalArrangement = Arrangement.spacedBy(AuraDockSpacing.md)
+        // The real dock for this template, shrunk to a landscape thumbnail.
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .aspectRatio(16f / 9f)
+                .clip(RoundedCornerShape(AuraDockRadii.control))
         ) {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f),
-                contentAlignment = Alignment.Center
-            ) {
-                // The real dock for this template, shrunk to a thumbnail.
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .aspectRatio(16f / 9f)
-                        .clip(RoundedCornerShape(AuraDockRadii.card))
-                ) {
-                    ScaledPreview(designWidth = AuraDockGallery.previewDesignWidth) {
-                        DockContent(template = template, state = state)
-                    }
-                }
+            ScaledPreview(designWidth = AuraDockGallery.previewDesignWidth) {
+                DockContent(template = template, state = state)
             }
-
-            Row(horizontalArrangement = Arrangement.spacedBy(AuraDockSpacing.sm)) {
-                Text(
-                    text = template.label,
-                    color = AuraDockColors.OnBackground,
-                    style = if (inUse) AuraDockTypography.TitleStrong else AuraDockTypography.Title
-                )
-                if (inUse) {
-                    Text(text = "· in use", color = AuraDockColors.Accent, style = AuraDockTypography.WidgetLabel)
-                }
-            }
-            Text(
-                text = template.description,
-                color = AuraDockColors.OnSurfaceVariant,
-                style = AuraDockTypography.WidgetLabel
-            )
         }
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(AuraDockSpacing.sm)) {
+            Text(text = template.label, color = AuraDockColors.OnBackground, style = AuraDockTypography.Section)
+            if (inUse) Badge("In use")
+        }
+        Text(text = template.description, color = AuraDockColors.OnSurfaceVariant, style = AuraDockTypography.Secondary)
     }
 }
