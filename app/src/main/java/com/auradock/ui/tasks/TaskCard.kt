@@ -147,7 +147,7 @@ private fun TaskRow(
                     modifier = Modifier
                         .fillMaxSize()
                         .clip(RoundedCornerShape(AuraDockRadii.control))
-                        .background(AuraDockColors.Danger)
+                        .background(AuraDockColors.Inactive)
                         .padding(end = spacing.mdl),
                     contentAlignment = Alignment.CenterEnd
                 ) {

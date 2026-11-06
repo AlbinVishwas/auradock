@@ -8,7 +8,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.blur
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -52,9 +51,9 @@ fun ClockWidget(
     showDate   : Boolean = true,
     modifier   : Modifier = Modifier
 ) {
-    val digitColor = if (dimmed) AuraDockColors.DimDigits else AuraDockColors.OnBackground
-    val colonColor = if (dimmed) AuraDockColors.DimColon else AuraDockColors.ClockGlow
-    val labelColor = if (dimmed) AuraDockColors.DimLabel else AuraDockColors.OnSurfaceVariant
+    val digitColor = if (dimmed) AuraDockColors.DimDigits else AuraDockColors.DockText
+    val colonColor = if (dimmed) AuraDockColors.DimColon else AuraDockColors.DockLabel
+    val labelColor = if (dimmed) AuraDockColors.DimLabel else AuraDockColors.DockSecondary
     // ── Time components (recomputed only when millis cross a minute boundary) ─
     val calendar = remember(timeMillis) {
         Calendar.getInstance().apply { timeInMillis = timeMillis }
@@ -105,16 +104,6 @@ fun ClockWidget(
         label         = "minuteFade"
     )
 
-    val glowBreath by rememberInfiniteTransition(label = "clockGlowBreath").animateFloat(
-        initialValue = 0.28f,
-        targetValue = 0.42f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(durationMillis = AuraDockMotion.ClockDrift, easing = AuraDockMotion.Easing),
-            repeatMode = RepeatMode.Reverse
-        ),
-        label = "glowBreathAlpha"
-    )
-
     Box(
         contentAlignment = Alignment.Center,
         modifier         = modifier.fillMaxWidth()
@@ -126,20 +115,6 @@ fun ClockWidget(
 
             // ── Step 4c: Stacked glow + sharp clock row ───────────────────────
             Box(contentAlignment = Alignment.Center) {
-
-                // Ghost layer — blurred copy creates the ambient halo.
-                // Drawn first so it sits visually behind the sharp text.
-                if (!dimmed) {
-                    Text(
-                        text = "$hourStr:$minuteStr",
-                        style = AuraDockTypography.ClockDisplay.copy(
-                            color = AuraDockColors.ClockGlow.copy(
-                                alpha = glowBreath * minuteAlpha
-                            )
-                        ),
-                        modifier = Modifier.blur(AuraDockSizes.blurGlow)
-                    )
-                }
 
                 // Sharp foreground clock row
                 Row(verticalAlignment = Alignment.CenterVertically) {

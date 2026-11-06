@@ -85,7 +85,15 @@ object AuraDockDockLayout {
     val contentMaxWidth: Dp = 560.dp
     val timeColumn: Dp = 104.dp
     val labelColumn: Dp = 92.dp
+    /** The safe zone of every dock template: 40 dp at the sides and 24 dp at the top and bottom (the burn-in drift is on top of that). */
     val screenPadding: Dp = 40.dp
+    val safeVertical: Dp = 24.dp
+    /** The Focus digits: a digit is this fraction of the font size tall, and the two lines are this far apart. */
+    const val FocusCapEm = 0.83f
+    const val FocusGapEm = 0.10f
+    /** The Classic day number's line height as a fraction of its size. */
+    const val DayLineEm = 0.95f
+    const val FocusLeftShare = 0.46f
     val columnGap: Dp = 28.dp
     val sectionGap: Dp = 36.dp
     val listGap: Dp = 18.dp

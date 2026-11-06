@@ -3,7 +3,7 @@ package com.auradock.dock
 /** The dock looks V1 offers. No customization: the user just picks one. */
 enum class DockTemplate(val label: String, val description: String) {
     BOLD("Bold", "Just the time, big and bold"),
-    CLASSIC("Classic", "Big clock, date and weather"),
+    CLASSIC("Classic", "Big date, city and temperature"),
     FOCUS("Focus", "Clock, next event and top task"),
     MINIMAL("Minimal", "Just the time, dimmed for OLED"),
     PRODUCTIVITY("Productivity", "Clock, tasks, events and weather");

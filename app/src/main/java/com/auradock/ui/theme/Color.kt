@@ -91,8 +91,6 @@ object AuraDockColors {
     val GlassCardBottom = AuraDockPalette.White5
     val GlassBorder = AuraDockPalette.White12
     val Divider = AuraDockPalette.White15
-    /** A hairline between columns on the dock. */
-    val DockDivider = AuraDockPalette.White8
 
     // Text
     val OnBackground = AuraDockPalette.White
@@ -116,20 +114,19 @@ object AuraDockColors {
     /** The two big dots of the Bold clock's colon: translucent grey. */
     val BoldColon = AuraDockPalette.Secondary.copy(alpha = 0.45f)
 
-    // Dock clock colours still on their first designs (restyled with the templates).
-    val ClockGlow = AuraDockPalette.Cyan
-    val Success = AuraDockPalette.Green
-    val Danger = AuraDockPalette.DarkRed
-
-    // The dock: quieter greys for text that must not glare in a dark room.
-    val DockLabel = AuraDockPalette.Grey600
-    val DockText = AuraDockPalette.Grey200
-    val DockOverdue = AuraDockPalette.OldGold
-    val DimDigits = AuraDockPalette.Grey500
-    val DimColon = AuraDockPalette.DimBlueGrey
-    val DimLabel = AuraDockPalette.Grey650
-    val StripText = AuraDockPalette.Grey550
-    val StripTextDim = AuraDockPalette.Grey800
+    // The dock templates: pure black, white and the greys, with coral the one loud colour.
+    val DockText = AuraDockPalette.White
+    val DockSecondary = AuraDockPalette.Secondary
+    val DockLabel = AuraDockPalette.Tertiary
+    val DockOverdue = AuraDockPalette.Coral
+    val DockDivider = AuraDockPalette.Inactive
+    /** Minimal: OLED-dim grey digits. */
+    val DimDigits = AuraDockPalette.Outline
+    val DimColon = AuraDockPalette.Inactive
+    val DimLabel = AuraDockPalette.Inactive
+    /** The notification strip: grey, quieter than anything else. */
+    val StripText = AuraDockPalette.Tertiary
+    val StripTextDim = AuraDockPalette.Inactive
 
     // The docking pill and the onboarding animation
     val PillBackground = AuraDockPalette.Black

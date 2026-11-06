@@ -1,6 +1,8 @@
 package com.auradock.dock
 
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.FirstBaseline
+import androidx.compose.ui.layout.layout
 import com.auradock.ui.theme.AuraDockTypography
 import com.auradock.ui.theme.AuraDockBold
 import com.auradock.ui.theme.AuraDockSpacing
@@ -24,6 +26,13 @@ import androidx.compose.foundation.layout.widthIn
 import android.text.format.DateFormat
 import androidx.compose.material3.Text
 import androidx.compose.runtime.remember
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.Density
+import java.time.Instant
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
+import java.util.Locale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
 import com.auradock.data.nextEvent
@@ -35,7 +44,6 @@ import java.util.Date
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import com.auradock.ui.components.GlassCard
 import com.auradock.ui.theme.AuraDockColors
 import com.auradock.ui.weather.WeatherIcon
 import com.auradock.ui.widgets.ClockWidget
@@ -73,9 +81,9 @@ fun DockContent(template: DockTemplate, state: DockUiState, modifier: Modifier =
                 scale = if (lines.isEmpty()) 1f else AuraDockBold.StripScale
             )
             DockTemplate.MINIMAL -> ClockWidget(timeMillis = state.timeMillis, dimmed = true, showDate = false)
-            DockTemplate.FOCUS -> FocusLayout(state)
-            DockTemplate.PRODUCTIVITY -> ProductivityLayout(state)
-            DockTemplate.CLASSIC -> ClassicLayout(state)
+            DockTemplate.FOCUS -> SafeZone { FocusLayout(state) }
+            DockTemplate.PRODUCTIVITY -> SafeZone { ProductivityLayout(state) }
+            DockTemplate.CLASSIC -> SafeZone { ClassicLayout(state) }
         }
         }
         NotificationStrip(
@@ -86,51 +94,90 @@ fun DockContent(template: DockTemplate, state: DockUiState, modifier: Modifier =
     }
 }
 
+/** Keeps a template inside the safe zone: 40 dp at the sides, 24 dp at the top and bottom. */
+@Composable
+private fun SafeZone(content: @Composable () -> Unit) {
+    Box(
+        modifier = Modifier.fillMaxSize().padding(horizontal = AuraDockDockLayout.screenPadding, vertical = AuraDockDockLayout.safeVertical),
+        contentAlignment = Alignment.Center
+    ) { content() }
+}
+
 /**
- * Focus: a big clock and almost nothing else. Underneath, at most two quiet lines: the next calendar event today and
- * the one task that matters most. If there is neither, it is just the clock. Mostly black, no panels.
+ * Focus: giant, tall, condensed digits in coral on the left (hour over minutes); on the right the weekday and date, the
+ * temperature, the next event and the top task. Pure black behind.
  */
 @Composable
 private fun FocusLayout(state: DockUiState) {
     val context = LocalContext.current
     val timeFormat = remember(context) { DateFormat.getTimeFormat(context) }
+    val use24Hour = DateFormat.is24HourFormat(context)
     val next = nextEvent(state.events, state.timeMillis)
     val top = topTask(state.tasks, state.timeMillis)
+    val parts = remember(state.timeMillis, use24Hour) { boldTimeString(state.timeMillis, use24Hour).split(":") }
+    val date = remember(state.timeMillis) { DockDate.of(state.timeMillis) }
 
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(AuraDockDockLayout.sectionGap, Alignment.CenterVertically)
-    ) {
-        ClockWidget(timeMillis = state.timeMillis, showDate = false)
-        if (next != null || top != null) {
-            Column(modifier = Modifier.widthIn(max = AuraDockDockLayout.contentMaxWidth), verticalArrangement = Arrangement.spacedBy(AuraDockSpacing.md)) {
-                if (next != null) {
-                    FocusLine(label = "NEXT", text = "${timeFormat.format(Date(next.startTime))}  ${next.title}")
+    Row(modifier = Modifier.fillMaxSize(), verticalAlignment = Alignment.CenterVertically) {
+        BoxWithConstraints(modifier = Modifier.weight(AuraDockDockLayout.FocusLeftShare).fillMaxHeight(), contentAlignment = Alignment.Center) {
+            val fixed = Density(LocalDensity.current.density, fontScale = 1f)
+            val em = constraints.maxHeight / (2f * AuraDockDockLayout.FocusCapEm + AuraDockDockLayout.FocusGapEm)
+            val style = AuraDockTypography.DockCondensed.copy(fontSize = with(fixed) { em.toSp() }, color = AuraDockColors.Coral)
+            Column(horizontalAlignment = Alignment.Start, verticalArrangement = Arrangement.spacedBy(with(fixed) { (em * AuraDockDockLayout.FocusGapEm).toDp() })) {
+                parts.forEach { CondensedLine(it, style, capPx = em * AuraDockDockLayout.FocusCapEm) }
+            }
+        }
+        Column(
+            modifier = Modifier.weight(1f - AuraDockDockLayout.FocusLeftShare).padding(start = AuraDockDockLayout.columnGap),
+            verticalArrangement = Arrangement.spacedBy(AuraDockDockLayout.listGap, Alignment.CenterVertically)
+        ) {
+            Column {
+                Text(text = date.weekday, color = AuraDockColors.DockText, style = AuraDockTypography.DockHeading)
+                Text(text = date.dayMonth, color = AuraDockColors.DockSecondary, style = AuraDockTypography.DockSecondary)
+            }
+            val weather = state.weather
+            if (weather != null) {
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(AuraDockDockLayout.weatherGap)) {
+                    WeatherIcon(weather.condition.icon, AuraDockColors.DockSecondary, size = AuraDockDockLayout.weatherIconLarge)
+                    Column {
+                        Text(text = temperatureLabel(weather.temperatureC), color = AuraDockColors.DockText, style = AuraDockTypography.DockTemperature)
+                        Text(text = conditionLine(weather), color = AuraDockColors.DockSecondary, style = AuraDockTypography.DockSecondary)
+                    }
                 }
-                if (top != null) {
-                    val overdue = isOverdue(top, state.timeMillis)
-                    val due = top.dueAt?.let { "  " + timeFormat.format(Date(it)) }.orEmpty()
-                    FocusLine(
-                        label = if (overdue) "OVERDUE" else "TASK",
-                        text = top.title + due,
-                        labelColor = if (overdue) AuraDockColors.DockOverdue else AuraDockColors.DockLabel
-                    )
-                }
+            }
+            if (next != null) FocusLine(label = "Next", text = "${timeFormat.format(Date(next.startTime))}  ${next.title}")
+            if (top != null) {
+                val overdue = isOverdue(top, state.timeMillis)
+                val due = top.dueAt?.let { "  " + timeFormat.format(Date(it)) }.orEmpty()
+                FocusLine(
+                    label = if (overdue) "Overdue" else "Task",
+                    text = top.title + due,
+                    labelColor = if (overdue) AuraDockColors.DockOverdue else AuraDockColors.DockLabel
+                )
             }
         }
     }
 }
 
-/** Dim, letter-spaced label on the left and a soft-white line of text: small and calm, nothing pure white. */
+/** One line of the Focus digits, cut to the height of the digit itself (the font's own line is much taller). */
+@Composable
+private fun CondensedLine(text: String, style: androidx.compose.ui.text.TextStyle, capPx: Float) {
+    Text(
+        text = text,
+        style = style,
+        softWrap = false,
+        modifier = Modifier.layout { measurable, constraints ->
+            val placeable = measurable.measure(constraints.copy(minHeight = 0, maxHeight = androidx.compose.ui.unit.Constraints.Infinity))
+            val height = capPx.toInt()
+            layout(placeable.width, height) { placeable.place(0, -(placeable[FirstBaseline] - height)) }
+        }
+    )
+}
+
+/** A small grey label over one line of text. */
 @Composable
 private fun FocusLine(label: String, text: String, labelColor: Color = AuraDockColors.DockLabel) {
-    Row(verticalAlignment = Alignment.Bottom) {
-        Text(
-            text = label,
-            color = labelColor,
-            style = AuraDockTypography.DockLabel,
-            modifier = Modifier.width(AuraDockDockLayout.labelColumn).padding(bottom = AuraDockSpacing.xs)
-        )
+    Column {
+        Text(text = label, color = labelColor, style = AuraDockTypography.DockLabel)
         Text(
             text = text,
             color = AuraDockColors.DockText,
@@ -141,10 +188,25 @@ private fun FocusLine(label: String, text: String, labelColor: Color = AuraDockC
     }
 }
 
+/** The pieces of a date the dock writes in different places. */
+private data class DockDate(val weekday: String, val month: String, val day: String, val dayMonth: String) {
+    companion object {
+        fun of(millis: Long): DockDate {
+            val t = Instant.ofEpochMilli(millis).atZone(ZoneId.systemDefault())
+            val locale = Locale.getDefault()
+            return DockDate(
+                weekday = DateTimeFormatter.ofPattern("EEEE", locale).format(t),
+                month = DateTimeFormatter.ofPattern("MMMM", locale).format(t),
+                day = t.dayOfMonth.toString(),
+                dayMonth = DateTimeFormatter.ofPattern("d MMMM", locale).format(t)
+            )
+        }
+    }
+}
+
 /**
  * Productivity: the clock and weather on the left; on the right, up to four of today's open tasks ("+N more" for the
- * rest) and up to three upcoming events. Sized to read from a metre or two. It is only text and one hairline on black
- * (no panels or large bright areas), so nothing stays lit as a big block on an OLED.
+ * rest) and up to three upcoming events. Only text and one hairline on black, so nothing stays lit as a big block on an OLED.
  */
 @Composable
 private fun ProductivityLayout(state: DockUiState) {
@@ -155,10 +217,7 @@ private fun ProductivityLayout(state: DockUiState) {
     val moreTasks = tasks.size - shownTasks.size
     val events = upcomingEvents(state.events, state.timeMillis).take(PRODUCTIVITY_EVENTS)
 
-    Row(
-        modifier = Modifier.fillMaxSize().padding(horizontal = AuraDockDockLayout.screenPadding, vertical = AuraDockSpacing.mdl),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
+    Row(modifier = Modifier.fillMaxSize(), verticalAlignment = Alignment.CenterVertically) {
         Column(
             modifier = Modifier.weight(0.42f),
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -175,23 +234,22 @@ private fun ProductivityLayout(state: DockUiState) {
             modifier = Modifier.weight(0.58f),
             verticalArrangement = Arrangement.spacedBy(AuraDockSpacing.xxs, Alignment.CenterVertically)
         ) {
-            SectionLabel("TODAY")
+            SectionLabel("Today")
             if (shownTasks.isEmpty()) {
                 QuietLine("Nothing left to do")
             } else {
                 shownTasks.forEach { task ->
-                    val overdue = isOverdue(task, state.timeMillis)
                     TaskLine(
                         title = task.title,
                         due = task.dueAt?.let { timeFormat.format(Date(it)) },
-                        overdue = overdue
+                        overdue = isOverdue(task, state.timeMillis)
                     )
                 }
                 if (moreTasks > 0) QuietLine("+$moreTasks more")
             }
 
             Spacer(Modifier.height(AuraDockSpacing.smd))
-            SectionLabel("UP NEXT")
+            SectionLabel("Up next")
             if (events.isEmpty()) {
                 QuietLine("No more events today")
             } else {
@@ -216,14 +274,14 @@ private fun QuietLine(text: String) {
     Text(text = text, color = AuraDockColors.DockLabel, style = AuraDockTypography.DockSecondary, modifier = Modifier.padding(vertical = AuraDockSpacing.xxs))
 }
 
-/** An open circle, the task title, and its due time on the right (amber once it is overdue). */
+/** An open circle, the task title, and its due time on the right (coral once it is overdue). */
 @Composable
 private fun TaskLine(title: String, due: String?, overdue: Boolean) {
     Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(vertical = AuraDockSizes.line)) {
         Box(
             Modifier
                 .size(AuraDockDockLayout.taskRing)
-                .border(AuraDockDockLayout.strokeRing, if (overdue) AuraDockColors.DockOverdue else AuraDockColors.DockLabel, CircleShape)
+                .border(AuraDockDockLayout.strokeRing, if (overdue) AuraDockColors.DockOverdue else AuraDockColors.Outline, CircleShape)
         )
         Spacer(Modifier.width(AuraDockDockLayout.taskRingGap))
         Text(
@@ -236,7 +294,7 @@ private fun TaskLine(title: String, due: String?, overdue: Boolean) {
         )
         if (due != null) {
             Spacer(Modifier.width(AuraDockDockLayout.taskRingGap))
-            Text(text = due, color = if (overdue) AuraDockColors.DockOverdue else AuraDockColors.DockLabel, style = AuraDockTypography.DockSecondary)
+            Text(text = due, color = if (overdue) AuraDockColors.DockOverdue else AuraDockColors.DockSecondary, style = AuraDockTypography.DockSecondary)
         }
     }
 }
@@ -244,7 +302,7 @@ private fun TaskLine(title: String, due: String?, overdue: Boolean) {
 @Composable
 private fun EventLine(time: String, title: String) {
     Row(verticalAlignment = Alignment.Bottom, modifier = Modifier.padding(vertical = AuraDockSizes.line)) {
-        Text(text = time, color = AuraDockColors.DockLabel, style = AuraDockTypography.DockSecondary, modifier = Modifier.width(AuraDockDockLayout.timeColumn))
+        Text(text = time, color = AuraDockColors.DockSecondary, style = AuraDockTypography.DockSecondary, modifier = Modifier.width(AuraDockDockLayout.timeColumn))
         Text(text = title, color = AuraDockColors.DockText, style = AuraDockTypography.DockBody, maxLines = 1, overflow = TextOverflow.Ellipsis)
     }
 }
@@ -253,51 +311,47 @@ private fun EventLine(time: String, title: String) {
 @Composable
 private fun WeatherBlock(weather: Weather?) {
     if (weather == null) {
-        Text(text = "—", color = AuraDockColors.DockLabel, style = AuraDockTypography.WidgetPrimary)
+        Text(text = "—", color = AuraDockColors.DockLabel, style = AuraDockTypography.DockTemperature)
         return
     }
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(AuraDockDockLayout.weatherGap)) {
-            WeatherIcon(weather.condition.icon, AuraDockColors.DockLabel, size = AuraDockDockLayout.weatherIcon)
+            WeatherIcon(weather.condition.icon, AuraDockColors.DockSecondary, size = AuraDockDockLayout.weatherIcon)
             Text(text = temperatureLabel(weather.temperatureC), color = AuraDockColors.DockText, style = AuraDockTypography.DockTemperature)
         }
-        Text(text = conditionLine(weather), color = AuraDockColors.DockLabel, style = AuraDockTypography.DockCondition)
+        Text(text = conditionLine(weather), color = AuraDockColors.DockSecondary, style = AuraDockTypography.DockCondition)
     }
 }
 
-/** Big clock, date, weather, on a glass card. */
+/**
+ * Classic: a big date on the left (the weekday in coral, the month in grey, a huge white day number); on the right the
+ * city, a large temperature, the condition and an icon.
+ */
 @Composable
 private fun ClassicLayout(state: DockUiState) {
-    GlassCard(modifier = Modifier.fillMaxSize().padding(AuraDockDockLayout.cardPadding)) {
-        Column(
-            modifier = Modifier.fillMaxSize(),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(AuraDockDockLayout.cardGap, Alignment.CenterVertically)
-        ) {
-            ClockWidget(timeMillis = state.timeMillis)
-            WeatherLine(weather = state.weather)
+    val date = remember(state.timeMillis) { DockDate.of(state.timeMillis) }
+    Row(modifier = Modifier.fillMaxSize(), verticalAlignment = Alignment.CenterVertically) {
+        Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.Center) {
+            Text(text = date.weekday, color = AuraDockColors.Coral, style = AuraDockTypography.DockWeekday)
+            Text(text = date.month, color = AuraDockColors.DockLabel, style = AuraDockTypography.DockMonth)
+            Text(
+                text = date.day,
+                color = AuraDockColors.DockText,
+                style = AuraDockTypography.DockDayNumber.copy(lineHeight = AuraDockTypography.DockDayNumber.fontSize * AuraDockDockLayout.DayLineEm)
+            )
         }
-    }
-}
-
-/** Icon, temperature and condition (with the city if known), or a quiet dash when there is no weather. Never fake data. */
-@Composable
-private fun WeatherLine(weather: Weather?) {
-    if (weather == null) {
-        Text(text = "—", color = AuraDockColors.OnSurfaceVariant, style = AuraDockTypography.WidgetPrimary)
-        return
-    }
-    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(AuraDockDockLayout.taskRingGap)) {
-        WeatherIcon(weather.condition.icon, AuraDockColors.OnSurfaceVariant, size = AuraDockDockLayout.weatherIconLarge)
-        Text(
-            text = temperatureLabel(weather.temperatureC),
-            color = AuraDockColors.OnBackground,
-            style = AuraDockTypography.DockTemperatureLarge
-        )
-        Text(
-            text = conditionLine(weather),
-            color = AuraDockColors.OnSurfaceVariant,
-            style = AuraDockTypography.DockSecondary
-        )
+        Column(modifier = Modifier.weight(1f), horizontalAlignment = Alignment.End, verticalArrangement = Arrangement.Center) {
+            val weather = state.weather
+            if (weather == null) {
+                Text(text = "—", color = AuraDockColors.DockLabel, style = AuraDockTypography.DockTemperatureLarge)
+            } else {
+                weather.city?.let { Text(text = it, color = AuraDockColors.DockSecondary, style = AuraDockTypography.DockHeading) }
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(AuraDockDockLayout.taskRingGap)) {
+                    WeatherIcon(weather.condition.icon, AuraDockColors.DockSecondary, size = AuraDockDockLayout.weatherIconLarge)
+                    Text(text = temperatureLabel(weather.temperatureC), color = AuraDockColors.DockText, style = AuraDockTypography.DockTemperatureLarge)
+                }
+                Text(text = weather.condition.label, color = AuraDockColors.DockSecondary, style = AuraDockTypography.DockCondition)
+            }
+        }
     }
 }

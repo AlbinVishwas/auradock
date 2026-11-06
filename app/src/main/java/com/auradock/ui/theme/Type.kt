@@ -1,7 +1,9 @@
 package com.auradock.ui.theme
 
 import androidx.compose.ui.text.ExperimentalTextApi
+import androidx.compose.ui.text.PlatformTextStyle
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.style.LineHeightStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontVariation
@@ -24,6 +26,9 @@ private val Weights = listOf(
 
 /** Display face: the clock, big numbers and screen titles. Rounded, friendly. */
 val NunitoFamily = FontFamily(Weights.map { weightOf(R.font.nunito_variable, it) })
+
+/** The Focus template's giant, tall digits: a condensed display face (Oswald, SIL OFL). */
+val CondensedFamily = FontFamily(Weights.map { weightOf(R.font.oswald_variable, it) })
 
 /** Titles, section headings, buttons and numbers in the app (not on the dock). */
 val MonaSansFamily = FontFamily(Weights.map { weightOf(R.font.mona_sans_variable, it) })
@@ -67,37 +72,58 @@ object AuraDockTypography {
     /** 96 sp, extra light: the clock on the dashboard's preview (the dock has its own, see below). */
     val ClockDisplay = TextStyle(fontFamily = NunitoFamily, fontWeight = FontWeight.ExtraLight, fontSize = 96.sp, letterSpacing = (-4).sp)
 
-    // ---- The dock (landscape, read from a distance; Nunito, light) ----
-    /** 13 sp, light, wide: the date under the clock. */
-    val ClockCaption = TextStyle(fontFamily = InterFamily, fontWeight = FontWeight.Light, fontSize = 13.sp, letterSpacing = 2.sp)
+    // ---- The dock (landscape, read from a distance). Nunito for the big shapes, Inter for the reading. ----
+    /** Focus: giant condensed digits, Oswald Bold. The size is worked out from the screen; this sets the face. */
+    val DockCondensed = TextStyle(
+        fontFamily = CondensedFamily,
+        fontWeight = FontWeight.Bold,
+        fontSize = 200.sp,
+        platformStyle = PlatformTextStyle(includeFontPadding = false),
+        lineHeightStyle = LineHeightStyle(LineHeightStyle.Alignment.Center, LineHeightStyle.Trim.Both)
+    )
 
-    /** 18 sp: the AM/PM marker beside the clock. */
-    val ClockMeridiem = TextStyle(fontFamily = InterFamily, fontWeight = FontWeight.Light, fontSize = 18.sp)
+    /** The Classic template's weekday, coral: Nunito ExtraBold 34. */
+    val DockWeekday = TextStyle(fontFamily = NunitoFamily, fontWeight = FontWeight.ExtraBold, fontSize = 34.sp)
 
-    /** 12 sp, medium, wide: a section label on the dock ("NEXT", "TASK"). */
-    val DockLabel = TextStyle(fontFamily = InterFamily, fontWeight = FontWeight.Medium, fontSize = 12.sp, letterSpacing = 2.sp)
+    /** The Classic template's month, grey: Nunito Bold 34. */
+    val DockMonth = TextStyle(fontFamily = NunitoFamily, fontWeight = FontWeight.Bold, fontSize = 34.sp)
 
-    /** 14 sp: a line in the notification strip. */
-    val DockStrip = TextStyle(fontFamily = InterFamily, fontWeight = FontWeight.Normal, fontSize = 14.sp)
+    /** The Classic template's huge day number: Nunito Black 250. */
+    val DockDayNumber = TextStyle(fontFamily = NunitoFamily, fontWeight = FontWeight.Black, fontSize = 250.sp, letterSpacing = (-6).sp)
 
-    /** 16 sp, light: the weather condition line. */
-    val DockCondition = TextStyle(fontFamily = NunitoFamily, fontWeight = FontWeight.Light, fontSize = 16.sp)
+    /** A big temperature: Nunito Black 88. */
+    val DockTemperatureLarge = TextStyle(fontFamily = NunitoFamily, fontWeight = FontWeight.Black, fontSize = 88.sp, letterSpacing = (-2).sp)
 
-    /** 20 sp, light: a time or secondary line. */
-    val DockSecondary = TextStyle(fontFamily = NunitoFamily, fontWeight = FontWeight.Light, fontSize = 20.sp)
+    /** A medium temperature (Focus, Productivity): Nunito Black 44. */
+    val DockTemperature = TextStyle(fontFamily = NunitoFamily, fontWeight = FontWeight.Black, fontSize = 44.sp)
 
-    /** 24 sp, light: an event title. */
-    val DockBody = TextStyle(fontFamily = NunitoFamily, fontWeight = FontWeight.Light, fontSize = 24.sp)
+    /** The city and other short headings on the dock: Mona Sans Bold 20. */
+    val DockHeading = TextStyle(fontFamily = MonaSansFamily, fontWeight = FontWeight.Bold, fontSize = 20.sp)
 
-    /** 26 sp, light: a task title. */
-    val DockTask = TextStyle(fontFamily = NunitoFamily, fontWeight = FontWeight.Light, fontSize = 26.sp)
+    /** Secondary lines on the dock (condition, a time, a date): Inter Regular 18. */
+    val DockSecondary = TextStyle(fontFamily = InterFamily, fontWeight = FontWeight.Normal, fontSize = 18.sp)
 
-    /** 36 sp, light: temperature on the Focus template. */
-    val DockTemperature = TextStyle(fontFamily = NunitoFamily, fontWeight = FontWeight.Light, fontSize = 36.sp)
+    /** Condition under a temperature: Inter Medium 18. */
+    val DockCondition = TextStyle(fontFamily = InterFamily, fontWeight = FontWeight.Medium, fontSize = 18.sp)
 
-    /** 40 sp, light: temperature on the Classic template. */
-    val DockTemperatureLarge = TextStyle(fontFamily = NunitoFamily, fontWeight = FontWeight.Light, fontSize = 40.sp)
+    /** An event title on the dock: Inter Medium 22. */
+    val DockBody = TextStyle(fontFamily = InterFamily, fontWeight = FontWeight.Medium, fontSize = 22.sp)
 
-    /** 24 sp, light: the clock in the onboarding illustration. */
+    /** A task title on the dock: Inter Medium 24. */
+    val DockTask = TextStyle(fontFamily = InterFamily, fontWeight = FontWeight.Medium, fontSize = 24.sp)
+
+    /** A section label on the dock ("Next", "Today"): Inter Medium 14, sentence case. */
+    val DockLabel = TextStyle(fontFamily = InterFamily, fontWeight = FontWeight.Medium, fontSize = 14.sp)
+
+    /** The notification strip: a quiet Inter Medium 13 caption. */
+    val DockStrip = Caption
+
+    /** The AM/PM marker beside a clock: Inter Medium 18. */
+    val ClockMeridiem = TextStyle(fontFamily = InterFamily, fontWeight = FontWeight.Medium, fontSize = 18.sp)
+
+    /** The date under a clock: Inter Medium 14. */
+    val ClockCaption = TextStyle(fontFamily = InterFamily, fontWeight = FontWeight.Medium, fontSize = 14.sp)
+
+    /** 28 sp, light: the clock in the onboarding illustration. */
     val IllustrationClock = TextStyle(fontFamily = NunitoFamily, fontWeight = FontWeight.Light, fontSize = 28.sp)
 }
