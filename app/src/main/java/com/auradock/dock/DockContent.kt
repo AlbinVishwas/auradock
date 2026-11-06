@@ -2,6 +2,7 @@ package com.auradock.dock
 
 import androidx.compose.ui.graphics.Color
 import com.auradock.ui.theme.AuraDockTypography
+import com.auradock.ui.theme.AuraDockBold
 import com.auradock.ui.theme.AuraDockSpacing
 import com.auradock.ui.theme.AuraDockSizes
 import com.auradock.ui.theme.AuraDockDockLayout
@@ -66,6 +67,11 @@ fun DockContent(template: DockTemplate, state: DockUiState, modifier: Modifier =
             contentAlignment = Alignment.Center
         ) {
         when (template) {
+            DockTemplate.BOLD -> BoldClock(
+                timeMillis = state.timeMillis,
+                use24Hour = DateFormat.is24HourFormat(LocalContext.current),
+                scale = if (lines.isEmpty()) 1f else AuraDockBold.StripScale
+            )
             DockTemplate.MINIMAL -> ClockWidget(timeMillis = state.timeMillis, dimmed = true, showDate = false)
             DockTemplate.FOCUS -> FocusLayout(state)
             DockTemplate.PRODUCTIVITY -> ProductivityLayout(state)

@@ -36,10 +36,10 @@ class TemplateRepositoryTest {
     // ── parsing the stored value ──────────────────────────────────────────────
 
     @Test
-    fun `nothing stored gives the default`() = assertEquals(DockTemplate.CLASSIC, parseDockTemplate(null))
+    fun `nothing stored gives the default`() = assertEquals(DockTemplate.BOLD, parseDockTemplate(null))
 
     @Test
-    fun `garbage gives the default`() = assertEquals(DockTemplate.CLASSIC, parseDockTemplate("NOT_A_TEMPLATE"))
+    fun `garbage gives the default`() = assertEquals(DockTemplate.BOLD, parseDockTemplate("NOT_A_TEMPLATE"))
 
     @Test
     fun `an offered template is restored`() = assertEquals(DockTemplate.MINIMAL, parseDockTemplate("MINIMAL"))
@@ -52,7 +52,7 @@ class TemplateRepositoryTest {
     @Test
     fun `the gallery offers all four templates`() =
         assertEquals(
-            listOf(DockTemplate.CLASSIC, DockTemplate.FOCUS, DockTemplate.MINIMAL, DockTemplate.PRODUCTIVITY),
+            listOf(DockTemplate.BOLD, DockTemplate.CLASSIC, DockTemplate.FOCUS, DockTemplate.MINIMAL, DockTemplate.PRODUCTIVITY),
             DockTemplate.available
         )
 
@@ -64,7 +64,7 @@ class TemplateRepositoryTest {
 
     @Test
     fun `starts with the default when nothing is saved`() =
-        assertEquals(DockTemplate.CLASSIC, repoWithStored(null).selected.value)
+        assertEquals(DockTemplate.BOLD, repoWithStored(null).selected.value)
 
     @Test
     fun `selecting updates the flow and writes it to the phone`() {

@@ -9,6 +9,10 @@ import com.auradock.ui.theme.AuraDockTheme
 // The dock is landscape-only, so every template has landscape previews. A portrait one is added too, to see how a template
 // holds up if the window is ever the wrong way round (the dock normally rotates its content, see RotatedContent).
 
+@PreviewLandscape @Composable private fun BoldFull() = AuraDockTheme { DockContent(DockTemplate.BOLD, PreviewData.dockFull) }
+@PreviewLandscape @Composable private fun BoldEmpty() = AuraDockTheme { DockContent(DockTemplate.BOLD, PreviewData.dockEmpty) }
+@PreviewPortrait @Composable private fun BoldPortrait() = AuraDockTheme { DockContent(DockTemplate.BOLD, PreviewData.dockFull) }
+
 @PreviewLandscape @Composable private fun ClassicFull() = AuraDockTheme { DockContent(DockTemplate.CLASSIC, PreviewData.dockFull) }
 @PreviewLandscape @Composable private fun ClassicEmpty() = AuraDockTheme { DockContent(DockTemplate.CLASSIC, PreviewData.dockEmpty) }
 

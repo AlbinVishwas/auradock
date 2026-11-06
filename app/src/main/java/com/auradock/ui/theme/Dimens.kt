@@ -130,3 +130,45 @@ object AuraDockGallery {
     val previewDesignWidth: Dp = 800.dp
     val cardPadding: Dp = 18.dp
 }
+
+/** The Bold template's clock (docs/design/STYLE_GUIDE.md): numbers in "em", meaning a fraction of the digit size. */
+object AuraDockBold {
+    /** Digits are drawn at 80% opacity, so overlapping ones screen into a lighter tone. */
+    const val DigitAlpha = 0.8f
+
+    /** How far each digit tucks into the one before it: -0.12 em. */
+    const val OverlapEm = 0.12f
+
+    /** The width of the colon's slot, and the size and spacing of its two dots. */
+    /** Room kept at each end of the time so a leaning digit is not clipped. */
+    const val EdgeEm = 0.08f
+
+    const val ColonEm = 0.30f
+    const val ColonDotRadiusEm = 0.075f
+    const val ColonDotOffsetEm = 0.20f
+
+    /** The height of a line of digits, as a fraction of their size, used to keep the time inside the screen. */
+    const val DigitHeightEm = 1.08f
+
+    /** The share of the free width the time fills, and how much smaller it gets when the notification strip shows. */
+    const val WidthFill = 0.96f
+    const val StripScale = 0.82f
+
+    /**
+     * Each digit leans a little, so the time looks set by hand. The guide gives 1 -3, 2 +5, 3 -4, 0 +5; the others
+     * carry on in the same +-3 to +-5 range.
+     */
+    fun rotationDegrees(digit: Char): Float = when (digit) {
+        '0' -> 5f
+        '1' -> -3f
+        '2' -> 5f
+        '3' -> -4f
+        '4' -> 4f
+        '5' -> -5f
+        '6' -> 3f
+        '7' -> -4f
+        '8' -> -3f
+        '9' -> 5f
+        else -> 0f
+    }
+}
