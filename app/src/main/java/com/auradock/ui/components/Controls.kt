@@ -56,7 +56,7 @@ import com.auradock.ui.theme.AuraDockTypography
 
 /** The primary pill: 56 dp high, accent fill, black text. One per screen. */
 @Composable
-fun PrimaryPill(text: String, onClick: () -> Unit, modifier: Modifier = Modifier, enabled: Boolean = true) {
+fun PrimaryPill(text: String, onClick: () -> Unit, modifier: Modifier = Modifier, enabled: Boolean = true, icon: androidx.compose.ui.graphics.vector.ImageVector? = null) {
     Box(
         modifier = modifier
             .fillMaxWidth()
@@ -66,7 +66,11 @@ fun PrimaryPill(text: String, onClick: () -> Unit, modifier: Modifier = Modifier
             .clickable(enabled = enabled, onClick = onClick),
         contentAlignment = Alignment.Center
     ) {
-        Text(text = text, style = AuraDockTypography.Button, color = if (enabled) AuraDockColors.OnAccent else AuraDockColors.Tertiary)
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(AuraDockSpacing.smd - AuraDockSpacing.xxs)) {
+            val tint = if (enabled) AuraDockColors.OnAccent else AuraDockColors.Tertiary
+            if (icon != null) Icon(icon, contentDescription = null, tint = tint, modifier = Modifier.size(AuraDockSizes.pillIcon))
+            Text(text = text, style = AuraDockTypography.Button, color = tint)
+        }
     }
 }
 

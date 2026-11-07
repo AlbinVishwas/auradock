@@ -60,6 +60,8 @@ import com.auradock.ui.theme.AuraDockGallery
 import com.auradock.ui.theme.AuraDockSizes
 import com.auradock.ui.theme.AuraDockTheme
 import com.auradock.ui.theme.LocalAuraDockSpacing
+import com.auradock.ui.theme.AuraDockSpacing
+import com.auradock.ui.theme.fromScreenTop
 import com.auradock.ui.viewmodel.CalendarPermissionUiState
 
 /** Everything the dashboard shows. The ViewModel's flows are folded into this by DashboardRoute. */
@@ -91,14 +93,12 @@ data class DashboardActions(
 )
 
 /** The "today" screen. Stateless: draws [state] and reports taps through [actions]. */
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun DashboardScreen(
     state: DashboardUiState,
     actions: DashboardActions,
     modifier: Modifier = Modifier
 ) {
-    val spacing = LocalAuraDockSpacing.current
     val context = LocalContext.current
     val timeMillis = state.timeMillis
     val tasks = state.tasks
@@ -113,28 +113,17 @@ fun DashboardScreen(
             .fillMaxSize()
             .background(AuraDockColors.Background)
             .verticalScroll(rememberScrollState())
-            .padding(horizontal = spacing.mdl),
-        verticalArrangement = Arrangement.Top
+            .padding(start = AuraDockSpacing.mdl, end = AuraDockSpacing.mdl, top = fromScreenTop(AuraDockSpacing.huge), bottom = AuraDockSpacing.xxl),
+        verticalArrangement = Arrangement.spacedBy(AuraDockSpacing.md)
     ) {
         // Everything settles in with blur to focus, one row after the other (40 ms apart).
         BlurIn(index = 0) {
-            Column {
-                Text(
-                    text = greetingFor(timeMillis),
-                    modifier = Modifier.padding(top = spacing.xl),
-                    color = AuraDockColors.OnBackground,
-                    style = AuraDockTypography.ScreenTitle
-                )
-                WeatherRow(
-                    date = dateText,
-                    weather = state.weather,
-                    permission = state.locationPermission,
-                    onEnable = actions.onEnableWeather
-                )
+            Column(modifier = Modifier.padding(start = AuraDockSpacing.xs, end = AuraDockSpacing.xs, bottom = AuraDockSpacing.smd)) {
+                Text(text = greetingFor(timeMillis), color = AuraDockColors.OnBackground, style = AuraDockTypography.Greeting)
+                WeatherRow(date = dateText, weather = state.weather, permission = state.locationPermission, onEnable = actions.onEnableWeather)
             }
         }
 
-        Spacer(modifier = Modifier.height(spacing.lg))
         BlurIn(index = 1) {
             TaskCard(
                 tasks = tasks,
@@ -162,72 +151,32 @@ fun DashboardScreen(
             )
         }
 
-        Spacer(modifier = Modifier.height(spacing.md))
-        val summary = buildTodaySummary(
-            events = state.events,
-            permission = state.calendarPermission,
-            formatTime = { timeFormat.format(Date(it)) }
-        )
         BlurIn(index = 2) {
-            TodaySnapshotCard(
-                modifier = Modifier.fillMaxWidth(),
-                title = "Calendar",
-                items = summary.lines,
-                emptyStateText = summary.emptyText,
-                actionText = summary.actionText,
-                onAction = actions.onEnableCalendarAccess
+            CalendarCard(
+                events = state.events,
+                permission = state.calendarPermission,
+                nowMillis = timeMillis,
+                formatTime = { timeFormat.format(Date(it)) },
+                onEnableAccess = actions.onEnableCalendarAccess
             )
         }
 
-        Spacer(modifier = Modifier.height(spacing.md))
-        // The dock card: a landscape thumbnail of the dock in use, and the one primary pill on this screen.
         BlurIn(index = 3) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(AuraDockRadii.card))
-                    .background(AuraDockColors.Surface)
-                    .padding(spacing.md),
-                verticalArrangement = Arrangement.spacedBy(spacing.md)
-            ) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .aspectRatio(16f / 9f)
-                        .clip(RoundedCornerShape(AuraDockRadii.control))
-                ) {
-                    // Lay the template out at a realistic landscape size, then shrink it to fit the card.
-                    ScaledPreview(designWidth = AuraDockGallery.previewDesignWidth) {
-                        DockContent(
-                            template = state.template,
-                            state = DockUiState(timeMillis, state.weather, state.events.orEmpty(), tasks.orEmpty())
-                        )
-                    }
-                }
-                val morph = LocalDockMorph.current
-                var pillBounds by remember { mutableStateOf(Rect.Zero) }
-                PrimaryPill(
-                    text = "Dock now",
-                    onClick = { morph(pillBounds, actions.onDockNow) },
-                    modifier = Modifier.reportBounds { pillBounds = it }
-                )
-            }
+            DockCard(
+                template = state.template,
+                dockState = DockUiState(timeMillis, state.weather, state.events.orEmpty(), tasks.orEmpty()),
+                onChange = actions.onOpenTemplates,
+                onDockNow = actions.onDockNow
+            )
         }
 
-        Spacer(modifier = Modifier.height(spacing.md))
         BlurIn(index = 4) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(spacing.smd),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                QuietPill(text = "Templates", onClick = actions.onOpenTemplates)
-                QuietPill(text = "Focus", onClick = actions.onOpenFocus)
-                GreyTextButton(text = "Setup", onClick = actions.onOpenSetup)
+            Column(verticalArrangement = Arrangement.spacedBy(AuraDockSpacing.xs)) {
+                NavTiles(templateCount = DockTemplate.available.size, onOpenTemplates = actions.onOpenTemplates, onOpenFocus = actions.onOpenFocus)
+                // Not in the handoff: the only way back to Setup, so a skipped permission can still be fixed.
+                GreyTextButton(text = "Setup", onClick = actions.onOpenSetup, modifier = Modifier.fillMaxWidth())
             }
         }
-
-        Spacer(modifier = Modifier.height(spacing.xl))
     }
 }
 

@@ -99,13 +99,18 @@ fun BoldClock(timeMillis: Long, use24Hour: Boolean, modifier: Modifier = Modifie
             modifier = Modifier
                 .layout { measurable, constraints ->
                     // The design sets the line box to 0.8 em, shorter than the font's own line, so the strip can sit close.
-                    val p = measurable.measure(constraints.copy(minHeight = 0, maxHeight = Constraints.Infinity))
+                    // The time is measured at its natural width (it can be a touch wider than the space, with its ink inside it) and centred.
+                    val p = measurable.measure(constraints.copy(minWidth = 0, maxWidth = Constraints.Infinity, minHeight = 0, maxHeight = Constraints.Infinity))
                     val boxH = (AuraDockBold.LineHeightEm * emPx).toInt()
-                    layout(p.width, boxH) { p.place(0, (boxH - p.height) / 2) }
+                    // The layer is wider than the time by the bleed on each side, so a leaning digit is not cut off; the layout is not.
+                    val bleed = (AuraDockBold.BleedEm * emPx).toInt()
+                    val natural = p.width - 2 * bleed
+                    val width = minOf(natural, constraints.maxWidth)
+                    layout(width, boxH) { p.place(-bleed + (width - natural) / 2, (boxH - p.height) / 2) }
                 }
-                .offset(y = with(fixed) { (-AuraDockBold.LiftEm * emPx).toDp() })
+                .offset(x = with(fixed) { (-AuraDockBold.ShiftEm * emPx).toDp() }, y = with(fixed) { (-AuraDockBold.LiftEm * emPx).toDp() })
                 .graphicsLayer { compositingStrategy = CompositingStrategy.Offscreen }
-                .padding(horizontal = with(fixed) { (AuraDockBold.EdgeEm * emPx).toDp() }),
+                .padding(horizontal = with(fixed) { ((AuraDockBold.EdgeEm + AuraDockBold.BleedEm) * emPx).toDp() }),
             verticalAlignment = Alignment.CenterVertically
         ) {
             var digitIndex = 0

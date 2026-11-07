@@ -91,6 +91,19 @@ object AuraDockTypography {
     /** A template's name under the carousel: Mona Sans Bold 24. */
     val TemplateName = TextStyle(fontFamily = MonaSansFamily, fontWeight = FontWeight.Bold, fontSize = 24.sp, lineHeight = 28.sp)
 
+    /** "Nothing planned. Enjoy the quiet.": Mona Sans Bold 20 / 1.3. */
+    val EmptyState = TextStyle(fontFamily = MonaSansFamily, fontWeight = FontWeight.Bold, fontSize = 20.sp, lineHeight = 26.sp)
+
+    /** The count beside a card's title ("3 left") and a task's time: Inter Regular 14. */
+    val Meta = TextStyle(fontFamily = InterFamily, fontWeight = FontWeight.Normal, fontSize = 14.sp, lineHeight = 20.sp)
+
+    /** The time of an event: Mona Sans Bold 18, with its "PM" in [EventMeridiem]. */
+    val EventTime = TextStyle(fontFamily = MonaSansFamily, fontWeight = FontWeight.Bold, fontSize = 18.sp, lineHeight = 21.6.sp)
+    val EventMeridiem = TextStyle(fontFamily = MonaSansFamily, fontWeight = FontWeight.Bold, fontSize = 12.sp)
+
+    /** The text on the calendar's Allow pill: Inter SemiBold 14. */
+    val PillSmall = TextStyle(fontFamily = InterFamily, fontWeight = FontWeight.SemiBold, fontSize = 14.sp)
+
     // Names the screens used before the style guide. They now map onto the guide's scale.
     val Title = Button
     val TitleStrong = Button

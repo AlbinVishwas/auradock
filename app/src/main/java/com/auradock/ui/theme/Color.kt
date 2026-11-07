@@ -40,6 +40,10 @@ object AuraDockPalette {
     val Tile = Color(0xFF222222)
     val Hairline = Color(0xFF242424)
     val BadgeBorder = Color(0xFF3A3A33)
+    /** The filled circle of a done task. */
+    val DoneCircle = Color(0xFF333333)
+    /** The outline of a navigation tile on the dashboard. */
+    val TileOutline = Color(0xFF222222)
 
     /** The app's accent: a pale cream. The one filled action, toggles, selected states, overdue items, badges. */
     val Cream = Color(0xFFFEFFED)
@@ -100,6 +104,8 @@ object AuraDockColors {
     val BadgeBorder = AuraDockPalette.BadgeBorder
     /** The current progress dot: white (the handoff), not the accent. */
     val DotCurrent = AuraDockPalette.White
+    val DoneCircle = AuraDockPalette.DoneCircle
+    val TileOutline = AuraDockPalette.TileOutline
     val GlassCardTop = AuraDockPalette.White9
     val GlassCardBottom = AuraDockPalette.White5
     val GlassBorder = AuraDockPalette.White12

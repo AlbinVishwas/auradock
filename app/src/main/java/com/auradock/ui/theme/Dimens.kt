@@ -42,6 +42,9 @@ object AuraDockRadii {
     val row: Dp = 20.dp
     /** The 40 dp tile behind an icon on a row. */
     val iconTile: Dp = 12.dp
+    /** The dock thumbnail on the dashboard, and the 44 dp calendar tile. */
+    val thumbnail: Dp = 16.dp
+    val calendarTile: Dp = 14.dp
     /** A template card in the carousel. */
     val templateCard: Dp = 22.dp
     /** The device frame on the welcome step. */
@@ -80,6 +83,14 @@ object AuraDockSizes {
     val dotCurrent: Dp = 24.dp
     /** The icon disc on a permission card. */
     val iconDisc: Dp = 40.dp
+    /** Dashboard (handoff): the dock thumbnail is 157 dp high; a task row's tap area is 38 dp wide (circle + gap); the 44 dp calendar tile. */
+    val thumbnailHeight: Dp = 157.dp
+    val taskCircleTap: Dp = 38.dp
+    val calendarTileSize: Dp = 44.dp
+    val calendarAllow: Dp = 40.dp
+    val timeColumn: Dp = 64.dp
+    val navTileIcon: Dp = 22.dp
+    val pillIcon: Dp = 22.dp
     /** The small pills on a row: Allow, Skip. 36 dp high. */
     val smallPill: Dp = 36.dp
     /** The dots under a carousel: 6 dp. */
@@ -176,7 +187,7 @@ object AuraDockGallery {
     val deviceBaseWidth: Dp = 200.dp
     val deviceBaseHeight: Dp = 8.dp
     val pageInset: Dp = 40.dp
-    val previewDesignWidth: Dp = 800.dp
+    val previewDesignWidth: Dp = 914.dp
     val cardPadding: Dp = 18.dp
 }
 
@@ -191,6 +202,12 @@ object AuraDockBold {
     /** The width of the colon's slot, and the size and spacing of its two dots. */
     /** Room kept at each end of the time so a leaning digit is not clipped. */
     const val EdgeEm = 0.08f
+
+    /** A small nudge to the left, measured against the handoff render: the digits' ink sits slightly right of the design's. */
+    const val ShiftEm = 0f
+
+    /** Extra room inside the blend layer, either side of the time, so a leaning digit is never clipped. */
+    const val BleedEm = 0.12f
 
     /** Colon (Dock-Bold.dc.html): dots 0.17 em wide, 0.1 em apart, a 0.02 em margin before and -0.06 em after. */
     const val ColonEm = 0.13f
