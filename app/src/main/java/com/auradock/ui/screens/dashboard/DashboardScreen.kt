@@ -108,8 +108,9 @@ fun DashboardScreen(
     // Task list add/edit sheet. -1 means "new task"; null means the sheet is closed.
     var sheetTaskId by rememberSaveable { mutableStateOf<Long?>(null) }
 
+    Box(modifier = modifier.fillMaxSize()) {
     Column(
-        modifier = modifier
+        modifier = Modifier
             .fillMaxSize()
             .background(AuraDockColors.Background)
             .verticalScroll(rememberScrollState())
@@ -136,21 +137,6 @@ fun DashboardScreen(
                 modifier = Modifier.fillMaxWidth()
             )
         }
-        sheetTaskId?.let { id ->
-            val editing = tasks?.firstOrNull { it.id == id }
-            TaskSheet(
-                task = editing,
-                nowMillis = timeMillis,
-                exactAlarmsAllowed = state.exactAlarmsAllowed,
-                onAllowExactAlarms = actions.onAllowExactAlarms,
-                onSave = { title, dueAt ->
-                    actions.onSaveTask(editing?.id, title, dueAt)
-                    sheetTaskId = null
-                },
-                onDismiss = { sheetTaskId = null }
-            )
-        }
-
         BlurIn(index = 2) {
             CalendarCard(
                 events = state.events,
@@ -177,6 +163,23 @@ fun DashboardScreen(
                 GreyTextButton(text = "Setup", onClick = actions.onOpenSetup, modifier = Modifier.fillMaxWidth())
             }
         }
+    }
+    sheetTaskId?.let { id ->
+            val editing = tasks?.firstOrNull { it.id == id }
+            TaskSheet(
+                task = editing,
+                nowMillis = timeMillis,
+                exactAlarmsAllowed = state.exactAlarmsAllowed,
+                onAllowExactAlarms = actions.onAllowExactAlarms,
+                onSave = { title, dueAt ->
+                    actions.onSaveTask(editing?.id, title, dueAt)
+                    sheetTaskId = null
+                },
+                onDismiss = { sheetTaskId = null },
+                onDelete = editing?.let { task -> { actions.onDeleteTask(task); sheetTaskId = null } }
+            )
+        }
+
     }
 }
 

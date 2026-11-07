@@ -88,6 +88,18 @@ object AuraDockTypography {
     /** The text of a badge: Inter SemiBold 12. */
     val SmallBadge = TextStyle(fontFamily = InterFamily, fontWeight = FontWeight.SemiBold, fontSize = 12.sp)
 
+    /** A sheet's title: Mona Sans Bold 24. */
+    val SheetTitle = TextStyle(fontFamily = MonaSansFamily, fontWeight = FontWeight.Bold, fontSize = 24.sp, lineHeight = 28.sp)
+
+    /** A field's label (Inter Medium 13) and its text (Inter Medium 17). */
+    val FieldLabel = TextStyle(fontFamily = InterFamily, fontWeight = FontWeight.Medium, fontSize = 13.sp, lineHeight = 18.sp)
+    val FieldText = TextStyle(fontFamily = InterFamily, fontWeight = FontWeight.Medium, fontSize = 17.sp, lineHeight = 24.sp)
+
+    /** The time wheel: the chosen number in Mona Sans Bold 28 (24 for AM/PM), the others 20. */
+    val WheelChosen = TextStyle(fontFamily = MonaSansFamily, fontWeight = FontWeight.Bold, fontSize = 28.sp)
+    val WheelChosenSmall = TextStyle(fontFamily = MonaSansFamily, fontWeight = FontWeight.Bold, fontSize = 24.sp)
+    val WheelOther = TextStyle(fontFamily = MonaSansFamily, fontWeight = FontWeight.Bold, fontSize = 20.sp)
+
     /** A template's name under the carousel: Mona Sans Bold 24. */
     val TemplateName = TextStyle(fontFamily = MonaSansFamily, fontWeight = FontWeight.Bold, fontSize = 24.sp, lineHeight = 28.sp)
 

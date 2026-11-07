@@ -44,6 +44,9 @@ object AuraDockPalette {
     val DoneCircle = Color(0xFF333333)
     /** The outline of a navigation tile on the dashboard. */
     val TileOutline = Color(0xFF222222)
+    /** The grab handle of a sheet, and the dimmed rows of a time wheel. */
+    val Handle = Color(0xFF4A4A4A)
+    val WheelDim = Color(0xFF6B6B6B)
 
     /** The app's accent: a pale cream. The one filled action, toggles, selected states, overdue items, badges. */
     val Cream = Color(0xFFFEFFED)
@@ -105,6 +108,10 @@ object AuraDockColors {
     /** The current progress dot: white (the handoff), not the accent. */
     val DotCurrent = AuraDockPalette.White
     val DoneCircle = AuraDockPalette.DoneCircle
+    /** The band that marks the chosen row of a time wheel. */
+    val WheelHighlight = AuraDockPalette.DoneCircle
+    val SheetHandle = AuraDockPalette.Handle
+    val WheelDim = AuraDockPalette.WheelDim
     val TileOutline = AuraDockPalette.TileOutline
     val GlassCardTop = AuraDockPalette.White9
     val GlassCardBottom = AuraDockPalette.White5

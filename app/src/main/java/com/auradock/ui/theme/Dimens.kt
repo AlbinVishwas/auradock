@@ -42,6 +42,8 @@ object AuraDockRadii {
     val row: Dp = 20.dp
     /** The 40 dp tile behind an icon on a row. */
     val iconTile: Dp = 12.dp
+    /** The text field and the time row in a sheet: 16 dp corners. */
+    val field: Dp = 16.dp
     /** The dock thumbnail on the dashboard, and the 44 dp calendar tile. */
     val thumbnail: Dp = 16.dp
     val calendarTile: Dp = 14.dp
@@ -91,6 +93,14 @@ object AuraDockSizes {
     val timeColumn: Dp = 64.dp
     val navTileIcon: Dp = 22.dp
     val pillIcon: Dp = 22.dp
+    /** Sheets (handoff): the grab handle is 32 x 4; a field is 56 high; the time wheel is 168 high with 48 dp rows. */
+    val handleWidth: Dp = 32.dp
+    val handleHeight: Dp = 4.dp
+    val field: Dp = 56.dp
+    val wheelHeight: Dp = 168.dp
+    val wheelRow: Dp = 48.dp
+    val wheelHighlightInset: Dp = 12.dp
+    val rowChevron: Dp = 18.dp
     /** The small pills on a row: Allow, Skip. 36 dp high. */
     val smallPill: Dp = 36.dp
     /** The dots under a carousel: 6 dp. */
