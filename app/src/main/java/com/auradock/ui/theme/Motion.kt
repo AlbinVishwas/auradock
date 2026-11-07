@@ -17,11 +17,11 @@ object AuraDockMotion {
     const val Fast = 150
     const val ScreenOut = 200
     const val ScreenIn = 260
-    const val Check = 220
+    const val Check = 120
     const val Standard = 250
-    const val Strike = 280
+    const val Strike = 220
     const val DockFade = 320
-    const val MinuteSwap = 350
+    const val MinuteSwap = 300
     const val Slow = 400
     const val ColonBlink = 500
     const val IllustrationFrame = 2200
