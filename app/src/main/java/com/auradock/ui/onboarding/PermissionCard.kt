@@ -6,36 +6,49 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Alarm
+import androidx.compose.material.icons.outlined.CalendarToday
+import androidx.compose.material.icons.outlined.ChatBubbleOutline
+import androidx.compose.material.icons.outlined.DarkMode
+import androidx.compose.material.icons.outlined.LocationOn
+import androidx.compose.material.icons.outlined.Notifications
+import androidx.compose.material.icons.rounded.Check
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import com.auradock.ui.components.QuietPill
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.semantics.Role
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.defaultMinSize
 import com.auradock.ui.theme.AuraDockColors
 import com.auradock.ui.theme.AuraDockRadii
 import com.auradock.ui.theme.AuraDockSizes
 import com.auradock.ui.theme.AuraDockSpacing
 import com.auradock.ui.theme.AuraDockTypography
 
-/** Everything AuraDock can ask the user for, each with the one-line reason shown on its card. */
-enum class SetupPermission(val title: String, val why: String) {
-    CALENDAR("Calendar", "Shows today's events on the dashboard and the dock."),
-    NOTIFICATION_ACCESS("Notification access", "Lets the dock show the latest message from the apps you pick."),
-    DND_ACCESS("Do Not Disturb access", "Silences the phone while the dock is showing, then puts your settings back."),
-    LOCATION("Location (approximate)", "Finds the weather for where you are; never precise, never stored."),
-    POST_NOTIFICATIONS("Notifications", "Lets task reminders appear at their due time."),
-    EXACT_ALARMS("Exact alarms", "Makes task reminders fire on the minute instead of a few minutes late.")
+/** Everything AuraDock can ask the user for, each with the one-line reason shown on its card (handoff v1 wording). */
+enum class SetupPermission(val title: String, val why: String, val icon: ImageVector) {
+    CALENDAR("Calendar", "See today's events", Icons.Outlined.CalendarToday),
+    NOTIFICATION_ACCESS("Notification access", "Show messages from apps you choose", Icons.Outlined.ChatBubbleOutline),
+    DND_ACCESS("Do Not Disturb access", "Silence distractions while docked", Icons.Outlined.DarkMode),
+    LOCATION("Location", "Local weather, approximate only", Icons.Outlined.LocationOn),
+    POST_NOTIFICATIONS("Notifications", "Remind you when tasks are due", Icons.Outlined.Notifications),
+    EXACT_ALARMS("Alarms and reminders", "Remind you on time", Icons.Outlined.Alarm)
 }
 
 /**
- * The style guide's permission card: an icon disc, the title, a one-line reason and an Allow pill. Once allowed, the pill
- * becomes a "✓ Allowed" label in the accent.
+ * The permission row from the handoff: an icon tile, the title and a one-line reason, then either "Skip" and an Allow pill,
+ * or, once allowed, a round check and the word "Allowed". [onSkip] is null where there is nothing to skip (the Setup page).
  */
 @Composable
 fun PermissionCard(
@@ -43,28 +56,59 @@ fun PermissionCard(
     granted: Boolean,
     onAllow: () -> Unit,
     modifier: Modifier = Modifier,
-    containerColor: Color = AuraDockColors.Surface
+    containerColor: Color = AuraDockColors.Surface,
+    onSkip: (() -> Unit)? = null,
+    skipped: Boolean = false
 ) {
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(AuraDockRadii.card))
+            .clip(RoundedCornerShape(AuraDockRadii.row))
             .background(containerColor)
-            .padding(AuraDockSpacing.md),
+            .padding(start = AuraDockSpacing.md, end = AuraDockSpacing.smd + AuraDockSpacing.xxs, top = AuraDockSpacing.smd + AuraDockSpacing.xxs, bottom = AuraDockSpacing.smd + AuraDockSpacing.xxs),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(AuraDockSpacing.smd)
     ) {
         Box(
-            modifier = Modifier.size(AuraDockSizes.iconDisc).clip(CircleShape).background(AuraDockColors.Field),
+            modifier = Modifier.size(AuraDockSizes.iconDisc).clip(RoundedCornerShape(AuraDockRadii.iconTile)).background(AuraDockColors.IconTile),
             contentAlignment = Alignment.Center
         ) {
-            Text(text = permission.title.first().toString(), style = AuraDockTypography.Button, color = AuraDockColors.OnBackground)
+            Icon(permission.icon, contentDescription = null, tint = AuraDockColors.OnBackground, modifier = Modifier.size(AuraDockSizes.tileIcon))
         }
         Column(modifier = Modifier.weight(1f)) {
-            Text(text = permission.title, style = AuraDockTypography.Button, color = AuraDockColors.OnBackground)
-            Text(text = permission.why, style = AuraDockTypography.Caption, color = AuraDockColors.OnSurfaceVariant)
+            Text(text = permission.title, style = AuraDockTypography.RowTitle, color = AuraDockColors.OnBackground)
+            Text(text = permission.why, style = AuraDockTypography.RowCaption, color = AuraDockColors.OnSurfaceVariant, modifier = Modifier.padding(top = AuraDockSpacing.xxs))
         }
-        if (granted) Text(text = "✓ Allowed", style = AuraDockTypography.Caption, color = AuraDockColors.Accent)
-        else QuietPill(text = "Allow", onClick = onAllow)
+        if (granted) {
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(AuraDockSpacing.sm - AuraDockSpacing.xxs)) {
+                Box(Modifier.size(AuraDockSizes.allowedCheck).clip(CircleShape).background(AuraDockColors.Field), contentAlignment = Alignment.Center) {
+                    Icon(Icons.Rounded.Check, contentDescription = null, tint = AuraDockColors.OnBackground, modifier = Modifier.size(AuraDockSizes.allowedCheckIcon))
+                }
+                Text(text = "Allowed", style = AuraDockTypography.RowCaption, color = AuraDockColors.OnSurfaceVariant)
+            }
+        } else if (skipped) {
+            Text(text = "Skipped", style = AuraDockTypography.RowCaption, color = AuraDockColors.Tertiary)
+        } else {
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(AuraDockSpacing.xs)) {
+                if (onSkip != null) {
+                    Box(
+                        modifier = Modifier
+                            .heightIn(min = AuraDockSizes.smallPill)
+                            .clickable(role = Role.Button, onClick = onSkip)
+                            .padding(horizontal = AuraDockSpacing.sm),
+                        contentAlignment = Alignment.Center
+                    ) { Text(text = "Skip", style = AuraDockTypography.RowCaption, color = AuraDockColors.OnSurfaceVariant) }
+                }
+                Box(
+                    modifier = Modifier
+                        .heightIn(min = AuraDockSizes.smallPill)
+                        .clip(RoundedCornerShape(AuraDockSizes.smallPill / 2))
+                        .background(AuraDockColors.QuietPill)
+                        .clickable(role = Role.Button, onClick = onAllow)
+                        .padding(horizontal = AuraDockSpacing.md - AuraDockSpacing.xxs),
+                    contentAlignment = Alignment.Center
+                ) { Text(text = "Allow", style = AuraDockTypography.SmallAction, color = AuraDockColors.OnBackground) }
+            }
+        }
     }
 }

@@ -1,12 +1,12 @@
 package com.auradock.dock
 
 /** The dock looks V1 offers. No customization: the user just picks one. */
-enum class DockTemplate(val label: String, val description: String) {
-    BOLD("Bold", "Just the time, big and bold"),
-    CLASSIC("Classic", "Big date, city and temperature"),
-    FOCUS("Focus", "Clock, next event and top task"),
-    MINIMAL("Minimal", "Just the time, dimmed for OLED"),
-    PRODUCTIVITY("Productivity", "Clock, tasks, events and weather");
+enum class DockTemplate(val label: String, val description: String, val shows: String, val bestFor: String) {
+    BOLD("Bold", "A giant two-tone clock. Nothing else.", "Time, one message line", "Reading across the room"),
+    CLASSIC("Classic", "Big date, city and temperature.", "Date, city, temperature", "A glance at the day"),
+    FOCUS("Focus", "Giant digits, your next event and top task.", "Time, next event, top task", "Working at a desk"),
+    MINIMAL("Minimal", "Just the time, dimmed for OLED.", "Time, dimmed", "The bedside at night"),
+    PRODUCTIVITY("Productivity", "Clock, tasks, events and weather.", "Time, tasks, events, weather", "Planning the day");
 
     companion object {
         val default = BOLD

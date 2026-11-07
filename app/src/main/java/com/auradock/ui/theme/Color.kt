@@ -36,6 +36,11 @@ object AuraDockPalette {
     val Tertiary = Color(0xFF8A8A8A)
     val Secondary = Color(0xFFA3A3A3)
 
+    /** Handoff v1: the tile behind an icon on a row, the hairline between rows, the border of a "Default" badge. */
+    val Tile = Color(0xFF222222)
+    val Hairline = Color(0xFF242424)
+    val BadgeBorder = Color(0xFF3A3A33)
+
     /** The app's accent: a pale cream. The one filled action, toggles, selected states, overdue items, badges. */
     val Cream = Color(0xFFFEFFED)
 
@@ -87,6 +92,14 @@ object AuraDockColors {
     val Outline = AuraDockPalette.Outline
     /** Text of done items. */
     val Tertiary = AuraDockPalette.Tertiary
+    /** The rounded tile behind an icon on a row (permission rows, nav tiles). */
+    val IconTile = AuraDockPalette.Tile
+    /** The thin line between rows inside a card. */
+    val RowDivider = AuraDockPalette.Hairline
+    /** The outline of a "Default" badge. */
+    val BadgeBorder = AuraDockPalette.BadgeBorder
+    /** The current progress dot: white (the handoff), not the accent. */
+    val DotCurrent = AuraDockPalette.White
     val GlassCardTop = AuraDockPalette.White9
     val GlassCardBottom = AuraDockPalette.White5
     val GlassBorder = AuraDockPalette.White12

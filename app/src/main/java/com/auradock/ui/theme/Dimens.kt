@@ -36,6 +36,16 @@ object AuraDockRadii {
     val sheet: Dp = 28.dp
     /** An app icon's rounded tile: 28 dp across, with this corner. */
     val tile: Dp = 8.dp
+    /** The outlined "Default" / "In use" badge. */
+    val badge: Dp = 10.dp
+    /** Handoff v1: rows inside a screen (permission rows, task-free list cards, nav tiles) use 20 dp, not the style guide's 24. */
+    val row: Dp = 20.dp
+    /** The 40 dp tile behind an icon on a row. */
+    val iconTile: Dp = 12.dp
+    /** A template card in the carousel. */
+    val templateCard: Dp = 22.dp
+    /** The device frame on the welcome step. */
+    val device: Dp = 26.dp
     val pill: Dp = 999.dp
 }
 
@@ -70,6 +80,18 @@ object AuraDockSizes {
     val dotCurrent: Dp = 24.dp
     /** The icon disc on a permission card. */
     val iconDisc: Dp = 40.dp
+    /** The small pills on a row: Allow, Skip. 36 dp high. */
+    val smallPill: Dp = 36.dp
+    /** The dots under a carousel: 6 dp. */
+    val pagerDot: Dp = 6.dp
+    /** The check inside an "In use" badge. */
+    val badgeIcon: Dp = 11.dp
+    /** The round "allowed" check on a row, and the check inside it. */
+    val allowedCheck: Dp = 28.dp
+    val allowedCheckIcon: Dp = 14.dp
+    /** The 20 dp icon inside an icon tile, and the 22 dp icon on a nav tile or fact row. */
+    val tileIcon: Dp = 20.dp
+    val factIcon: Dp = 22.dp
     val checkStroke: Dp = 2.dp
     /** The logo mark on the welcome step. */
     val wordmarkMark: Dp = 96.dp
@@ -113,6 +135,10 @@ object AuraDockDockLayout {
 
 /** The onboarding animation's drawing sizes. */
 object AuraDockIllustration {
+    /** The screensaver step's scene is drawn on a 320 x 210 canvas; its clock is coral at 90%. */
+    val sceneWidth: Dp = 320.dp
+    val sceneHeight: Dp = 210.dp
+    const val ClockAlpha = 0.9f
     val height: Dp = 150.dp
     val phoneWidth: Dp = 200.dp
     val phoneHeight: Dp = 96.dp
@@ -134,6 +160,21 @@ object AuraDockIllustration {
 
 /** Sizes in the template gallery. */
 object AuraDockGallery {
+    /** Handoff v1: the carousel card is 320 x 144, the next one peeks in after a 16 dp gap; neighbours sit at 88% and 40% opacity. */
+    val cardWidth: Dp = 320.dp
+    val cardHeight: Dp = 144.dp
+    val cardGap: Dp = 16.dp
+    val textInset: Dp = 46.dp
+    val welcomeSubtitleWidth: Dp = 300.dp
+    const val NeighbourScale = 0.88f
+    const val NeighbourAlpha = 0.4f
+    val deviceWidth: Dp = 340.dp
+    val deviceHeight: Dp = 160.dp
+    val deviceBorder: Dp = 6.dp
+    val deviceNeck: Dp = 14.dp
+    val deviceNeckWidth: Dp = 120.dp
+    val deviceBaseWidth: Dp = 200.dp
+    val deviceBaseHeight: Dp = 8.dp
     val pageInset: Dp = 40.dp
     val previewDesignWidth: Dp = 800.dp
     val cardPadding: Dp = 18.dp

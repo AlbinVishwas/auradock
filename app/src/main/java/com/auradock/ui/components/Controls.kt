@@ -6,6 +6,10 @@ import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Check
+import androidx.compose.material3.Icon
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -172,16 +176,19 @@ fun AuraCheckbox(checked: Boolean, modifier: Modifier = Modifier, dimmed: Boolea
     }
 }
 
-/** The small "In use" badge: accent fill, black text. */
+/** The small outlined badge next to a template's name: "Default", or "In use" with a check ([checked]). Cream text, a faint warm outline. */
 @Composable
-fun Badge(text: String, modifier: Modifier = Modifier) {
-    Box(
+fun Badge(text: String, modifier: Modifier = Modifier, checked: Boolean = false) {
+    Row(
         modifier = modifier
-            .clip(RoundedCornerShape(AuraDockRadii.pill))
-            .background(AuraDockColors.Accent)
-            .padding(horizontal = AuraDockSpacing.smd, vertical = AuraDockSpacing.xs)
+            .clip(RoundedCornerShape(AuraDockRadii.badge))
+            .border(AuraDockSizes.line, AuraDockColors.BadgeBorder, RoundedCornerShape(AuraDockRadii.badge))
+            .padding(horizontal = AuraDockSpacing.sm, vertical = AuraDockSpacing.xxs + AuraDockSpacing.hairline),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(AuraDockSpacing.xs)
     ) {
-        Text(text = text, style = AuraDockTypography.Caption, color = AuraDockColors.OnAccent)
+        if (checked) Icon(Icons.Rounded.Check, contentDescription = null, tint = AuraDockColors.Accent, modifier = Modifier.size(AuraDockSizes.badgeIcon))
+        Text(text = text, style = AuraDockTypography.SmallBadge, color = AuraDockColors.Accent)
     }
 }
 
@@ -191,8 +198,18 @@ fun ProgressDots(count: Int, current: Int, modifier: Modifier = Modifier) {
     Row(modifier = modifier, horizontalArrangement = Arrangement.spacedBy(AuraDockSpacing.sm), verticalAlignment = Alignment.CenterVertically) {
         repeat(count) { i ->
             val w by animateDpAsState(if (i == current) AuraDockSizes.dotCurrent else AuraDockSizes.dot, AuraDockMotion.softSpring(), label = "dotW")
-            val c by animateColorAsState(if (i == current) AuraDockColors.Accent else AuraDockColors.Inactive, label = "dotC")
+            val c by animateColorAsState(if (i == current) AuraDockColors.DotCurrent else AuraDockColors.Inactive, label = "dotC")
             Box(Modifier.size(w, AuraDockSizes.dot).clip(CircleShape).background(c))
+        }
+    }
+}
+
+/** The small dots under a carousel: the current one is white, the rest grey, all the same size. */
+@Composable
+fun PagerDots(count: Int, current: Int, modifier: Modifier = Modifier) {
+    Row(modifier = modifier, horizontalArrangement = Arrangement.spacedBy(AuraDockSpacing.xs + AuraDockSpacing.xxs), verticalAlignment = Alignment.CenterVertically) {
+        repeat(count) { i ->
+            Box(Modifier.size(AuraDockSizes.pagerDot).clip(CircleShape).background(if (i == current) AuraDockColors.DotCurrent else AuraDockColors.Inactive))
         }
     }
 }

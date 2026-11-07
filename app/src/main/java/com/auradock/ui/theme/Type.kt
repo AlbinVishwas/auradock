@@ -60,6 +60,37 @@ object AuraDockTypography {
     /** Caption: Inter Medium 13. "Overdue · 11:00 AM". */
     val Caption = TextStyle(fontFamily = InterFamily, fontWeight = FontWeight.Medium, fontSize = 13.sp, lineHeight = 18.sp)
 
+    // ---- Handoff v1 (docs/design/handoff/claude-design-v1) ----
+    /** The welcome title: Mona Sans ExtraBold 48, tight. */
+    val WelcomeTitle = TextStyle(fontFamily = MonaSansFamily, fontWeight = FontWeight.ExtraBold, fontSize = 48.sp, lineHeight = 48.sp, letterSpacing = (-0.96).sp)
+
+    /** The line under the welcome title: Inter Regular 20 / 1.35. */
+    val WelcomeSubtitle = TextStyle(fontFamily = InterFamily, fontWeight = FontWeight.Normal, fontSize = 20.sp, lineHeight = 27.sp)
+
+    /** A step or screen title one size down from [ScreenTitle]: Mona Sans ExtraBold 32. */
+    val StepTitle = TextStyle(fontFamily = MonaSansFamily, fontWeight = FontWeight.ExtraBold, fontSize = 32.sp, lineHeight = 35.2.sp)
+
+    /** The dashboard greeting: Mona Sans ExtraBold 40. */
+    val Greeting = TextStyle(fontFamily = MonaSansFamily, fontWeight = FontWeight.ExtraBold, fontSize = 40.sp, lineHeight = 44.sp, letterSpacing = (-0.4).sp)
+
+    /** Running text under a step title: Inter Regular 17 / 1.45. */
+    val StepBody = TextStyle(fontFamily = InterFamily, fontWeight = FontWeight.Normal, fontSize = 17.sp, lineHeight = 24.65.sp)
+
+    /** A row's title: Inter SemiBold 15. */
+    val RowTitle = TextStyle(fontFamily = InterFamily, fontWeight = FontWeight.SemiBold, fontSize = 15.sp, lineHeight = 20.sp)
+
+    /** A row's reason: Inter Regular 13 / 1.35. */
+    val RowCaption = TextStyle(fontFamily = InterFamily, fontWeight = FontWeight.Normal, fontSize = 13.sp, lineHeight = 17.55.sp)
+
+    /** The text on a small pill (Allow): Inter SemiBold 13. */
+    val SmallAction = TextStyle(fontFamily = InterFamily, fontWeight = FontWeight.SemiBold, fontSize = 13.sp)
+
+    /** The text of a badge: Inter SemiBold 12. */
+    val SmallBadge = TextStyle(fontFamily = InterFamily, fontWeight = FontWeight.SemiBold, fontSize = 12.sp)
+
+    /** A template's name under the carousel: Mona Sans Bold 24. */
+    val TemplateName = TextStyle(fontFamily = MonaSansFamily, fontWeight = FontWeight.Bold, fontSize = 24.sp, lineHeight = 28.sp)
+
     // Names the screens used before the style guide. They now map onto the guide's scale.
     val Title = Button
     val TitleStrong = Button
@@ -126,6 +157,9 @@ object AuraDockTypography {
 
     /** The date under a clock: Inter Medium 14. */
     val ClockCaption = TextStyle(fontFamily = InterFamily, fontWeight = FontWeight.Medium, fontSize = 14.sp)
+
+    /** The clock drawn in the screensaver illustration: Nunito Black (the size is set where it is drawn). */
+    val IllustrationBoldClock = TextStyle(fontFamily = NunitoFamily, fontWeight = FontWeight.Black)
 
     /** 28 sp, light: the clock in the onboarding illustration. */
     val IllustrationClock = TextStyle(fontFamily = NunitoFamily, fontWeight = FontWeight.Light, fontSize = 28.sp)
