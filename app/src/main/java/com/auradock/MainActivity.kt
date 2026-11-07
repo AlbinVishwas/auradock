@@ -239,7 +239,7 @@ class MainActivity : ComponentActivity() {
                         "onboarding" -> OnboardingRoute(standbyViewModel, system)
                         "gallery" -> TemplateGalleryRoute(standbyViewModel, navigation)
                         "setup" -> SetupRoute(standbyViewModel, system)
-                        "focus" -> FocusSettingsRoute(standbyViewModel)
+                        "focus" -> FocusSettingsRoute(standbyViewModel, onOpenSetup = navigation.openSetup)
                         else -> DashboardRoute(standbyViewModel, navigation)
                     }
                 }

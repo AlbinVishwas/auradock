@@ -180,7 +180,7 @@ fun OnboardingRoute(viewModel: StandbyViewModel, system: SystemSettings, modifie
 }
 
 @Composable
-fun FocusSettingsRoute(viewModel: StandbyViewModel, modifier: Modifier = Modifier) {
+fun FocusSettingsRoute(viewModel: StandbyViewModel, modifier: Modifier = Modifier, onOpenSetup: () -> Unit = {}) {
     LaunchedEffect(Unit) { viewModel.loadApps() }
     val focusWhileDocked by viewModel.focusWhileDocked.collectAsState()
     val dndAccess by viewModel.dndAccessGranted.collectAsState()
@@ -212,6 +212,7 @@ fun FocusSettingsRoute(viewModel: StandbyViewModel, modifier: Modifier = Modifie
             onAllowOverlay = { viewModel.openOverlaySettings() },
             loadIcon = { viewModel.appIcon(it) }
         ),
+        onOpenSetup = onOpenSetup,
         modifier = modifier
     )
 }
