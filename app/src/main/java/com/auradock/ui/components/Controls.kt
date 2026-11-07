@@ -155,7 +155,7 @@ fun AuraSwitch(checked: Boolean, onCheckedChange: (Boolean) -> Unit, modifier: M
  */
 @Composable
 fun AuraCheckbox(checked: Boolean, modifier: Modifier = Modifier, dimmed: Boolean = false) {
-    val shape = RoundedCornerShape(AuraDockRadii.tile)
+    val shape = RoundedCornerShape(AuraDockRadii.checkbox)
     val tick = AuraDockColors.OnAccent
     val strokePx = with(androidx.compose.ui.platform.LocalDensity.current) { AuraDockSizes.checkStroke.toPx() }
     Box(

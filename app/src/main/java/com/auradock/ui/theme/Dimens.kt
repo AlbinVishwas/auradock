@@ -36,12 +36,16 @@ object AuraDockRadii {
     val sheet: Dp = 28.dp
     /** An app icon's rounded tile: 28 dp across, with this corner. */
     val tile: Dp = 8.dp
+    /** The tick box of the app picker. */
+    val checkbox: Dp = 7.dp
     /** The outlined "Default" / "In use" badge. */
     val badge: Dp = 10.dp
     /** Handoff v1: rows inside a screen (permission rows, task-free list cards, nav tiles) use 20 dp, not the style guide's 24. */
     val row: Dp = 20.dp
     /** The 40 dp tile behind an icon on a row. */
     val iconTile: Dp = 12.dp
+    /** The letter tile on an app chip: 9 dp corners. */
+    val chipTile: Dp = 9.dp
     /** The text field and the time row in a sheet: 16 dp corners. */
     val field: Dp = 16.dp
     /** The dock thumbnail on the dashboard, and the 44 dp calendar tile. */
@@ -101,6 +105,10 @@ object AuraDockSizes {
     val wheelRow: Dp = 48.dp
     val wheelHighlightInset: Dp = 12.dp
     val rowChevron: Dp = 18.dp
+    /** Focus (handoff): an app chip is 40 high with a 28 dp tile; the search bar is 48; an app row is 60 with a 40 dp tile. */
+    val appChip: Dp = 40.dp
+    val searchBar: Dp = 48.dp
+    val appRow: Dp = 60.dp
     /** The small pills on a row: Allow, Skip. 36 dp high. */
     val smallPill: Dp = 36.dp
     /** The dots under a carousel: 6 dp. */
@@ -112,6 +120,8 @@ object AuraDockSizes {
     val allowedCheckIcon: Dp = 14.dp
     /** The 20 dp icon inside an icon tile, and the 22 dp icon on a nav tile or fact row. */
     val tileIcon: Dp = 20.dp
+    /** The check beside "Allowed" on the Setup page. */
+    val statusIcon: Dp = 12.dp
     val factIcon: Dp = 22.dp
     val checkStroke: Dp = 2.dp
     /** The logo mark on the welcome step. */
@@ -189,6 +199,8 @@ object AuraDockGallery {
     val welcomeSubtitleWidth: Dp = 300.dp
     const val NeighbourScale = 0.88f
     const val NeighbourAlpha = 0.4f
+    /** A row of the app picker that cannot be chosen (the limit is reached) fades to 35%. */
+    const val DimmedAlpha = 0.35f
     val deviceWidth: Dp = 340.dp
     val deviceHeight: Dp = 160.dp
     val deviceBorder: Dp = 6.dp

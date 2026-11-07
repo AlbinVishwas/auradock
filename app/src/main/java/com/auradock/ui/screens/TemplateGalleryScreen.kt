@@ -156,12 +156,12 @@ fun TemplateGalleryScreen(
                 }
             }
             PrimaryPill(
-                text = if (walkthrough) "Use this dock" else if (shown == selected) "In use" else "Use this dock",
+                text = "Use this dock",
                 onClick = {
                     haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                     onApply(shown)
                 },
-                enabled = walkthrough || shown != selected
+                enabled = true
             )
         }
     }

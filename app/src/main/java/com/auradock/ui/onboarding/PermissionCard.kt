@@ -58,7 +58,9 @@ fun PermissionCard(
     modifier: Modifier = Modifier,
     containerColor: Color = AuraDockColors.Surface,
     onSkip: (() -> Unit)? = null,
-    skipped: Boolean = false
+    skipped: Boolean = false,
+    /** The Setup page's version: a status line under the reason, and "Manage" instead of the round check once allowed. */
+    showStatus: Boolean = false
 ) {
     Row(
         modifier = modifier
@@ -78,8 +80,26 @@ fun PermissionCard(
         Column(modifier = Modifier.weight(1f)) {
             Text(text = permission.title, style = AuraDockTypography.RowTitle, color = AuraDockColors.OnBackground)
             Text(text = permission.why, style = AuraDockTypography.RowCaption, color = AuraDockColors.OnSurfaceVariant, modifier = Modifier.padding(top = AuraDockSpacing.xxs))
+            if (showStatus) {
+                Row(modifier = Modifier.padding(top = AuraDockSpacing.sm - AuraDockSpacing.xxs), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(AuraDockSpacing.xs)) {
+                    if (granted) Icon(Icons.Rounded.Check, contentDescription = null, tint = AuraDockColors.OnBackground, modifier = Modifier.size(AuraDockSizes.statusIcon))
+                    Text(
+                        text = if (granted) "Allowed" else "Not allowed",
+                        style = AuraDockTypography.SmallBadge,
+                        color = if (granted) AuraDockColors.OnBackground else AuraDockColors.Accent
+                    )
+                }
+            }
         }
-        if (granted) {
+        if (showStatus && granted) {
+            Box(
+                modifier = Modifier
+                    .heightIn(min = AuraDockSizes.smallPill)
+                    .clickable(role = Role.Button, onClick = onAllow)
+                    .padding(horizontal = AuraDockSpacing.smd - AuraDockSpacing.xxs),
+                contentAlignment = Alignment.Center
+            ) { Text(text = "Manage", style = AuraDockTypography.RowCaption, color = AuraDockColors.OnSurfaceVariant) }
+        } else if (granted) {
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(AuraDockSpacing.sm - AuraDockSpacing.xxs)) {
                 Box(Modifier.size(AuraDockSizes.allowedCheck).clip(CircleShape).background(AuraDockColors.Field), contentAlignment = Alignment.Center) {
                     Icon(Icons.Rounded.Check, contentDescription = null, tint = AuraDockColors.OnBackground, modifier = Modifier.size(AuraDockSizes.allowedCheckIcon))
@@ -105,7 +125,7 @@ fun PermissionCard(
                         .clip(RoundedCornerShape(AuraDockSizes.smallPill / 2))
                         .background(AuraDockColors.QuietPill)
                         .clickable(role = Role.Button, onClick = onAllow)
-                        .padding(horizontal = AuraDockSpacing.md - AuraDockSpacing.xxs),
+                        .padding(horizontal = AuraDockSpacing.md),
                     contentAlignment = Alignment.Center
                 ) { Text(text = "Allow", style = AuraDockTypography.SmallAction, color = AuraDockColors.OnBackground) }
             }

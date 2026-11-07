@@ -100,6 +100,19 @@ object AuraDockTypography {
     val WheelChosenSmall = TextStyle(fontFamily = MonaSansFamily, fontWeight = FontWeight.Bold, fontSize = 24.sp)
     val WheelOther = TextStyle(fontFamily = MonaSansFamily, fontWeight = FontWeight.Bold, fontSize = 20.sp)
 
+    /** A settings card's title: Inter SemiBold 17. */
+    val CardTitle = TextStyle(fontFamily = InterFamily, fontWeight = FontWeight.SemiBold, fontSize = 17.sp, lineHeight = 24.sp)
+
+    /** A line in a row ("Choose apps", "Setup and permissions"): Inter Medium 15. */
+    val RowLabel = TextStyle(fontFamily = InterFamily, fontWeight = FontWeight.Medium, fontSize = 15.sp, lineHeight = 20.sp)
+
+    /** An app chip's name: Inter Medium 14. */
+    val ChipLabel = TextStyle(fontFamily = InterFamily, fontWeight = FontWeight.Medium, fontSize = 14.sp)
+
+    /** The letter on an app tile: Mona Sans ExtraBold 14, or 17 on the picker's bigger tile. */
+    val TileLetter = TextStyle(fontFamily = MonaSansFamily, fontWeight = FontWeight.ExtraBold, fontSize = 14.sp)
+    val TileLetterLarge = TextStyle(fontFamily = MonaSansFamily, fontWeight = FontWeight.ExtraBold, fontSize = 17.sp)
+
     /** A template's name under the carousel: Mona Sans Bold 24. */
     val TemplateName = TextStyle(fontFamily = MonaSansFamily, fontWeight = FontWeight.Bold, fontSize = 24.sp, lineHeight = 28.sp)
 
