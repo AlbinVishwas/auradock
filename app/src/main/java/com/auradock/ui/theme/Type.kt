@@ -118,6 +118,9 @@ object AuraDockTypography {
     /** The notification strip: a quiet Inter Medium 13 caption. */
     val DockStrip = Caption
 
+    /** The notification line under the Bold clock: Inter Medium 16. */
+    val BoldStrip = TextStyle(fontFamily = InterFamily, fontWeight = FontWeight.Medium, fontSize = 16.sp)
+
     /** The AM/PM marker beside a clock: Inter Medium 18. */
     val ClockMeridiem = TextStyle(fontFamily = InterFamily, fontWeight = FontWeight.Medium, fontSize = 18.sp)
 

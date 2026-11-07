@@ -1,9 +1,17 @@
 package com.auradock.dock
 
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.Column
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.ChatBubbleOutline
+import androidx.compose.material3.Icon
+import androidx.compose.ui.text.style.TextOverflow
+import com.auradock.ui.theme.AuraDockTypography
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Text
@@ -27,11 +35,11 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.LineHeightStyle
+import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.dp
 import com.auradock.ui.theme.AuraDockBold
 import com.auradock.ui.theme.AuraDockColors
-import com.auradock.ui.theme.AuraDockDockLayout
-import com.auradock.ui.theme.AuraDockSpacing
 import com.auradock.ui.theme.NunitoFamily
 import java.time.Instant
 import java.time.ZoneId
@@ -52,7 +60,8 @@ fun boldTimeString(timeMillis: Long, use24Hour: Boolean, zone: ZoneId = ZoneId.s
  * translucent grey dots. Pure black behind. [scale] makes it smaller (when the notification strip is showing).
  */
 @Composable
-fun BoldClock(timeMillis: Long, use24Hour: Boolean, modifier: Modifier = Modifier, scale: Float = 1f) {
+fun BoldClock(timeMillis: Long, use24Hour: Boolean, modifier: Modifier = Modifier, strip: List<String> = emptyList()) {
+    val scale = if (strip.isEmpty()) 1f else AuraDockBold.StripScale
     val text = remember(timeMillis, use24Hour) { boldTimeString(timeMillis, use24Hour) }
     val measurer = rememberTextMeasurer()
     val density = LocalDensity.current
@@ -61,14 +70,14 @@ fun BoldClock(timeMillis: Long, use24Hour: Boolean, modifier: Modifier = Modifie
     val style = TextStyle(
         fontFamily = NunitoFamily,
         fontWeight = FontWeight.Black,
+        fontFeatureSettings = "tnum",
         platformStyle = PlatformTextStyle(includeFontPadding = false),
         lineHeightStyle = LineHeightStyle(LineHeightStyle.Alignment.Center, LineHeightStyle.Trim.Both)
     )
 
     BoxWithConstraints(
         modifier = modifier
-            .fillMaxSize()
-            .padding(horizontal = AuraDockDockLayout.screenPadding, vertical = AuraDockSpacing.lg),
+            .fillMaxSize(),
         contentAlignment = Alignment.Center
     ) {
         val availW = constraints.maxWidth.toFloat()
@@ -81,12 +90,20 @@ fun BoldClock(timeMillis: Long, use24Hour: Boolean, modifier: Modifier = Modifie
         }
         val gaps = text.indices.drop(1).count { text[it] != ':' && text[it - 1] != ':' }
         val totalEm = widthsEm.sum() - AuraDockBold.OverlapEm * gaps + 2 * AuraDockBold.EdgeEm
-        val emPx = minOf(availW * AuraDockBold.WidthFill / totalEm, availH / AuraDockBold.DigitHeightEm) * scale
+        val emPx = minOf(availW * AuraDockBold.WidthFill / totalEm, availH * AuraDockBold.HeightShare) * scale
         val fontSize = with(fixed) { emPx.toSp() }
 
+        Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.padding(top = if (strip.isEmpty()) 0.dp else AuraDockBold.StripTopPad)) {
         Row(
             // The padding sits inside the layer, so the leaning digits are not clipped at its edge.
             modifier = Modifier
+                .layout { measurable, constraints ->
+                    // The design sets the line box to 0.8 em, shorter than the font's own line, so the strip can sit close.
+                    val p = measurable.measure(constraints.copy(minHeight = 0, maxHeight = Constraints.Infinity))
+                    val boxH = (AuraDockBold.LineHeightEm * emPx).toInt()
+                    layout(p.width, boxH) { p.place(0, (boxH - p.height) / 2) }
+                }
+                .offset(y = with(fixed) { (-AuraDockBold.LiftEm * emPx).toDp() })
                 .graphicsLayer { compositingStrategy = CompositingStrategy.Offscreen }
                 .padding(horizontal = with(fixed) { (AuraDockBold.EdgeEm * emPx).toDp() }),
             verticalAlignment = Alignment.CenterVertically
@@ -100,8 +117,9 @@ fun BoldClock(timeMillis: Long, use24Hour: Boolean, modifier: Modifier = Modifie
                     Canvas(Modifier.size(with(fixed) { w.toDp() }, with(fixed) { emPx.toDp() })) {
                         val r = AuraDockBold.ColonDotRadiusEm * emPx
                         val dy = AuraDockBold.ColonDotOffsetEm * emPx
-                        drawCircle(AuraDockColors.BoldColon, r, Offset(size.width / 2, size.height / 2 - dy))
-                        drawCircle(AuraDockColors.BoldColon, r, Offset(size.width / 2, size.height / 2 + dy))
+                        val cx = AuraDockBold.ColonDotCenterXEm * emPx
+                        drawCircle(AuraDockColors.BoldColon, r, Offset(cx, size.height / 2 - dy))
+                        drawCircle(AuraDockColors.BoldColon, r, Offset(cx, size.height / 2 + dy))
                     }
                 } else {
                     val color = (if (digitIndex % 2 == 0) AuraDockColors.Coral else AuraDockColors.CoralLight).copy(alpha = AuraDockBold.DigitAlpha)
@@ -111,6 +129,7 @@ fun BoldClock(timeMillis: Long, use24Hour: Boolean, modifier: Modifier = Modifie
                         text = c.toString(),
                         style = style.copy(fontSize = fontSize, color = color),
                         softWrap = false,
+                        overflow = TextOverflow.Visible,
                         modifier = Modifier
                             .layout { measurable, constraints ->
                                 val p = measurable.measure(constraints)
@@ -129,5 +148,34 @@ fun BoldClock(timeMillis: Long, use24Hour: Boolean, modifier: Modifier = Modifie
                 }
             }
         }
+        if (strip.isNotEmpty()) {
+            Column(
+                modifier = Modifier.padding(top = AuraDockBold.StripGap),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                strip.forEach { BoldStripLine(it) }
+            }
+        }
+        }
+    }
+}
+
+/** One notification under the Bold clock: a chat-bubble icon and "App · who", Inter Medium 16, grey. */
+@Composable
+private fun BoldStripLine(text: String) {
+    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(AuraDockBold.StripIconGap)) {
+        Icon(
+            imageVector = Icons.Outlined.ChatBubbleOutline,
+            contentDescription = null,
+            tint = AuraDockColors.DockSecondary,
+            modifier = Modifier.size(AuraDockBold.StripIcon)
+        )
+        Text(
+            text = text,
+            color = AuraDockColors.DockSecondary,
+            style = AuraDockTypography.BoldStrip,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
+        )
     }
 }

@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>AuraDock · Set as screensaver</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Mona+Sans:wght@500..900&amp;family=Nunito:wght@900&amp;display=swap">
+<style>
+body{margin:0;background:#000}
+a{color:#FFFFFF;text-decoration:none}a:hover{color:#FFFFFF}
+</style>
+</helmet>
+<div style="width: 412px; height: 915px; background: #000000; color: #FFFFFF; font-family: Inter, sans-serif; position: relative; box-sizing: border-box; padding: 72px 28px 40px; display: flex; flex-direction: column">
+
+<div style="display: flex; justify-content: center; padding: 8px 0 32px">
+<svg width="320" height="210" viewBox="0 0 320 210" fill="none" role="img" aria-label="A phone resting sideways on a stand, plugged in, showing the dock">
+<rect x="44" y="30" width="232" height="108" rx="18" fill="#000000" stroke="#3A3A3A" stroke-width="3"></rect>
+<text x="160" y="105" text-anchor="middle" font-family="Nunito, sans-serif" font-weight="900" font-size="64" fill="#FF5A4E" fill-opacity="0.9">12:30</text>
+<path d="M118 138 L100 186 M202 138 L220 186" stroke="#3A3A3A" stroke-width="3" stroke-linecap="round"></path>
+<rect x="72" y="186" width="176" height="10" rx="5" fill="#1C1C1E"></rect>
+<path d="M276 84 C 302 84, 306 150, 294 206" stroke="#5C5C5C" stroke-width="3" stroke-linecap="round"></path>
+</svg>
+</div>
+
+<h1 style="margin: 0; font-family: 'Mona Sans', sans-serif; font-weight: 800; font-size: 34px; line-height: 1.1">Opens on its own</h1>
+<p style="margin: 14px 0 0; font-size: 17px; line-height: 1.45; color: #A3A3A3">Set AuraDock as your screensaver. It starts by itself when all three are true:</p>
+
+<div style="margin-top: 24px; display: flex; flex-direction: column; gap: 10px">
+<div style="display: flex; align-items: center; gap: 14px; background: #161616; border-radius: 20px; padding: 14px 16px">
+<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 3L5.5 13.5H12L11 21l7.5-10.5H12z"></path></svg>
+<span style="font-size: 16px; font-weight: 500">Phone is charging</span>
+</div>
+<div style="display: flex; align-items: center; gap: 14px; background: #161616; border-radius: 20px; padding: 14px 16px">
+<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="6.5" width="19" height="11" rx="3"></rect><path d="M8 21h8"></path></svg>
+<span style="font-size: 16px; font-weight: 500">Sideways on a stand</span>
+</div>
+<div style="display: flex; align-items: center; gap: 14px; background: #161616; border-radius: 20px; padding: 14px 16px">
+<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"></circle><path d="M12 7.5V12l3 2"></path></svg>
+<span style="font-size: 16px; font-weight: 500">Screen times out</span>
+</div>
+</div>
+
+<div style="flex: 1"></div>
+
+<div style="display: flex; flex-direction: column; gap: 12px">
+<div aria-label="Step 2 of 4" style="display: flex; gap: 8px; justify-content: center; margin-bottom: 16px">
+<span style="width: 8px; height: 8px; border-radius: 4px; background: #3A3A3A"></span>
+<span style="width: 24px; height: 8px; border-radius: 4px; background: #FFFFFF"></span>
+<span style="width: 8px; height: 8px; border-radius: 4px; background: #3A3A3A"></span>
+<span style="width: 8px; height: 8px; border-radius: 4px; background: #3A3A3A"></span>
+</div>
+<a href="Onboarding-Permissions.dc.html" style="height: 56px; border-radius: 28px; background: #FEFFED; color: #000000; display: flex; align-items: center; justify-content: center; font-family: 'Mona Sans', sans-serif; font-weight: 700; font-size: 18px">Open screensaver settings</a>
+<a href="Onboarding-Permissions.dc.html" style="height: 48px; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 500; color: #A3A3A3">Skip for now</a>
+</div>
+
+<div style="position: absolute; left: 152px; bottom: 10px; width: 108px; height: 4px; border-radius: 2px; background: #9A9A9A"></div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":412,"height":915}}'>
+class Component extends DCLogic {
+renderVals() {
+return {};
+}
+}
+</script>
+</body>
+</html>

@@ -71,14 +71,14 @@ fun DockContent(template: DockTemplate, state: DockUiState, modifier: Modifier =
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(bottom = if (lines.isEmpty()) AuraDockSizes.none else AuraDockDockLayout.stripBase + AuraDockDockLayout.stripLine * lines.size),
+                .padding(bottom = if (lines.isEmpty() || template == DockTemplate.BOLD) AuraDockSizes.none else AuraDockDockLayout.stripBase + AuraDockDockLayout.stripLine * lines.size),
             contentAlignment = Alignment.Center
         ) {
         when (template) {
             DockTemplate.BOLD -> BoldClock(
                 timeMillis = state.timeMillis,
                 use24Hour = DateFormat.is24HourFormat(LocalContext.current),
-                scale = if (lines.isEmpty()) 1f else AuraDockBold.StripScale
+                strip = lines
             )
             DockTemplate.MINIMAL -> ClockWidget(timeMillis = state.timeMillis, dimmed = true, showDate = false)
             DockTemplate.FOCUS -> SafeZone { FocusLayout(state) }
@@ -87,7 +87,7 @@ fun DockContent(template: DockTemplate, state: DockUiState, modifier: Modifier =
         }
         }
         NotificationStrip(
-            lines = lines,
+            lines = if (template == DockTemplate.BOLD) emptyList() else lines,
             dimmed = template == DockTemplate.MINIMAL,
             modifier = Modifier.align(Alignment.BottomCenter)
         )

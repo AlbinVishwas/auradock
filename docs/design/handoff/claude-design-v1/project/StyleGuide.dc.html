@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>AuraDock · Style guide</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Mona+Sans:wght@500..900&amp;family=Nunito:wght@900&amp;display=swap">
+<style>
+body{margin:0;background:#000}
+button{font:inherit;color:inherit}
+</style>
+</helmet>
+<div style="width: 1440px; height: 2400px; background: #000000; color: #FFFFFF; font-family: Inter, sans-serif; box-sizing: border-box; padding: 80px; display: flex; flex-direction: column; gap: 72px">
+
+<header>
+<h1 style="margin: 0; font-family: 'Mona Sans', sans-serif; font-weight: 800; font-size: 64px; line-height: 1">AuraDock style guide</h1>
+<p style="margin: 16px 0 0; font-size: 20px; color: #A3A3A3">Two quiet colours, one loud. Flat black, big type, nothing extra.</p>
+</header>
+
+<section style="display: flex; flex-direction: column; gap: 24px">
+<h2 style="margin: 0; font-family: 'Mona Sans', sans-serif; font-weight: 700; font-size: 28px">Colour</h2>
+<div style="display: grid; grid-template-columns: repeat(9, minmax(0, 1fr)); gap: 12px">
+<div><div style="height: 96px; border-radius: 20px; background: #000000; border: 1px solid #2A2A2A"></div><div style="font-size: 14px; font-weight: 600; margin-top: 10px">Black</div><div style="font-size: 13px; color: #A3A3A3; margin-top: 2px">#000000 · ground</div></div>
+<div><div style="height: 96px; border-radius: 20px; background: #161616"></div><div style="font-size: 14px; font-weight: 600; margin-top: 10px">Card</div><div style="font-size: 13px; color: #A3A3A3; margin-top: 2px">#161616</div></div>
+<div><div style="height: 96px; border-radius: 20px; background: #1C1C1E"></div><div style="font-size: 14px; font-weight: 600; margin-top: 10px">Sheet</div><div style="font-size: 13px; color: #A3A3A3; margin-top: 2px">#1C1C1E</div></div>
+<div><div style="height: 96px; border-radius: 20px; background: #262626"></div><div style="font-size: 14px; font-weight: 600; margin-top: 10px">Field</div><div style="font-size: 13px; color: #A3A3A3; margin-top: 2px">#262626 · chips</div></div>
+<div><div style="height: 96px; border-radius: 20px; background: #3A3A3A"></div><div style="font-size: 14px; font-weight: 600; margin-top: 10px">Inactive</div><div style="font-size: 13px; color: #A3A3A3; margin-top: 2px">#3A3A3A · off</div></div>
+<div><div style="height: 96px; border-radius: 20px; background: #5C5C5C"></div><div style="font-size: 14px; font-weight: 600; margin-top: 10px">Outline</div><div style="font-size: 13px; color: #A3A3A3; margin-top: 2px">#5C5C5C</div></div>
+<div><div style="height: 96px; border-radius: 20px; background: #8A8A8A"></div><div style="font-size: 14px; font-weight: 600; margin-top: 10px">Tertiary</div><div style="font-size: 13px; color: #A3A3A3; margin-top: 2px">#8A8A8A · done</div></div>
+<div><div style="height: 96px; border-radius: 20px; background: #A3A3A3"></div><div style="font-size: 14px; font-weight: 600; margin-top: 10px">Secondary</div><div style="font-size: 13px; color: #A3A3A3; margin-top: 2px">#A3A3A3</div></div>
+<div><div style="height: 96px; border-radius: 20px; background: #FFFFFF"></div><div style="font-size: 14px; font-weight: 600; margin-top: 10px">White</div><div style="font-size: 13px; color: #A3A3A3; margin-top: 2px">#FFFFFF · primary</div></div>
+</div>
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px">
+<div style="display: flex; gap: 20px; align-items: center; background: #161616; border-radius: 24px; padding: 20px">
+<div style="width: 120px; height: 120px; flex: none; border-radius: 20px; background: #FEFFED"></div>
+<div><div style="font-family: 'Mona Sans', sans-serif; font-weight: 700; font-size: 22px">Accent #FEFFED</div><div style="font-size: 15px; line-height: 1.5; color: #A3A3A3; margin-top: 6px">The app's accent. One filled action per screen (Dock now, Save, Continue), toggles, checkboxes, selected states, overdue items, badges. Text on the accent is black. Never decorative.</div></div>
+</div>
+<div style="display: flex; gap: 20px; align-items: center; background: #161616; border-radius: 24px; padding: 20px">
+<div style="width: 120px; height: 120px; flex: none; border-radius: 20px; background: #FF5A4E"></div>
+<div><div style="font-family: 'Mona Sans', sans-serif; font-weight: 700; font-size: 22px">Coral #FF5A4E + #FF8F86</div><div style="font-size: 15px; line-height: 1.5; color: #A3A3A3; margin-top: 6px">Dock templates only: the two tones of the Bold clock. Never used in the app's own UI.</div></div>
+</div>
+</div>
+</section>
+
+<section style="display: flex; flex-direction: column; gap: 8px">
+<h2 style="margin: 0 0 16px; font-family: 'Mona Sans', sans-serif; font-weight: 700; font-size: 28px">Type</h2>
+<div style="display: grid; grid-template-columns: 280px minmax(0, 1fr); align-items: center; gap: 32px; padding: 12px 0; border-top: 1px solid #222222">
+<div><div style="font-size: 15px; font-weight: 600">Dock display</div><div style="font-size: 13px; color: #A3A3A3; margin-top: 4px">Nunito Black · 80% opacity, screen blend · digits overlap −0.12em · rotation 1 −3°, 2 +5°, 3 −4°, 0 +5°</div></div>
+<div style="display: flex; align-items: center; font-family: Nunito, ui-rounded, sans-serif; font-weight: 900; font-size: 220px; line-height: 0.8; font-variant-numeric: tabular-nums; isolation: isolate; background-color: transparent">
+<span style="color: rgba(255,90,78,0.8); mix-blend-mode: screen; transform: rotate(-3deg)">1</span>
+<span style="color: rgba(255,143,134,0.8); mix-blend-mode: screen; margin-left: -0.12em; transform: rotate(5deg)">2</span>
+<span style="display: flex; flex-direction: column; gap: 0.1em; margin: 0 -0.06em 0 0.02em; mix-blend-mode: screen"><span style="width: 0.17em; height: 0.17em; border-radius: 50%; background: rgba(200,200,200,0.8)"></span><span style="width: 0.17em; height: 0.17em; border-radius: 50%; background: rgba(200,200,200,0.8)"></span></span>
+<span style="color: rgba(255,90,78,0.8); mix-blend-mode: screen; transform: rotate(-4deg)">3</span>
+<span style="color: rgba(255,143,134,0.8); mix-blend-mode: screen; margin-left: -0.12em; transform: rotate(5deg)">0</span>
+</div>
+</div>
+<div style="display: grid; grid-template-columns: 280px minmax(0, 1fr); align-items: center; gap: 32px; padding: 16px 0; border-top: 1px solid #222222">
+<div><div style="font-size: 15px; font-weight: 600">Title</div><div style="font-size: 13px; color: #A3A3A3; margin-top: 4px">Mona Sans ExtraBold · 32–36 / 1.1</div></div>
+<div style="font-family: 'Mona Sans', sans-serif; font-weight: 800; font-size: 36px; line-height: 1.1">Good afternoon</div>
+</div>
+<div style="display: grid; grid-template-columns: 280px minmax(0, 1fr); align-items: center; gap: 32px; padding: 16px 0; border-top: 1px solid #222222">
+<div><div style="font-size: 15px; font-weight: 600">Section</div><div style="font-size: 13px; color: #A3A3A3; margin-top: 4px">Mona Sans Bold · 22</div></div>
+<div style="font-family: 'Mona Sans', sans-serif; font-weight: 700; font-size: 22px">Today</div>
+</div>
+<div style="display: grid; grid-template-columns: 280px minmax(0, 1fr); align-items: center; gap: 32px; padding: 16px 0; border-top: 1px solid #222222">
+<div><div style="font-size: 15px; font-weight: 600">Button and numbers</div><div style="font-size: 13px; color: #A3A3A3; margin-top: 4px">Mona Sans Bold · 18</div></div>
+<div style="font-family: 'Mona Sans', sans-serif; font-weight: 700; font-size: 18px">Dock now · 5:30 PM</div>
+</div>
+<div style="display: grid; grid-template-columns: 280px minmax(0, 1fr); align-items: center; gap: 32px; padding: 16px 0; border-top: 1px solid #222222">
+<div><div style="font-size: 15px; font-weight: 600">Body</div><div style="font-size: 13px; color: #A3A3A3; margin-top: 4px">Inter Medium · 16 / 1.4</div></div>
+<div style="font-size: 16px; font-weight: 500">Send invoice</div>
+</div>
+<div style="display: grid; grid-template-columns: 280px minmax(0, 1fr); align-items: center; gap: 32px; padding: 16px 0; border-top: 1px solid #222222">
+<div><div style="font-size: 15px; font-weight: 600">Secondary</div><div style="font-size: 13px; color: #A3A3A3; margin-top: 4px">Inter Regular · 15 · #A3A3A3</div></div>
+<div style="font-size: 15px; color: #A3A3A3">Thursday, 5 November · 31° Clear · Navi Mumbai</div>
+</div>
+<div style="display: grid; grid-template-columns: 280px minmax(0, 1fr); align-items: center; gap: 32px; padding: 16px 0; border-top: 1px solid #222222; border-bottom: 1px solid #222222">
+<div><div style="font-size: 15px; font-weight: 600">Caption</div><div style="font-size: 13px; color: #A3A3A3; margin-top: 4px">Inter Medium · 13</div></div>
+<div style="font-size: 13px; font-weight: 500; color: #FEFFED">Overdue · 11:00 AM</div>
+</div>
+<p style="margin: 12px 0 0; font-size: 14px; color: #8A8A8A">Sentence case everywhere. No Apple fonts. Few words, big type.</p>
+</section>
+
+<section style="display: flex; flex-direction: column; gap: 24px">
+<h2 style="margin: 0; font-family: 'Mona Sans', sans-serif; font-weight: 700; font-size: 28px">Components</h2>
+<div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px">
+
+<div style="background: #161616; border-radius: 24px; padding: 24px; display: flex; flex-direction: column; gap: 16px">
+<div style="font-size: 13px; color: #A3A3A3">Buttons</div>
+<button style="height: 56px; border-radius: 28px; border: none; background: #FEFFED; color: #000000; font-family: 'Mona Sans', sans-serif; font-weight: 700; font-size: 18px">Dock now</button>
+<div style="display: flex; gap: 12px; align-items: center">
+<button style="height: 40px; padding: 0 18px; border-radius: 20px; border: none; background: #2E2E2E; font-size: 14px; font-weight: 600">Allow</button>
+<button style="height: 40px; padding: 0 10px; border: none; background: none; font-size: 14px; color: #A3A3A3">Skip for now</button>
+</div>
+<div style="font-size: 13px; line-height: 1.5; color: #8A8A8A">Primary pill 56 high, one per screen. Quiet pill #2E2E2E. Text button grey.</div>
+</div>
+
+<div style="background: #161616; border-radius: 24px; padding: 24px; display: flex; flex-direction: column; gap: 16px">
+<div style="font-size: 13px; color: #A3A3A3">Task rows</div>
+<div style="display: flex; align-items: center; gap: 14px"><span style="width: 24px; height: 24px; box-sizing: border-box; border-radius: 50%; border: 2px solid #5C5C5C"></span><span style="flex: 1; font-size: 16px; font-weight: 500">Send invoice</span><span style="font-size: 14px; color: #A3A3A3">4:00 PM</span></div>
+<div style="display: flex; align-items: center; gap: 14px"><span style="width: 24px; height: 24px; box-sizing: border-box; border-radius: 50%; border: 2px solid #FEFFED"></span><span style="flex: 1; font-size: 16px; font-weight: 500">Call the bank</span><span style="font-size: 13px; color: #FEFFED">Overdue</span></div>
+<div style="display: flex; align-items: center; gap: 14px"><span style="width: 24px; height: 24px; border-radius: 50%; background: #333333; display: flex; align-items: center; justify-content: center"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg></span><span style="flex: 1; font-size: 16px; font-weight: 500; color: #8A8A8A; text-decoration: line-through">Gym</span></div>
+<div style="font-size: 13px; line-height: 1.5; color: #8A8A8A">Empty, overdue, done. Done rows sink to the bottom.</div>
+</div>
+
+<div style="background: #161616; border-radius: 24px; padding: 24px; display: flex; flex-direction: column; gap: 16px">
+<div style="font-size: 13px; color: #A3A3A3">Toggles and checkboxes</div>
+<div style="display: flex; gap: 16px; align-items: center">
+<span style="width: 52px; height: 32px; box-sizing: border-box; border-radius: 16px; background: #FEFFED; padding: 4px; display: flex; justify-content: flex-end"><span style="width: 24px; height: 24px; border-radius: 50%; background: #000000"></span></span>
+<span style="width: 52px; height: 32px; box-sizing: border-box; border-radius: 16px; background: #3A3A3A; padding: 4px; display: flex"><span style="width: 24px; height: 24px; border-radius: 50%; background: #A3A3A3"></span></span>
+<span style="width: 24px; height: 24px; border-radius: 7px; background: #FEFFED; display: flex; align-items: center; justify-content: center"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#000000" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg></span>
+<span style="width: 24px; height: 24px; box-sizing: border-box; border-radius: 7px; border: 2px solid #5C5C5C"></span>
+<span style="width: 24px; height: 24px; box-sizing: border-box; border-radius: 7px; border: 2px solid #5C5C5C; opacity: 0.35"></span>
+</div>
+<div style="font-size: 13px; line-height: 1.5; color: #8A8A8A">On, off, selected, empty, dimmed (picker limit reached).</div>
+</div>
+
+<div style="background: #161616; border-radius: 24px; padding: 24px; display: flex; flex-direction: column; gap: 16px">
+<div style="font-size: 13px; color: #A3A3A3">Permission card</div>
+<div style="display: flex; align-items: center; gap: 12px; background: #000000; border-radius: 20px; padding: 14px 14px 14px 16px">
+<div style="width: 40px; height: 40px; flex: none; border-radius: 12px; background: #222222; display: flex; align-items: center; justify-content: center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"></path></svg></div>
+<div style="flex: 1"><div style="font-size: 15px; font-weight: 600">Do Not Disturb access</div><div style="font-size: 13px; color: #A3A3A3; margin-top: 2px">Silence distractions while docked</div></div>
+<span style="height: 36px; padding: 0 14px; border-radius: 18px; background: #2E2E2E; font-size: 13px; font-weight: 600; display: flex; align-items: center">Allow</span>
+</div>
+<div style="display: flex; gap: 20px; font-size: 13px"><span style="display: flex; align-items: center; gap: 5px; font-weight: 600"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg>Allowed</span><span style="font-weight: 600; color: #FEFFED">Not allowed</span></div>
+</div>
+
+<div style="background: #161616; border-radius: 24px; padding: 24px; display: flex; flex-direction: column; gap: 16px">
+<div style="font-size: 13px; color: #A3A3A3">Chips and badges</div>
+<div style="display: flex; gap: 8px; flex-wrap: wrap">
+<span style="display: flex; align-items: center; gap: 8px; height: 40px; padding: 0 14px 0 6px; border-radius: 20px; background: #262626; font-size: 14px; font-weight: 500"><span style="width: 28px; height: 28px; border-radius: 9px; background: #3A3A3A; display: flex; align-items: center; justify-content: center; font-family: 'Mona Sans', sans-serif; font-weight: 800; font-size: 14px">W</span>WhatsApp</span>
+<span style="display: flex; align-items: center; height: 26px; font-size: 12px; font-weight: 600; color: #FEFFED; border: 1px solid #3A3A33; border-radius: 13px; padding: 0 10px">In use</span>
+</div>
+<div style="font-size: 13px; line-height: 1.5; color: #8A8A8A">App icons sit in 28dp rounded tiles. Use real app icons in build.</div>
+</div>
+
+<div style="background: #161616; border-radius: 24px; padding: 24px; display: flex; flex-direction: column; gap: 16px">
+<div style="font-size: 13px; color: #A3A3A3">Shape and spacing</div>
+<div style="display: flex; gap: 12px; align-items: flex-end">
+<div style="width: 72px; height: 72px; border-radius: 24px; background: #262626"></div>
+<div style="width: 72px; height: 56px; border-radius: 28px 28px 0 0; background: #262626"></div>
+<div style="width: 96px; height: 40px; border-radius: 20px; background: #262626"></div>
+</div>
+<div style="font-size: 13px; line-height: 1.5; color: #8A8A8A">Cards 24dp radius, sheets 28dp top, pills full. 4dp grid, 20dp screen margins, 48dp touch targets. Flat: no shadows, gradients, glows or blur surfaces.</div>
+</div>
+</div>
+</section>
+
+<section style="display: flex; flex-direction: column; gap: 24px">
+<h2 style="margin: 0; font-family: 'Mona Sans', sans-serif; font-weight: 700; font-size: 28px">Motion</h2>
+<p style="margin: -8px 0 0; font-size: 16px; color: #A3A3A3">Calm and physical. Springs settle without overshoot. Nothing bouncy.</p>
+<div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px">
+<div style="border: 1px solid #222222; border-radius: 24px; padding: 24px"><div style="font-family: 'Mona Sans', sans-serif; font-weight: 700; font-size: 20px">Sheets and cards</div><div style="font-size: 14px; line-height: 1.55; color: #A3A3A3; margin-top: 8px">Soft spring, damping 0.9, stiffness 380 (about 320ms). Scrim fades to 60% black. Drag to dismiss follows the finger 1:1.</div></div>
+<div style="border: 1px solid #222222; border-radius: 24px; padding: 24px"><div style="font-family: 'Mona Sans', sans-serif; font-weight: 700; font-size: 20px">Blur to focus</div><div style="font-size: 14px; line-height: 1.55; color: #A3A3A3; margin-top: 8px">New content: blur 12 to 0, opacity 0 to 1, 4dp rise, 260ms, ease cubic(0.2, 0, 0, 1). Lists stagger 40ms.</div></div>
+<div style="border: 1px solid #222222; border-radius: 24px; padding: 24px"><div style="font-family: 'Mona Sans', sans-serif; font-weight: 700; font-size: 20px">Dock now morph</div><div style="font-size: 14px; line-height: 1.55; color: #A3A3A3; margin-top: 8px">The pill expands into the full screen (container transform, 450ms emphasized). The thumbnail clock scales into the dock clock. System bars hide at 60%.</div></div>
+<div style="border: 1px solid #222222; border-radius: 24px; padding: 24px"><div style="font-family: 'Mona Sans', sans-serif; font-weight: 700; font-size: 20px">Task tick</div><div style="font-size: 14px; line-height: 1.55; color: #A3A3A3; margin-top: 8px">Circle fills 120ms, strike-through draws left to right 220ms, text fades to #8A8A8A. After 600ms the row eases to the bottom. Light haptic tick.</div></div>
+<div style="border: 1px solid #222222; border-radius: 24px; padding: 24px"><div style="font-family: 'Mona Sans', sans-serif; font-weight: 700; font-size: 20px">Carousels</div><div style="font-size: 14px; line-height: 1.55; color: #A3A3A3; margin-top: 8px">Snap on a critically damped spring. Neighbours sit at 88% scale and 40% opacity, interpolated with scroll position.</div></div>
+<div style="border: 1px solid #222222; border-radius: 24px; padding: 24px"><div style="font-family: 'Mona Sans', sans-serif; font-weight: 700; font-size: 20px">Dock clock</div><div style="font-size: 14px; line-height: 1.55; color: #A3A3A3; margin-top: 8px">Digits change with a 300ms blur crossfade. Notification strip rises 12dp while the clock scales to 84%. Clock drifts up to 3dp a minute for OLED burn-in.</div></div>
+</div>
+</section>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":2400}}'>
+class Component extends DCLogic {
+renderVals() {
+return {};
+}
+}
+</script>
+</body>
+</html>

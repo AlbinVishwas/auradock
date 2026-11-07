@@ -151,16 +151,30 @@ object AuraDockBold {
     /** Room kept at each end of the time so a leaning digit is not clipped. */
     const val EdgeEm = 0.08f
 
-    const val ColonEm = 0.30f
-    const val ColonDotRadiusEm = 0.075f
-    const val ColonDotOffsetEm = 0.20f
+    /** Colon (Dock-Bold.dc.html): dots 0.17 em wide, 0.1 em apart, a 0.02 em margin before and -0.06 em after. */
+    const val ColonEm = 0.13f
+    const val ColonDotRadiusEm = 0.085f
+    const val ColonDotOffsetEm = 0.135f
+    const val ColonDotCenterXEm = 0.105f
 
-    /** The height of a line of digits, as a fraction of their size, used to keep the time inside the screen. */
-    const val DigitHeightEm = 1.08f
+    /** The line box of the digits, as a share of their size (line-height 0.8). */
+    const val LineHeightEm = 0.8f
 
-    /** The share of the free width the time fills, and how much smaller it gets when the notification strip shows. */
-    const val WidthFill = 0.96f
-    const val StripScale = 0.82f
+    /** The digits' size is this share of the dock's height (370 on 412). */
+    const val HeightShare = 0.898f
+
+    /** A small correction so the digits sit where the design has them inside its 0.8 em line box. */
+    const val LiftEm = 0.012f
+
+    /** Never wider than this share of the free width, so an unusual screen shape cannot clip the time. */
+    const val WidthFill = 1f
+
+    /** With a notification the clock shrinks to 316/370 of its size; the strip sits 22 dp under it. */
+    const val StripScale = 0.854f
+    val StripGap = 22.dp
+    val StripTopPad = 6.dp
+    val StripIcon = 18.dp
+    val StripIconGap = 10.dp
 
     /**
      * Each digit leans a little, so the time looks set by hand. The guide gives 1 -3, 2 +5, 3 -4, 0 +5; the others

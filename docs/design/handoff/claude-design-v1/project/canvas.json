@@ -1,0 +1,237 @@
+{
+  "v": 3,
+  "attachments": {},
+  "boards": {
+    "AppPicker-Limit.dc.html": {
+      "h": 915,
+      "is_interactive": true,
+      "title": "App picker · limit reached",
+      "w": 412,
+      "x": 1476,
+      "y": 2965
+    },
+    "AppPicker.dc.html": {
+      "h": 915,
+      "is_interactive": true,
+      "title": "App picker · 2 of 3",
+      "w": 412,
+      "x": 984,
+      "y": 2965
+    },
+    "Dashboard-Empty.dc.html": {
+      "h": 915,
+      "title": "Dashboard · Empty",
+      "w": 412,
+      "x": 492,
+      "y": 1295
+    },
+    "Dashboard-NoCalendar.dc.html": {
+      "h": 1290,
+      "title": "Dashboard · Calendar not allowed",
+      "w": 412,
+      "x": 984,
+      "y": 1295
+    },
+    "Dock-Bold-Notification.dc.html": {
+      "h": 412,
+      "title": "Dock · Bold with notification",
+      "w": 915,
+      "x": 995,
+      "y": 4260
+    },
+    "Dock-Bold.dc.html": {
+      "h": 412,
+      "title": "Dock · Bold",
+      "w": 915,
+      "x": -11,
+      "y": 4260
+    },
+    "Focus.dc.html": {
+      "h": 915,
+      "title": "Focus settings",
+      "w": 412,
+      "x": 492,
+      "y": 2965
+    },
+    "Main.dc.html": {
+      "h": 1290,
+      "title": "Dashboard (full scroll)",
+      "w": 412,
+      "x": 0,
+      "y": 1295
+    },
+    "Onboarding-Permissions.dc.html": {
+      "h": 915,
+      "title": "3 · Permissions",
+      "w": 412,
+      "x": 984,
+      "y": 0
+    },
+    "Onboarding-PickDock.dc.html": {
+      "h": 915,
+      "title": "4 · Pick your dock",
+      "w": 412,
+      "x": 1476,
+      "y": 0
+    },
+    "Onboarding-Screensaver.dc.html": {
+      "h": 915,
+      "title": "2 · Set as screensaver",
+      "w": 412,
+      "x": 492,
+      "y": 0
+    },
+    "Onboarding-Welcome.dc.html": {
+      "h": 915,
+      "title": "1 · Welcome",
+      "w": 412,
+      "x": 0,
+      "y": 0
+    },
+    "Setup.dc.html": {
+      "h": 915,
+      "title": "Setup and permissions",
+      "w": 412,
+      "x": 1968,
+      "y": 2965
+    },
+    "StyleGuide.dc.html": {
+      "h": 2400,
+      "title": "Style guide",
+      "w": 1440,
+      "x": -1640,
+      "y": 856
+    },
+    "Task-Add.dc.html": {
+      "h": 915,
+      "title": "Add task sheet",
+      "w": 412,
+      "x": 1476,
+      "y": 1295
+    },
+    "Task-Edit.dc.html": {
+      "h": 915,
+      "title": "Edit task sheet · time picker",
+      "w": 412,
+      "x": 1968,
+      "y": 1295
+    },
+    "Templates.dc.html": {
+      "h": 915,
+      "title": "Templates gallery",
+      "w": 412,
+      "x": 0,
+      "y": 2965
+    }
+  },
+  "createdOnFiles": {
+    "at": "2026-11-05T16:20:00Z",
+    "v": 1
+  },
+  "designSystems": [],
+  "launch": {
+    "view": "canvas"
+  },
+  "noteOrder": [
+    "t_style",
+    "t_onb",
+    "t_dash",
+    "t_set",
+    "t_dock",
+    "m_onb",
+    "m_dash",
+    "m_set",
+    "m_dock"
+  ],
+  "notes": {
+    "m_dash": {
+      "fill": "gray",
+      "text": "Motion · Dashboard\n\nCards blur-to-focus on open, 40ms stagger top to bottom.\n\nTick a task: the circle fills in 120ms, a strike-through draws left to right in 220ms, the text fades to grey, and after 600ms the row eases to the bottom.\n\nDock now: the pill morphs into the dock with a 450ms container transform. The thumbnail clock scales up into the full clock, and system bars hide at 60%.\n\nSheets rise on a soft spring (damping 0.9, about 320ms). The scrim fades to 60% black.",
+      "w": 360,
+      "x": 2460,
+      "y": 1295
+    },
+    "m_dock": {
+      "fill": "gray",
+      "text": "Motion · Dock\n\nMinute change: the old digit blurs out 6px and fades while the new one blurs in, 300ms.\n\nNotification: the strip rises 12dp and fades in over 280ms while the clock scales to 84% on the same spring. It leaves after 8s.\n\nBurn-in care: the whole clock drifts up to 3dp every minute.",
+      "w": 360,
+      "x": 1990,
+      "y": 4260
+    },
+    "m_onb": {
+      "fill": "gray",
+      "text": "Motion · Onboarding\n\nScreens advance with a shared-axis slide: 32dp on x plus a fade, 300ms, emphasized decelerate.\n\nContent arrives blur-to-focus: blur 12→0, opacity 0→1, 260ms, 40ms stagger.\n\nAllow: the button collapses into a check and the card settles, 200ms.\n\nCarousel snaps on a critically damped spring with no overshoot.",
+      "w": 360,
+      "x": 1968,
+      "y": 0
+    },
+    "m_set": {
+      "fill": "gray",
+      "text": "Motion · Settings\n\nToggles: the thumb slides on a 220ms spring and the track colour crossfades.\n\nApp picker: checking the third app dims the rest to 35% over 180ms. Unchecking restores them.\n\nTemplates: the centre card sits at 100%, neighbours at 88% scale and 40% opacity, interpolated with scroll.",
+      "w": 360,
+      "x": 2460,
+      "y": 2965
+    },
+    "t_dash": {
+      "kind": "title1",
+      "maxW": 2380,
+      "text": "Dashboard and task sheet",
+      "w": 240,
+      "x": 0,
+      "y": 1035
+    },
+    "t_dock": {
+      "kind": "title1",
+      "maxW": 1910,
+      "text": "Dock mode",
+      "w": 240,
+      "x": 0,
+      "y": 4000
+    },
+    "t_onb": {
+      "kind": "title1",
+      "maxW": 1888,
+      "text": "Onboarding",
+      "w": 240,
+      "x": 0,
+      "y": -260
+    },
+    "t_set": {
+      "kind": "title1",
+      "maxW": 2380,
+      "text": "Templates, Focus and setup",
+      "w": 240,
+      "x": 0,
+      "y": 2705
+    },
+    "t_style": {
+      "kind": "title1",
+      "maxW": 1440,
+      "text": "Style guide",
+      "w": 240,
+      "x": -1640,
+      "y": 579
+    }
+  },
+  "order": [
+    "Main.dc.html",
+    "StyleGuide.dc.html",
+    "Onboarding-Welcome.dc.html",
+    "Onboarding-Screensaver.dc.html",
+    "Onboarding-Permissions.dc.html",
+    "Onboarding-PickDock.dc.html",
+    "Dashboard-Empty.dc.html",
+    "Dashboard-NoCalendar.dc.html",
+    "Task-Add.dc.html",
+    "Task-Edit.dc.html",
+    "Templates.dc.html",
+    "Focus.dc.html",
+    "AppPicker.dc.html",
+    "AppPicker-Limit.dc.html",
+    "Setup.dc.html",
+    "Dock-Bold.dc.html",
+    "Dock-Bold-Notification.dc.html"
+  ],
+  "pages": [],
+  "title": "AuraDock"
+}
