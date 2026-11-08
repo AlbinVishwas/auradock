@@ -64,6 +64,7 @@ import com.auradock.ui.theme.AuraDockSpacing
 import com.auradock.ui.theme.fromScreenBottom
 import com.auradock.ui.theme.fromScreenTop
 import com.auradock.sessions.SessionSummary
+import com.auradock.sessions.WeeklyFocus
 import com.auradock.sessions.summaryIsFresh
 import com.auradock.ui.viewmodel.CalendarPermissionUiState
 
@@ -80,7 +81,9 @@ data class DashboardUiState(
     val exactAlarmsAllowed: Boolean = true,
     val calendarPermission: CalendarPermissionUiState = CalendarPermissionUiState.DENIED,
     /** A focus session just ended: its card shows for three seconds (null: no card). */
-    val undockSummary: SessionSummary? = null
+    val undockSummary: SessionSummary? = null,
+    /** Focus time over the last seven days; null while it loads (nothing is drawn then). */
+    val weeklyFocus: WeeklyFocus? = null
 )
 
 /** What the user can do on the dashboard. */
@@ -128,6 +131,7 @@ fun DashboardScreen(
             Column(modifier = Modifier.padding(start = AuraDockSpacing.xs, end = AuraDockSpacing.xs, bottom = AuraDockSpacing.smd)) {
                 Text(text = greetingFor(timeMillis), color = AuraDockColors.OnBackground, style = AuraDockTypography.Greeting)
                 WeatherRow(date = dateText, weather = state.weather, permission = state.locationPermission, onEnable = actions.onEnableWeather)
+                state.weeklyFocus?.let { WeeklyFocusLine(it) }
             }
         }
 

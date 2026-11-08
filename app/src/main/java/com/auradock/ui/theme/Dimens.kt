@@ -109,6 +109,12 @@ object AuraDockSizes {
     val appChip: Dp = 40.dp
     val searchBar: Dp = 48.dp
     val appRow: Dp = 60.dp
+    /** The seven-day mini bar on the dashboard: 6 dp wide bars 4 dp apart, 4 to 20 dp tall, a 3 dp dot for an empty day. */
+    val weekBar: Dp = 6.dp
+    val weekBarGap: Dp = 4.dp
+    val weekBarMin: Dp = 4.dp
+    val weekBarMax: Dp = 20.dp
+    val weekBarEmpty: Dp = 3.dp
     /** The small pills on a row: Allow, Skip. 36 dp high. */
     val smallPill: Dp = 36.dp
     /** The dots under a carousel: 6 dp. */

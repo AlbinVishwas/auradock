@@ -59,6 +59,7 @@ fun DashboardRoute(viewModel: StandbyViewModel, navigation: Navigation, modifier
     val exactAlarmsAllowed by viewModel.exactAlarmsAllowed.collectAsState()
     val calendarPermission by viewModel.calendarPermissionState.collectAsState()
     val summary by viewModel.undockSummary.collectAsState()
+    val weekly by viewModel.weeklyFocus.collectAsState()
 
     DashboardScreen(
         state = DashboardUiState(
@@ -70,7 +71,8 @@ fun DashboardRoute(viewModel: StandbyViewModel, navigation: Navigation, modifier
             tasks = tasks,
             exactAlarmsAllowed = exactAlarmsAllowed,
             calendarPermission = calendarPermission,
-            undockSummary = summary
+            undockSummary = summary,
+            weeklyFocus = weekly
         ),
         actions = DashboardActions(
             onEnableWeather = { viewModel.requestLocationPermission() },

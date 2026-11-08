@@ -23,7 +23,9 @@ import com.auradock.data.CalendarRepository
 import com.auradock.standby.StandbyState
 import com.auradock.standby.StandbyTriggerManager
 import com.auradock.permissions.canDrawOverOtherApps
+import com.auradock.sessions.FocusStats
 import com.auradock.sessions.SessionSummary
+import com.auradock.sessions.WeeklyFocus
 import com.auradock.sessions.SessionTracker
 import com.auradock.time.MinuteClock
 import com.auradock.watch.DockWatcherController
@@ -57,8 +59,13 @@ class StandbyViewModel @Inject constructor(
     private val dockWatcher: DockWatcherController,
     private val onboardingState: OnboardingState,
     private val sessions: SessionTracker,
+    focusStats: FocusStats,
     minuteClock: MinuteClock
 ) : ViewModel() {
+
+    /** Focus time over the last seven days. Null until the first read, so the line does not flash "start a session". */
+    val weeklyFocus: StateFlow<WeeklyFocus?> = focusStats.weekly
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
 
     /** The card shown after a focus session of two minutes or more, until it is dismissed. */
     val undockSummary: StateFlow<SessionSummary?> = sessions.summary

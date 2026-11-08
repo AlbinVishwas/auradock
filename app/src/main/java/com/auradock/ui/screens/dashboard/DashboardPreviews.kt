@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import com.auradock.dock.DockTemplate
 import com.auradock.sessions.SessionCounts
 import com.auradock.sessions.SessionSummary
+import com.auradock.sessions.WeeklyFocus
 import com.auradock.ui.preview.PreviewData
 import com.auradock.ui.preview.PreviewPortrait
 import com.auradock.ui.theme.AuraDockTheme
@@ -85,3 +86,18 @@ private fun DashboardUndockSummaryQuiet() = AuraDockTheme { DashboardScreen(Full
 @PreviewPortrait
 @Composable
 private fun DashboardUndockSummaryLong() = AuraDockTheme { DashboardScreen(Full.copy(undockSummary = summary(5 * 60 + 5, 1, 48)), DashboardActions()) }
+
+// The weekly line: a busy week, a week with one session (so one bar), and a week with none (the invitation).
+private fun week(vararg minutes: Long) = WeeklyFocus(minutes.map { it * 60_000L })
+
+@PreviewPortrait
+@Composable
+private fun DashboardWeeklyFocus() = AuraDockTheme { DashboardScreen(Full.copy(weeklyFocus = week(0, 45, 90, 20, 0, 60, 45)), DashboardActions()) }
+
+@PreviewPortrait
+@Composable
+private fun DashboardWeeklyFocusOneDay() = AuraDockTheme { DashboardScreen(Full.copy(weeklyFocus = week(0, 0, 0, 0, 0, 0, 25)), DashboardActions()) }
+
+@PreviewPortrait
+@Composable
+private fun DashboardWeeklyFocusEmpty() = AuraDockTheme { DashboardScreen(Full.copy(weeklyFocus = week(0, 0, 0, 0, 0, 0, 0)), DashboardActions()) }
