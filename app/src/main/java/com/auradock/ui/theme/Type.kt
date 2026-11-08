@@ -100,6 +100,9 @@ object AuraDockTypography {
     val WheelChosenSmall = TextStyle(fontFamily = MonaSansFamily, fontWeight = FontWeight.Bold, fontSize = 24.sp)
     val WheelOther = TextStyle(fontFamily = MonaSansFamily, fontWeight = FontWeight.Bold, fontSize = 20.sp)
 
+    /** A number on the undock card: Mona Sans Bold 28. */
+    val SummaryValue = TextStyle(fontFamily = MonaSansFamily, fontWeight = FontWeight.Bold, fontSize = 28.sp, lineHeight = 32.sp)
+
     /** A settings card's title: Inter SemiBold 17. */
     val CardTitle = TextStyle(fontFamily = InterFamily, fontWeight = FontWeight.SemiBold, fontSize = 17.sp, lineHeight = 24.sp)
 

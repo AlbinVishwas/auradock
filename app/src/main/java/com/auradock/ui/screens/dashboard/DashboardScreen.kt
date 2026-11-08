@@ -61,7 +61,10 @@ import com.auradock.ui.theme.AuraDockSizes
 import com.auradock.ui.theme.AuraDockTheme
 import com.auradock.ui.theme.LocalAuraDockSpacing
 import com.auradock.ui.theme.AuraDockSpacing
+import com.auradock.ui.theme.fromScreenBottom
 import com.auradock.ui.theme.fromScreenTop
+import com.auradock.sessions.SessionSummary
+import com.auradock.sessions.summaryIsFresh
 import com.auradock.ui.viewmodel.CalendarPermissionUiState
 
 /** Everything the dashboard shows. The ViewModel's flows are folded into this by DashboardRoute. */
@@ -75,7 +78,9 @@ data class DashboardUiState(
     /** Null until the first load finishes. */
     val tasks: List<TaskEntity>? = emptyList(),
     val exactAlarmsAllowed: Boolean = true,
-    val calendarPermission: CalendarPermissionUiState = CalendarPermissionUiState.DENIED
+    val calendarPermission: CalendarPermissionUiState = CalendarPermissionUiState.DENIED,
+    /** A focus session just ended: its card shows for three seconds (null: no card). */
+    val undockSummary: SessionSummary? = null
 )
 
 /** What the user can do on the dashboard. */
@@ -89,7 +94,8 @@ data class DashboardActions(
     val onOpenFocus: () -> Unit = {},
     val onOpenSetup: () -> Unit = {},
     val onDockNow: () -> Unit = {},
-    val onEnableCalendarAccess: () -> Unit = {}
+    val onEnableCalendarAccess: () -> Unit = {},
+    val onDismissUndockSummary: () -> Unit = {}
 )
 
 /** The "today" screen. Stateless: draws [state] and reports taps through [actions]. */
@@ -177,6 +183,13 @@ fun DashboardScreen(
                 },
                 onDismiss = { sheetTaskId = null },
                 onDelete = editing?.let { task -> { actions.onDeleteTask(task); sheetTaskId = null } }
+            )
+        }
+        state.undockSummary?.takeIf { summaryIsFresh(it.endedAt, timeMillis) }?.let {
+            UndockSummaryCard(
+                summary = it,
+                onDismiss = actions.onDismissUndockSummary,
+                modifier = Modifier.align(Alignment.BottomCenter).padding(horizontal = AuraDockSpacing.mdl).padding(bottom = fromScreenBottom(AuraDockSpacing.xl))
             )
         }
 

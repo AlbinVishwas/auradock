@@ -33,6 +33,9 @@ object AuraDockMotion {
     /** Blur to focus in a list: the delay between one row and the next. */
     const val Stagger = 40
 
+    /** How long the undock summary card stays: three seconds (a tap closes it sooner). */
+    const val UndockCard = 3000
+
     /** The Dock now morph (container transform from the pill into the dock). */
     const val DockMorph = 450
 

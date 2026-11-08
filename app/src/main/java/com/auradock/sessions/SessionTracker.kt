@@ -70,6 +70,12 @@ class SessionTracker @Inject constructor(
         if (machine.live == null && active.isNotEmpty()) seenKeys.clear()
         machine.onShowing(active.isNotEmpty(), source, now)
         _live.value = machine.live
+        if (active.isNotEmpty()) {
+            _summary.value = null // a dock is back (or a new session): the old card is no longer news
+        } else {
+            // The dock has just closed: the card should not wait out the handover grace. If a dock comes back it is withdrawn.
+            machine.provisional()?.takeIf { it.worthKeeping }?.let { announce(it) }
+        }
         handler.removeCallbacks(finish)
         if (active.isEmpty()) handler.postDelayed(finish, HANDOVER_GRACE_MS + 100)
     }
@@ -99,6 +105,15 @@ class SessionTracker @Inject constructor(
         seenKeys.remove(key)
     }
 
+    private fun announce(done: FinishedSession) {
+        scope.launch {
+            val tasksDone = tasks.countCompletedBetween(done.startedAt, done.endedAt)
+            synchronized(this@SessionTracker) {
+                if (machine.closing) _summary.value = SessionSummary(done.endedAt, done.durationMs, tasksDone, done.counts)
+            }
+        }
+    }
+
     private val finish = Runnable { finishNow() }
 
     @Synchronized
@@ -121,7 +136,7 @@ class SessionTracker @Inject constructor(
                     tasksCompleted = tasksDone
                 )
             )
-            _summary.value = SessionSummary(done.endedAt, done.durationMs, tasksDone, done.counts)
+            if (_summary.value == null) _summary.value = SessionSummary(done.endedAt, done.durationMs, tasksDone, done.counts)
             Log.d(TAG, "session saved: ${done.durationMs / 1000} s, $tasksDone tasks, ${done.counts}")
         }
     }

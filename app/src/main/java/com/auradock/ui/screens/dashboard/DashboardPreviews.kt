@@ -2,6 +2,8 @@ package com.auradock.ui.screens.dashboard
 
 import androidx.compose.runtime.Composable
 import com.auradock.dock.DockTemplate
+import com.auradock.sessions.SessionCounts
+import com.auradock.sessions.SessionSummary
 import com.auradock.ui.preview.PreviewData
 import com.auradock.ui.preview.PreviewPortrait
 import com.auradock.ui.theme.AuraDockTheme
@@ -67,3 +69,19 @@ private fun DashboardPermissionsBlocked() = AuraDockTheme {
         DashboardActions()
     )
 }
+
+// The card after a focus session: a normal one, one with nothing done and nothing held, and a long one.
+private fun summary(minutes: Long, tasks: Int, held: Int, through: Int = 0) =
+    SessionSummary(endedAt = PreviewData.now, durationMs = minutes * 60_000L, tasksCompleted = tasks, counts = SessionCounts(held, through))
+
+@PreviewPortrait
+@Composable
+private fun DashboardUndockSummary() = AuraDockTheme { DashboardScreen(Full.copy(undockSummary = summary(72, 3, 6, 2)), DashboardActions()) }
+
+@PreviewPortrait
+@Composable
+private fun DashboardUndockSummaryQuiet() = AuraDockTheme { DashboardScreen(Full.copy(undockSummary = summary(2, 0, 0)), DashboardActions()) }
+
+@PreviewPortrait
+@Composable
+private fun DashboardUndockSummaryLong() = AuraDockTheme { DashboardScreen(Full.copy(undockSummary = summary(5 * 60 + 5, 1, 48)), DashboardActions()) }

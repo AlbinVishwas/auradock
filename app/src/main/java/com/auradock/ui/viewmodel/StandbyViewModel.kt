@@ -23,6 +23,8 @@ import com.auradock.data.CalendarRepository
 import com.auradock.standby.StandbyState
 import com.auradock.standby.StandbyTriggerManager
 import com.auradock.permissions.canDrawOverOtherApps
+import com.auradock.sessions.SessionSummary
+import com.auradock.sessions.SessionTracker
 import com.auradock.time.MinuteClock
 import com.auradock.watch.DockWatcherController
 import android.content.Context
@@ -54,8 +56,14 @@ class StandbyViewModel @Inject constructor(
     private val dockFocus: DockFocusController,
     private val dockWatcher: DockWatcherController,
     private val onboardingState: OnboardingState,
+    private val sessions: SessionTracker,
     minuteClock: MinuteClock
 ) : ViewModel() {
+
+    /** The card shown after a focus session of two minutes or more, until it is dismissed. */
+    val undockSummary: StateFlow<SessionSummary?> = sessions.summary
+    fun dismissUndockSummary() = sessions.dismissSummary()
+
 
     /** Current time, refreshed at the start of every minute. Shared by the clock, preview and dashboard date. */
     val currentTimeMillis: StateFlow<Long> = minuteClock.minutes

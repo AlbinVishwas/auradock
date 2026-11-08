@@ -98,6 +98,13 @@ class SessionMachine {
         )
     }
 
+    /** The session as it stands now that its dock has closed, for the undock card, which cannot wait out the grace. */
+    fun provisional(): FinishedSession? {
+        val session = live ?: return null
+        val closed = closedAt ?: return null
+        return FinishedSession(session.startedAt, closed, session.source, session.counts)
+    }
+
     /** Call once the grace may have passed. Returns the session if it has now really ended. */
     fun finishIfDue(now: Long): FinishedSession? {
         val session = live ?: return null

@@ -58,6 +58,7 @@ fun DashboardRoute(viewModel: StandbyViewModel, navigation: Navigation, modifier
     val tasks by viewModel.tasks.collectAsState()
     val exactAlarmsAllowed by viewModel.exactAlarmsAllowed.collectAsState()
     val calendarPermission by viewModel.calendarPermissionState.collectAsState()
+    val summary by viewModel.undockSummary.collectAsState()
 
     DashboardScreen(
         state = DashboardUiState(
@@ -68,7 +69,8 @@ fun DashboardRoute(viewModel: StandbyViewModel, navigation: Navigation, modifier
             events = events,
             tasks = tasks,
             exactAlarmsAllowed = exactAlarmsAllowed,
-            calendarPermission = calendarPermission
+            calendarPermission = calendarPermission,
+            undockSummary = summary
         ),
         actions = DashboardActions(
             onEnableWeather = { viewModel.requestLocationPermission() },
@@ -80,7 +82,8 @@ fun DashboardRoute(viewModel: StandbyViewModel, navigation: Navigation, modifier
             onOpenFocus = navigation.openFocus,
             onOpenSetup = navigation.openSetup,
             onDockNow = { viewModel.enterDock() },
-            onEnableCalendarAccess = { viewModel.requestCalendarPermission() }
+            onEnableCalendarAccess = { viewModel.requestCalendarPermission() },
+            onDismissUndockSummary = { viewModel.dismissUndockSummary() }
         ),
         modifier = modifier
     )
