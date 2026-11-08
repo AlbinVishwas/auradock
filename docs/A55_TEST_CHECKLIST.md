@@ -375,8 +375,9 @@ in Focus settings. Watch the saved sessions with `adb logcat -s SessionTracker` 
   a starred contact counts as "through". The card at the end shows the same held number. Nothing is counted for ongoing notifications
   (music, downloads), AuraDock's own reminders, or when Do Not Disturb is off.
 - [ ] **Held counts are numbers only.** From across the room the caption says nothing about who wrote or what was said.
-- [ ] **Tasks done.** Tick a task, dock for two minutes, undock: the card says "0 tasks done". Now untick the dock: tick a task while the dock is
-  closing and dock again within three seconds (it merges); that task counts.
+- [ ] **Tasks done.** A task ticked before you docked is not counted: dock for two minutes after ticking one and the card says
+  "0 tasks done". A task ticked while the app is open during a session counts: close the dock, tick a task within three seconds and
+  dock again (the two docks merge into one session); the card at the end says "1 task done".
 - [ ] **Weekly line.** After a few sessions the dashboard says "N h M m focused this week" with seven bars, today on the right in cream. With no
   sessions in seven days it says "Dock your phone to start a focus session." The total matches the sessions you actually did.
 - [ ] **Midnight.** Dock across midnight: the time is split between the two bars.
