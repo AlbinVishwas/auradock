@@ -162,6 +162,12 @@ object AuraDockDockLayout {
     val stripBase: Dp = 24.dp
     val stripLine: Dp = 20.dp
     val stripVertical: Dp = 20.dp
+
+    /** The focus session line: 160 x 2 dp, 12 dp above the bottom edge (inside the burn-in drift), one lap an hour. */
+    val sessionLineWidth: Dp = 160.dp
+    val sessionLineHeight: Dp = 2.dp
+    val sessionLineBottom: Dp = 12.dp
+    const val SessionLapMinutes = 60
 }
 
 /** The onboarding animation's drawing sizes. */

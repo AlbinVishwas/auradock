@@ -20,5 +20,10 @@ data class DockUiState(
     /** The latest notification from each picked app (empty: no strip). Left empty in previews, which never show real messages. */
     val notifications: List<NotificationItem> = emptyList(),
     /** Whether the strip may show the message text itself. Off unless the user turns it on. */
-    val showMessageText: Boolean = false
+    val showMessageText: Boolean = false,
+    /** The focus session going on now (the live dock only; null for thumbnails, which draw no line and no counts). */
+    val session: SessionSnapshot? = null
 )
+
+/** What the dock draws about the session: when it began, and how many notifications were held and let through. */
+data class SessionSnapshot(val startedAt: Long, val held: Int = 0, val through: Int = 0)

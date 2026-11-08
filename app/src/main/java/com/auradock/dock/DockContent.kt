@@ -86,6 +86,13 @@ fun DockContent(template: DockTemplate, state: DockUiState, modifier: Modifier =
             DockTemplate.CLASSIC -> SafeZone { ClassicLayout(state) }
         }
         }
+        state.session?.let {
+            SessionLine(
+                elapsedMillis = state.timeMillis - it.startedAt,
+                dimmed = template == DockTemplate.MINIMAL,
+                modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = AuraDockDockLayout.sessionLineBottom)
+            )
+        }
         NotificationStrip(
             lines = if (template == DockTemplate.BOLD) emptyList() else lines,
             dimmed = template == DockTemplate.MINIMAL,

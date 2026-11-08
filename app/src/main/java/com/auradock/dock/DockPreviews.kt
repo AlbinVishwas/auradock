@@ -38,3 +38,12 @@ private fun ProductivityBusy() = AuraDockTheme {
 
 @PreviewPortrait @Composable private fun ClassicPortrait() = AuraDockTheme { DockContent(DockTemplate.CLASSIC, PreviewData.dockFull) }
 @PreviewPortrait @Composable private fun ProductivityPortrait() = AuraDockTheme { DockContent(DockTemplate.PRODUCTIVITY, PreviewData.dockFull) }
+
+// The focus session line: a session 25 minutes in, on the templates that carry it, and a fresh one (nothing filled yet).
+private val inSession = PreviewData.dockFull.copy(session = SessionSnapshot(startedAt = PreviewData.dockFull.timeMillis - 25 * 60_000L))
+@PreviewLandscape @Composable private fun BoldSession() = AuraDockTheme { DockContent(DockTemplate.BOLD, inSession) }
+@PreviewLandscape @Composable private fun ClassicSession() = AuraDockTheme { DockContent(DockTemplate.CLASSIC, inSession) }
+@PreviewLandscape @Composable private fun MinimalSession() = AuraDockTheme { DockContent(DockTemplate.MINIMAL, inSession) }
+@PreviewLandscape @Composable private fun BoldSessionJustStarted() = AuraDockTheme {
+    DockContent(DockTemplate.BOLD, PreviewData.dockFull.copy(session = SessionSnapshot(startedAt = PreviewData.dockFull.timeMillis)))
+}

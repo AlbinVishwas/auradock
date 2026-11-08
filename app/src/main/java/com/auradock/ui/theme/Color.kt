@@ -145,6 +145,13 @@ object AuraDockColors {
     val DockSecondary = AuraDockPalette.Secondary
     val DockLabel = AuraDockPalette.Tertiary
     val DockOverdue = AuraDockPalette.Coral
+    /** The line that shows how long this focus session has gone on: quiet greys, never coral. */
+    val SessionFill = AuraDockPalette.Tertiary
+    val SessionTrack = AuraDockPalette.Outline.copy(alpha = 0.4f)
+
+    /** The same line on Minimal, which is dimmed for OLED: one step darker. */
+    val SessionFillDim = AuraDockPalette.Outline
+    val SessionTrackDim = AuraDockPalette.Inactive.copy(alpha = 0.6f)
     val DockDivider = AuraDockPalette.Inactive
     /** Minimal: OLED-dim grey digits. */
     val DimDigits = AuraDockPalette.Outline
