@@ -136,7 +136,7 @@ class SessionTracker @Inject constructor(
                     tasksCompleted = tasksDone
                 )
             )
-            if (_summary.value == null) _summary.value = SessionSummary(done.endedAt, done.durationMs, tasksDone, done.counts)
+            // The card was announced when the dock closed ([announce]); setting it again here would show it twice.
             Log.d(TAG, "session saved: ${done.durationMs / 1000} s, $tasksDone tasks, ${done.counts}")
         }
     }

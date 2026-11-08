@@ -351,3 +351,34 @@ Watch decisions with `adb logcat -s DockWatcher` (lines like `pill: Countdown(se
   the feature ON; note the battery %. Repeat for an hour with it OFF (same use). Check Settings > Battery > AuraDock for its
   share. Pass: the difference is small (a point or two); record both numbers.
 - [ ] **Turning it off** stops the service (notification gone) and the pill never appears again.
+
+## Focus sessions (0.2.0)
+Setup: install 0.2.0 over 0.1.4 (see "Upgrade" below). Give AuraDock Do Not Disturb access and notification access, and pick one app
+in Focus settings. Watch the saved sessions with `adb logcat -s SessionTracker` (lines like `session saved: 130 s, 1 tasks, SessionCounts(held=4, through=0)`).
+- [ ] **Upgrade.** Install 0.2.0 over 0.1.4 with tasks and a chosen template in place. Pass: it opens on the dashboard (not
+  onboarding), the tasks and template are still there, nothing crashes.
+- [ ] **Session line, readable at 1 m.** Dock on the stand, in a lit room and in a dark one. Pass: from about 1 m you can see the grey
+  line under the clock and tell roughly how full it is; it is never louder than the clock; it is not coral. Check it on Bold, Classic,
+  Focus, Productivity and Minimal (Minimal is dimmer by design). It must not touch the digits, the date or the strip in either landscape direction.
+- [ ] **Session line moves.** After 30 minutes the line is about half full; after an hour it starts a new lap. It drifts with the clock
+  (no fixed bright pixels): look for burn-in after a night of docking.
+- [ ] **Under two minutes is ignored.** Dock for about a minute and undock. Pass: no card, and logcat says `ignored (under two minutes)`.
+- [ ] **Summary appears on a real undock.** Dock for at least two minutes, then touch the screen to close the dock (try it after "Dock now",
+  after the screensaver and after the Dock-from-anywhere pill). Pass: for "Dock now" and the pill the card shows on the dashboard straight away,
+  for three seconds, tap closes it sooner, and it settles in softly. After the screensaver the card waits and shows when you next open the
+  app (within ten minutes). It shows only once.
+- [ ] **Handover does not split a session.** Let the screensaver start, then open the app while it is showing (or turn the phone). Pass: one
+  session in logcat, not two.
+- [ ] **Counts match real notifications.** With Do Not Disturb on (Focus while docked), send yourself messages from apps you did NOT pick,
+  and from the app you did. Pass: the dock caption reads "N held · M through", where N is the number of notifications from the other apps
+  and M the number from the picked app (one per notification, not per message: five texts in one chat count once). A call or message from
+  a starred contact counts as "through". The card at the end shows the same held number. Nothing is counted for ongoing notifications
+  (music, downloads), AuraDock's own reminders, or when Do Not Disturb is off.
+- [ ] **Held counts are numbers only.** From across the room the caption says nothing about who wrote or what was said.
+- [ ] **Tasks done.** Tick a task, dock for two minutes, undock: the card says "0 tasks done". Now untick the dock: tick a task while the dock is
+  closing and dock again within three seconds (it merges); that task counts.
+- [ ] **Weekly line.** After a few sessions the dashboard says "N h M m focused this week" with seven bars, today on the right in cream. With no
+  sessions in seven days it says "Dock your phone to start a focus session." The total matches the sessions you actually did.
+- [ ] **Midnight.** Dock across midnight: the time is split between the two bars.
+- [ ] **Battery.** One night docked with 0.2.0 (the line updates once a minute): note the battery use from Settings > Battery > AuraDock;
+  it should match 0.1.4.
