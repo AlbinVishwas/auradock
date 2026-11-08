@@ -30,6 +30,10 @@ interface TaskDao {
     @Query("DELETE FROM tasks WHERE done = 1 AND completedAt < :startOfToday")
     suspend fun deleteDoneBefore(startOfToday: Long)
 
+    /** How many tasks were ticked off between [from] and [to] (and are still done): the focus session summary. */
+    @Query("SELECT COUNT(*) FROM tasks WHERE done = 1 AND completedAt >= :from AND completedAt <= :to")
+    suspend fun countCompletedBetween(from: Long, to: Long): Int
+
     /** Not done, has a due time still in the future: the ones that need an alarm. */
     @Query("SELECT * FROM tasks WHERE done = 0 AND dueAt IS NOT NULL AND dueAt > :now")
     suspend fun pendingWithDue(now: Long): List<TaskEntity>

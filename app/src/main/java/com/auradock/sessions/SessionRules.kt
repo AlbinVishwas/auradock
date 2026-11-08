@@ -1,0 +1,110 @@
+package com.auradock.sessions
+
+/** How a focus session started. */
+enum class SessionSource {
+    /** The screensaver (DreamService) started the dock. */
+    SCREENSAVER,
+
+    /** The user pressed "Dock now", or opened the app while charging sideways and the dock showed itself. */
+    DOCK_NOW,
+
+    /** The "Dock from anywhere" watcher opened the dock. */
+    WATCHER
+}
+
+/** A session shorter than this is not worth keeping: a phone briefly turned sideways is not focus. */
+const val MIN_SESSION_MS = 2 * 60_000L
+
+/**
+ * One dock closing and the next opening (the screensaver handing over to the app, or a turn of the phone) happens within a
+ * moment. Inside this window the two are one session. It matches the Do Not Disturb restore grace in DockFocusController.
+ */
+const val HANDOVER_GRACE_MS = 3_000L
+
+/** What came in while docked: [held] were silenced, [through] reached the user (a picked app, or someone Do Not Disturb lets through). */
+data class SessionCounts(val held: Int = 0, val through: Int = 0)
+
+/** A session that is going on now. */
+data class LiveSession(val startedAt: Long, val source: SessionSource, val counts: SessionCounts = SessionCounts())
+
+/** A session that has ended. */
+data class FinishedSession(
+    val startedAt: Long,
+    val endedAt: Long,
+    val source: SessionSource,
+    val counts: SessionCounts
+) {
+    val durationMs: Long get() = endedAt - startedAt
+
+    /** Sessions under two minutes are ignored: not saved, no summary. */
+    val worthKeeping: Boolean get() = durationMs >= MIN_SESSION_MS
+}
+
+/** How a notification that arrived during a session is counted. */
+enum class Arrival { HELD, THROUGH, IGNORED }
+
+/**
+ * Decides how one incoming notification counts. [picked]: from one of the user's picked apps (the dock shows it).
+ * [dndActive]: Do Not Disturb is filtering right now. [allowedByDnd]: Android would let this one through the filter (a starred
+ * contact, say). Nothing is counted for AuraDock's own notifications, ongoing ones, group headers or empty ones.
+ */
+fun classifyArrival(
+    ongoing: Boolean,
+    groupSummary: Boolean,
+    empty: Boolean,
+    own: Boolean,
+    picked: Boolean,
+    dndActive: Boolean,
+    allowedByDnd: Boolean
+): Arrival = when {
+    ongoing || groupSummary || empty || own -> Arrival.IGNORED
+    picked -> Arrival.THROUGH
+    !dndActive -> Arrival.IGNORED // nothing was silenced, so there is nothing held to report
+    allowedByDnd -> Arrival.THROUGH
+    else -> Arrival.HELD
+}
+
+/**
+ * The start-and-end rules, with no Android in them. Feed it "a dock is showing / is not showing" and the time; it keeps one
+ * live session, merges a handover into it, and hands back the finished session once the grace has passed.
+ */
+class SessionMachine {
+    var live: LiveSession? = null
+        private set
+    private var closedAt: Long? = null
+
+    /** True while a dock has just closed and the grace is running. */
+    val closing: Boolean get() = closedAt != null
+
+    fun onShowing(showing: Boolean, source: SessionSource, now: Long) {
+        if (showing) {
+            if (live == null) live = LiveSession(startedAt = now, source = source)
+            closedAt = null // a handover: the same session carries on
+        } else if (live != null && closedAt == null) {
+            closedAt = now
+        }
+    }
+
+    /** Counts a notification, but only while a dock is really showing. */
+    fun count(arrival: Arrival) {
+        val session = live ?: return
+        if (closedAt != null) return
+        live = session.copy(
+            counts = when (arrival) {
+                Arrival.HELD -> session.counts.copy(held = session.counts.held + 1)
+                Arrival.THROUGH -> session.counts.copy(through = session.counts.through + 1)
+                Arrival.IGNORED -> session.counts
+            }
+        )
+    }
+
+    /** Call once the grace may have passed. Returns the session if it has now really ended. */
+    fun finishIfDue(now: Long): FinishedSession? {
+        val session = live ?: return null
+        val closed = closedAt ?: return null
+        if (now - closed < HANDOVER_GRACE_MS) return null
+        live = null
+        closedAt = null
+        return FinishedSession(session.startedAt, closed, session.source, session.counts)
+    }
+}

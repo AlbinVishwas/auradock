@@ -9,7 +9,11 @@ data class RawNotification(
     val text: String,
     val postedAt: Long,
     val ongoing: Boolean,
-    val groupSummary: Boolean
+    val groupSummary: Boolean,
+    /** Do Not Disturb is filtering right now (not "allow all"). Only the focus session counts read this. */
+    val dndActive: Boolean = false,
+    /** Android would let this one through the current Do Not Disturb filter (a starred contact, say). */
+    val allowedByDnd: Boolean = false
 )
 
 /** A notification as the dock shows it. [key] is Android's unique id for it, used to update or remove it exactly. */

@@ -4,6 +4,7 @@ import android.content.Context
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
+import com.auradock.sessions.SessionTracker
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -24,7 +25,8 @@ enum class DockSource { APP, DREAM }
 class DockFocusController @Inject constructor(
     @ApplicationContext context: Context,
     private val settings: FocusSettings,
-    private val dnd: DndController
+    private val dnd: DndController,
+    private val sessions: SessionTracker
 ) {
     private val prefs = context.getSharedPreferences("auradock_focus_state", Context.MODE_PRIVATE)
     private val active = mutableSetOf<DockSource>()
@@ -50,6 +52,7 @@ class DockFocusController @Inject constructor(
     fun setActive(source: DockSource, isActive: Boolean) {
         if (isActive) active += source else active -= source
         _showing.value = active.isNotEmpty()
+        sessions.onDockSources(active.toSet())
         handler.removeCallbacks(delayedRefresh)
         restorePending = false
         if (!isActive && active.isEmpty()) {

@@ -34,8 +34,12 @@ class AuraNotificationListenerService : NotificationListenerService() {
         runCatching { requestRebind(ComponentName(this, AuraNotificationListenerService::class.java)) }
     }
 
+    override fun onNotificationPosted(sbn: StatusBarNotification?, rankingMap: RankingMap?) {
+        if (sbn != null) repository.onPosted(toRaw(sbn, rankingMap))
+    }
+
     override fun onNotificationPosted(sbn: StatusBarNotification?) {
-        if (sbn != null) repository.onPosted(toRaw(sbn))
+        // Handled by the version above, which also gets the ranking.
     }
 
     override fun onNotificationRemoved(sbn: StatusBarNotification?) {
@@ -43,8 +47,14 @@ class AuraNotificationListenerService : NotificationListenerService() {
         if (sbn != null) repository.onRemoved(sbn.key)
     }
 
-    private fun toRaw(sbn: StatusBarNotification): RawNotification {
+    private fun toRaw(sbn: StatusBarNotification, rankingMap: RankingMap? = null): RawNotification {
         val extras = sbn.notification.extras
+        val filter = runCatching { currentInterruptionFilter }.getOrDefault(INTERRUPTION_FILTER_UNKNOWN)
+        val dndActive = filter != INTERRUPTION_FILTER_ALL && filter != INTERRUPTION_FILTER_UNKNOWN
+        val allowed = runCatching {
+            val ranking = Ranking()
+            (rankingMap ?: currentRanking).getRanking(sbn.key, ranking) && ranking.matchesInterruptionFilter()
+        }.getOrDefault(false)
         return RawNotification(
             key = sbn.key,
             packageName = sbn.packageName,
@@ -53,7 +63,9 @@ class AuraNotificationListenerService : NotificationListenerService() {
             text = extras.getCharSequence("android.text")?.toString().orEmpty(),
             postedAt = sbn.postTime,
             ongoing = sbn.isOngoing,
-            groupSummary = (sbn.notification.flags and android.app.Notification.FLAG_GROUP_SUMMARY) != 0
+            groupSummary = (sbn.notification.flags and android.app.Notification.FLAG_GROUP_SUMMARY) != 0,
+            dndActive = dndActive,
+            allowedByDnd = allowed
         )
     }
 

@@ -2,6 +2,7 @@ package com.auradock.data
 
 import android.util.Log
 import com.auradock.focus.FocusSettings
+import com.auradock.sessions.SessionTracker
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -20,7 +21,8 @@ import javax.inject.Singleton
  */
 @Singleton
 class NotificationRepository @Inject constructor(
-    private val settings: FocusSettings
+    private val settings: FocusSettings,
+    private val sessions: SessionTracker
 ) {
     private val _items = MutableStateFlow<List<NotificationItem>>(emptyList())
     val items: StateFlow<List<NotificationItem>> = _items.asStateFlow()
@@ -47,6 +49,7 @@ class NotificationRepository @Inject constructor(
 
     fun onPosted(raw: RawNotification) {
         val picked = settings.pickedApps.value.toSet()
+        sessions.onNotification(raw, picked = raw.packageName in picked) // counted for the focus session; the text is never kept
         if (isRelevant(raw, picked)) {
             _items.update { upsert(it, raw.toItem()) }
             Log.d(TAG, "cached ${raw.packageName} (${_items.value.size} total)")
@@ -57,6 +60,7 @@ class NotificationRepository @Inject constructor(
     }
 
     fun onRemoved(key: String) {
+        sessions.onNotificationRemoved(key)
         _items.update { removeByKey(it, key) }
         Log.d(TAG, "removed (${_items.value.size} left)")
     }

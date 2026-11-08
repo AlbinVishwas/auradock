@@ -85,6 +85,7 @@ class MainActivity : ComponentActivity() {
 
     @Inject lateinit var dockData: DockData
     @Inject lateinit var dockFocus: DockFocusController
+    @Inject lateinit var sessions: com.auradock.sessions.SessionTracker
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -302,6 +303,7 @@ class MainActivity : ComponentActivity() {
     private fun openDockIfAsked(intent: Intent?) {
         if (intent?.getBooleanExtra(EXTRA_DOCK_NOW, false) == true) {
             intent.removeExtra(EXTRA_DOCK_NOW)
+            sessions.noteWatcherLaunch()
             standbyViewModel.enterDock()
         }
     }

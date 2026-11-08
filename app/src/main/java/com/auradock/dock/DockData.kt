@@ -10,6 +10,8 @@ import com.auradock.focus.FocusSettings
 import com.auradock.permissions.isNotificationAccessEnabled
 import com.auradock.tasks.TaskEntity
 import com.auradock.tasks.TaskRepository
+import com.auradock.sessions.LiveSession
+import com.auradock.sessions.SessionTracker
 import com.auradock.time.MinuteClock
 import com.auradock.weather.Weather
 import com.auradock.weather.WeatherRepository
@@ -37,8 +39,12 @@ class DockData @Inject constructor(
     private val minuteClock: MinuteClock,
     templateRepository: TemplateRepository,
     private val weatherRepository: WeatherRepository,
-    taskRepository: TaskRepository
+    taskRepository: TaskRepository,
+    sessionTracker: SessionTracker
 ) {
+    /** The focus session going on now, for the dock's ring and its "held for you" line. */
+    val session: StateFlow<LiveSession?> = sessionTracker.live
+
     val selectedTemplate: StateFlow<DockTemplate> = templateRepository.selected
 
     /** The latest weather (may be old: use usableAt before showing it). */
