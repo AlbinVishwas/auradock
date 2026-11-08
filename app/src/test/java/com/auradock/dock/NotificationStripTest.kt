@@ -31,3 +31,13 @@ class NotificationStripTest {
             stripLines(listOf(item("A", "x"), item("B", "y")), showText = false)
         )
 }
+
+class HeldCaptionTest {
+    @org.junit.Test fun `counts are shown together`() = org.junit.Assert.assertEquals("6 held · 2 through", heldCaption(6, 2))
+    @org.junit.Test fun `a quiet session shows nothing`() = org.junit.Assert.assertNull(heldCaption(0, 0))
+    @org.junit.Test fun `one side can be zero`() {
+        org.junit.Assert.assertEquals("0 held · 3 through", heldCaption(0, 3))
+        org.junit.Assert.assertEquals("4 held · 0 through", heldCaption(4, 0))
+    }
+    @org.junit.Test fun `negative counts are never shown`() = org.junit.Assert.assertEquals("0 held · 1 through", heldCaption(-2, 1))
+}

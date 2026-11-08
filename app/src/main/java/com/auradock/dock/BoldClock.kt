@@ -40,6 +40,7 @@ import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import com.auradock.ui.theme.AuraDockBold
 import com.auradock.ui.theme.AuraDockColors
+import com.auradock.ui.theme.AuraDockDockLayout
 import com.auradock.ui.theme.NunitoFamily
 import java.time.Instant
 import java.time.ZoneId
@@ -60,8 +61,9 @@ fun boldTimeString(timeMillis: Long, use24Hour: Boolean, zone: ZoneId = ZoneId.s
  * translucent grey dots. Pure black behind. [scale] makes it smaller (when the notification strip is showing).
  */
 @Composable
-fun BoldClock(timeMillis: Long, use24Hour: Boolean, modifier: Modifier = Modifier, strip: List<String> = emptyList()) {
-    val scale = if (strip.isEmpty()) 1f else AuraDockBold.StripScale
+fun BoldClock(timeMillis: Long, use24Hour: Boolean, modifier: Modifier = Modifier, strip: List<String> = emptyList(), caption: String? = null) {
+    val stripShown = strip.isNotEmpty() || caption != null
+    val scale = if (stripShown) AuraDockBold.StripScale else 1f
     val text = remember(timeMillis, use24Hour) { boldTimeString(timeMillis, use24Hour) }
     val measurer = rememberTextMeasurer()
     val density = LocalDensity.current
@@ -93,7 +95,7 @@ fun BoldClock(timeMillis: Long, use24Hour: Boolean, modifier: Modifier = Modifie
         val emPx = minOf(availW * AuraDockBold.WidthFill / totalEm, availH * AuraDockBold.HeightShare) * scale
         val fontSize = with(fixed) { emPx.toSp() }
 
-        Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.padding(top = if (strip.isEmpty()) 0.dp else AuraDockBold.StripTopPad)) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.padding(top = if (stripShown) AuraDockBold.StripTopPad else 0.dp)) {
         Row(
             // The padding sits inside the layer, so the leaning digits are not clipped at its edge.
             modifier = Modifier
@@ -153,12 +155,15 @@ fun BoldClock(timeMillis: Long, use24Hour: Boolean, modifier: Modifier = Modifie
                 }
             }
         }
-        if (strip.isNotEmpty()) {
+        if (stripShown) {
             Column(
                 modifier = Modifier.padding(top = AuraDockBold.StripGap),
-                horizontalAlignment = Alignment.CenterHorizontally
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(AuraDockBold.StripLineGap)
             ) {
-                strip.forEach { BoldStripLine(it) }
+                // The held-for-you counts sit next to the last notification line (alone when there is none), a step quieter.
+                strip.forEachIndexed { i, line -> BoldStripLine(line, if (i == strip.lastIndex) caption else null) }
+                if (strip.isEmpty() && caption != null) Text(text = caption, color = AuraDockColors.HeldCaption, style = AuraDockTypography.BoldStrip, maxLines = 1)
             }
         }
         }
@@ -167,7 +172,7 @@ fun BoldClock(timeMillis: Long, use24Hour: Boolean, modifier: Modifier = Modifie
 
 /** One notification under the Bold clock: a chat-bubble icon and "App · who", Inter Medium 16, grey. */
 @Composable
-private fun BoldStripLine(text: String) {
+private fun BoldStripLine(text: String, caption: String? = null) {
     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(AuraDockBold.StripIconGap)) {
         Icon(
             imageVector = Icons.Outlined.ChatBubbleOutline,
@@ -180,7 +185,11 @@ private fun BoldStripLine(text: String) {
             color = AuraDockColors.DockSecondary,
             style = AuraDockTypography.BoldStrip,
             maxLines = 1,
-            overflow = TextOverflow.Ellipsis
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.weight(1f, fill = false)
         )
+        if (caption != null) {
+            Text(text = caption, color = AuraDockColors.HeldCaption, style = AuraDockTypography.BoldStrip, maxLines = 1, modifier = Modifier.padding(start = AuraDockDockLayout.captionGap))
+        }
     }
 }

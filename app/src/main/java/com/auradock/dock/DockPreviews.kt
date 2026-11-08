@@ -47,3 +47,12 @@ private val inSession = PreviewData.dockFull.copy(session = SessionSnapshot(star
 @PreviewLandscape @Composable private fun BoldSessionJustStarted() = AuraDockTheme {
     DockContent(DockTemplate.BOLD, PreviewData.dockFull.copy(session = SessionSnapshot(startedAt = PreviewData.dockFull.timeMillis)))
 }
+
+// "Held for you": counts with and without a notification line, and the quiet session that shows nothing.
+private val heldSession = SessionSnapshot(startedAt = PreviewData.dockFull.timeMillis - 40 * 60_000L, held = 6, through = 2)
+@PreviewLandscape @Composable private fun BoldHeld() = AuraDockTheme { DockContent(DockTemplate.BOLD, PreviewData.dockFull.copy(session = heldSession)) }
+@PreviewLandscape @Composable private fun ClassicHeld() = AuraDockTheme { DockContent(DockTemplate.CLASSIC, PreviewData.dockFull.copy(session = heldSession)) }
+@PreviewLandscape @Composable private fun MinimalHeld() = AuraDockTheme { DockContent(DockTemplate.MINIMAL, PreviewData.dockFull.copy(session = heldSession)) }
+@PreviewLandscape @Composable private fun BoldQuietSession() = AuraDockTheme {
+    DockContent(DockTemplate.BOLD, PreviewData.dockFull.copy(session = heldSession.copy(held = 0, through = 0)))
+}

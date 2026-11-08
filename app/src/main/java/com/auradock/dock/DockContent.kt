@@ -29,6 +29,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.dp
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -67,18 +68,21 @@ fun DockContent(template: DockTemplate, state: DockUiState, modifier: Modifier =
         contentAlignment = Alignment.Center
     ) {
         val lines = stripLines(state.notifications, state.showMessageText)
+        val caption = state.session?.let { heldCaption(it.held, it.through) }
+        val rows = maxOf(lines.size, if (caption != null) 1 else 0)
         // Make room under the template for the strip so the two never overlap (the clock moves up a little).
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(bottom = if (lines.isEmpty() || template == DockTemplate.BOLD) AuraDockSizes.none else AuraDockDockLayout.stripBase + AuraDockDockLayout.stripLine * lines.size),
+                .padding(bottom = if (rows == 0 || template == DockTemplate.BOLD) AuraDockSizes.none else AuraDockDockLayout.stripBase + AuraDockDockLayout.stripLine * rows),
             contentAlignment = Alignment.Center
         ) {
         when (template) {
             DockTemplate.BOLD -> BoldClock(
                 timeMillis = state.timeMillis,
                 use24Hour = DateFormat.is24HourFormat(LocalContext.current),
-                strip = lines
+                strip = lines,
+                caption = caption
             )
             DockTemplate.MINIMAL -> ClockWidget(timeMillis = state.timeMillis, dimmed = true, showDate = false)
             DockTemplate.FOCUS -> SafeZone { FocusLayout(state) }
@@ -95,6 +99,7 @@ fun DockContent(template: DockTemplate, state: DockUiState, modifier: Modifier =
         }
         NotificationStrip(
             lines = if (template == DockTemplate.BOLD) emptyList() else lines,
+            caption = if (template == DockTemplate.BOLD) null else caption,
             dimmed = template == DockTemplate.MINIMAL,
             modifier = Modifier.align(Alignment.BottomCenter)
         )
@@ -337,6 +342,12 @@ private fun WeatherBlock(weather: Weather?) {
 @Composable
 private fun ClassicLayout(state: DockUiState) {
     val date = remember(state.timeMillis) { DockDate.of(state.timeMillis) }
+    BoxWithConstraints(Modifier.fillMaxSize()) {
+    // The day number is as big as fits under the weekday and month: smaller when a notification strip takes a row of the screen.
+    val fixed = Density(LocalDensity.current.density, fontScale = 1f)
+    val full = AuraDockTypography.DockDayNumber.fontSize.value
+    val fitted = ((maxHeight - AuraDockDockLayout.classicHeading).value / AuraDockDockLayout.DayLineEm).coerceIn(full / 2, full)
+    val daySize = with(fixed) { fitted.dp.toSp() }
     Row(modifier = Modifier.fillMaxSize(), verticalAlignment = Alignment.CenterVertically) {
         Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.Center) {
             Text(text = date.weekday, color = AuraDockColors.Coral, style = AuraDockTypography.DockWeekday)
@@ -344,7 +355,10 @@ private fun ClassicLayout(state: DockUiState) {
             Text(
                 text = date.day,
                 color = AuraDockColors.DockText,
-                style = AuraDockTypography.DockDayNumber.copy(lineHeight = AuraDockTypography.DockDayNumber.fontSize * AuraDockDockLayout.DayLineEm)
+                style = AuraDockTypography.DockDayNumber.copy(fontSize = daySize, lineHeight = daySize * AuraDockDockLayout.DayLineEm),
+                // The glyph is taller than its line box: do not cut it at the box.
+                overflow = androidx.compose.ui.text.style.TextOverflow.Visible,
+                softWrap = false
             )
         }
         Column(modifier = Modifier.weight(1f), horizontalAlignment = Alignment.End, verticalArrangement = Arrangement.Center) {
@@ -360,5 +374,6 @@ private fun ClassicLayout(state: DockUiState) {
                 Text(text = weather.condition.label, color = AuraDockColors.DockSecondary, style = AuraDockTypography.DockCondition)
             }
         }
+    }
     }
 }

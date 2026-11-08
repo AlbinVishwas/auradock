@@ -146,6 +146,8 @@ object AuraDockDockLayout {
     const val FocusGapEm = 0.10f
     /** The Classic day number's line height as a fraction of its size. */
     const val DayLineEm = 0.95f
+    /** The height of the weekday and month above Classic's day number (two 34 sp lines). */
+    val classicHeading: Dp = 94.dp
     const val FocusLeftShare = 0.46f
     val columnGap: Dp = 28.dp
     val sectionGap: Dp = 36.dp
@@ -162,6 +164,9 @@ object AuraDockDockLayout {
     val stripBase: Dp = 24.dp
     val stripLine: Dp = 20.dp
     val stripVertical: Dp = 20.dp
+
+    /** Space between the last notification line and the held-for-you counts beside it. */
+    val captionGap: Dp = 16.dp
 
     /** The focus session line: 160 x 2 dp, 12 dp above the bottom edge (inside the burn-in drift), one lap an hour. */
     val sessionLineWidth: Dp = 160.dp
@@ -261,6 +266,8 @@ object AuraDockBold {
     val StripTopPad = 6.dp
     val StripIcon = 18.dp
     val StripIconGap = 10.dp
+    /** Space between the notification line and the held-for-you caption under it. */
+    val StripLineGap = 6.dp
 
     /**
      * Each digit leans a little, so the time looks set by hand. The guide gives 1 -3, 2 +5, 3 -4, 0 +5; the others

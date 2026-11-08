@@ -145,6 +145,10 @@ object AuraDockColors {
     val DockSecondary = AuraDockPalette.Secondary
     val DockLabel = AuraDockPalette.Tertiary
     val DockOverdue = AuraDockPalette.Coral
+    /** The "6 held · 2 through" caption: one step quieter than the notification strip. */
+    val HeldCaption = AuraDockPalette.Outline
+    val HeldCaptionDim = AuraDockPalette.Inactive
+
     /** The line that shows how long this focus session has gone on: quiet greys, never coral. */
     val SessionFill = AuraDockPalette.Tertiary
     val SessionTrack = AuraDockPalette.Outline.copy(alpha = 0.4f)
