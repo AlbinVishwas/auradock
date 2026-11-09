@@ -454,7 +454,7 @@ phone to call from where noted.
   "Try again", which opens the test and hides the hint for a day.
 - [ ] **Undo focus.** Dock (Focus on, Do Not Disturb access allowed). Touch the screen once. Pass: a small "Undo focus" pill fades in at the top for 4 seconds
   and goes by itself; tapping it turns Do Not Disturb back to how it was (check the quick settings) and any VIP Favourite marks are put back, while the dock
-  stays open; a touch while the pill shows closes the dock. With Focus off, a touch closes the dock at once.
+  stays open. (Changed in 0.3.0: a single tap never closes the dock, with Focus on or off; double tap closes it. See the World and Split section.)
 - [ ] **Trust caption.** Every permission card (the sheets, Setup) says "Nothing leaves this phone."
 - [ ] **Hidden debug page.** Setup, scroll to the bottom, tap the version label seven times. Pass: "Debug" shows "Activated within 24 h" (Yes once the screensaver was
   set and the first dock happened within a day of install) and "Docked on 5+ of the last 7 days" with the day count, and the event counts. Nothing on it
@@ -464,3 +464,30 @@ phone to call from where noted.
   Templates and Focus tiles. Add a task: the fuller layout returns, and its Focus tile reads "On while docked" (or "Off").
 - [ ] **Motion.** Tick a task: a light tick under the finger, the strike and fade where the row is, and after a moment the row glides down below the others.
   Watch the dock clock over a minute change: the new time fades in as the old one fades out.
+
+
+## World and Split (0.3.0)
+
+Install `AuraDock-0.3.0.apk` over 0.2.3 (data stays). These need the real phone: the emulator cannot judge feel, a real stand or a real music app.
+
+- [ ] **Touch rules, app and screensaver.** Dock (Focus on). One tap: only "Undo focus" shows (nothing else, never closes). Double tap: the dock closes. Do the same
+  with the screensaver running on the stand (touch is now on in the dream). With Focus off a single tap does nothing, a double tap still leaves.
+- [ ] **Swipes on a stand.** Template Split. On the stand, swipe up and down on the left half, then on the right. Pass: only the half you touch changes; the old
+  widget slides up and fades, the new one comes in from below and sharpens, and the dots at the screen edge show where you are and fade after about 1.4 s. A
+  swipe starting on the left must never move the right. No accidental double-tap exit while swiping.
+- [ ] **Long press to edit.** Long-press a half: its edit list opens over it, the other half dims. Drag a row by its handle to reorder; the minus badge removes
+  one (never the last); "Add widget" opens the sheet (Time, Date, Info, App); Done saves. A widget already on the other side is not offered. Close the app and
+  reopen: the stacks are as you left them.
+- [ ] **Time is always there.** Put Month on the left and Tasks on the right and show them: a small time appears at the top. Swap one for the Dial: it goes.
+- [ ] **Now playing with Spotify.** Allow notification access. Play a track in Spotify, dock: swap to Now playing in a stack. Pass: cover, title, artist, the
+  Spotify icon (the app's own, not a drawn one), progress moving, play/pause works, dragging the card left skips to the next track, right to the previous. Pause
+  and then stop playback: the widget leaves the stack (nothing plays).
+- [ ] **Now playing with YouTube Music.** The same with YouTube Music; the icon must change to YouTube Music's.
+- [ ] **Calendar follows the phone.** Set the phone's first day of the week to Sunday, then Monday (Settings, region): the Month widget's columns follow.
+- [ ] **World map at 1 m.** World template on the stand, you one metre away: can you read the home city and time, and tell day from night by the lit dots? Do the
+  extra-city labels (up to two, picked in Templates, World) stay readable and apart? Home dot appears only with location allowed.
+- [ ] **Battery overnight: World and the Dial's second hand.** Dock overnight (about 8 hours, charging off the stand is not a test: unplug, or note the drain
+  while charging is on a slow charger) once with World and once with Split showing the Dial, and compare with Bold. By day the Dial ticks once a second; at
+  night (sun below the horizon at home) it drops its second hand and redraws once a minute. World recalculates every 5 minutes. Pass: no more than a few
+  percent more than Bold, and no warm phone.
+- [ ] **Readability of the Split night tones.** At night the greys step down (white to mid grey); the Dial and Month should still be readable from the bed.
