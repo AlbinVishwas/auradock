@@ -81,7 +81,7 @@ class WeatherRepository @Inject constructor(
         val previous = _weather.value
         val city = previous?.city?.takeIf { prefs.nearLastPlace(place.latitude, place.longitude) }
             ?: cities.cityAt(place.latitude, place.longitude)
-        val fresh = Weather(reading.temperatureC, reading.weatherCode, city, clock.currentMillis())
+        val fresh = Weather(reading.temperatureC, reading.weatherCode, city, clock.currentMillis(), reading.highC, reading.lowC)
         _weather.value = fresh
         save(fresh, place.latitude, place.longitude)
         Log.d(TAG, "weather updated: ${fresh.temperatureC}C code ${fresh.weatherCode} city=${fresh.city}")
@@ -93,7 +93,9 @@ class WeatherRepository @Inject constructor(
             temperatureC = prefs.getFloat("tempC", 0f).toDouble(),
             weatherCode = prefs.getInt("code", 0),
             city = prefs.getString("city", null),
-            fetchedAt = prefs.getLong("fetchedAt", 0L)
+            fetchedAt = prefs.getLong("fetchedAt", 0L),
+            highC = if (prefs.contains("highC")) prefs.getFloat("highC", 0f).toDouble() else null,
+            lowC = if (prefs.contains("lowC")) prefs.getFloat("lowC", 0f).toDouble() else null
         )
     }
 
@@ -103,6 +105,7 @@ class WeatherRepository @Inject constructor(
             .putInt("code", weather.weatherCode)
             .putString("city", weather.city)
             .putLong("fetchedAt", weather.fetchedAt)
+            .also { e -> weather.highC?.let { e.putFloat("highC", it.toFloat()) } ?: e.remove("highC"); weather.lowC?.let { e.putFloat("lowC", it.toFloat()) } ?: e.remove("lowC") }
             .putFloat("lat", lat.toFloat())
             .putFloat("lon", lon.toFloat())
             .apply()

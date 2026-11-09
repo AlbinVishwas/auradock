@@ -23,7 +23,10 @@ data class Weather(
     val temperatureC: Double,
     val weatherCode: Int,
     val city: String?,
-    val fetchedAt: Long
+    val fetchedAt: Long,
+    /** Today's high and low (Celsius), when known. */
+    val highC: Double? = null,
+    val lowC: Double? = null
 ) {
     val condition: WeatherCondition get() = conditionFor(weatherCode)
 }

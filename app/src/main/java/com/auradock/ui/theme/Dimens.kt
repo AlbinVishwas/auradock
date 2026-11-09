@@ -354,6 +354,32 @@ object AuraDockSplit {
     const val DialHubRadius = 7f
     const val DialHubHole = 2.5f
 
+    // Now playing: a 405 x 364 card, 36 radius; art 228 at (20, 20); app badge 50; play button 86; progress 8.
+    val CardRadius = 36.dp
+    val ArtSize = 228.dp
+    val ArtInset = 20.dp
+    val ArtRadius = 16.dp
+    val AppBadge = 50.dp
+    val PlayButton = 86.dp
+    val TitleInset = 24.dp
+    val TitleBottom = 32.dp
+    val TitleMaxWidth = 250.dp
+    val ProgressHeight = 8.dp
+    /** Dragging the card sideways further than this skips to the next or previous track. */
+    val SkipDistance = 80.dp
+
+    // Tasks.
+    val CheckSize = 28.dp
+    val CheckStroke = 2.5.dp
+    val TaskRowPad = 16.dp
+    const val TaskRows = 4
+
+    // Focus ring: 300 square, ring radius 132, stroke 10, one lap an hour.
+    val FocusSize = 300.dp
+    const val FocusRingRadius = 132f
+    const val FocusRingStroke = 10f
+    const val FocusLapMillis = 60 * 60_000L
+
     // Month.
     val MonthRow = 44.dp
     val MonthTodayDisc = 38.dp

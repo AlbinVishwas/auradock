@@ -36,6 +36,8 @@ object AuraDockPalette {
     val WorldDay = Color(0xFFD9D9D9)
     /** The Split dock's card (Now playing, the edit panel and Add widget sheet): #1C1C1E, new in the Split frames. */
     val SplitCard = Color(0xFF1C1C1E)
+    /** Behind the Now playing art when the track has none (#0A0A0A, from the frame). */
+    val SplitArt = Color(0xFF0A0A0A)
     val Outline = Color(0xFF5C5C5C)
     val Tertiary = Color(0xFF8A8A8A)
     val Secondary = Color(0xFFA3A3A3)
@@ -145,6 +147,8 @@ object AuraDockColors {
     /** The frosted wash at the top of each Bold digit: white at 2%. */
     /** World dock: land in daylight (new, #D9D9D9); land at night is [Inactive]; the day and night line is [Outline]. */
     val WorldDay = AuraDockPalette.WorldDay
+    val SplitCard = AuraDockPalette.SplitCard
+    val SplitArt = AuraDockPalette.SplitArt
     val WorldNight = AuraDockPalette.Inactive
     val WorldLine = AuraDockPalette.Outline
     val BoldFrost = Color.White.copy(alpha = AuraDockBold.FrostAlpha)

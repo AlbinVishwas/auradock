@@ -83,3 +83,26 @@ class MonthGridTest {
         assertEquals(listOf("S", "M", "T", "W", "T", "F", "S"), weekdayInitials(java.time.DayOfWeek.SUNDAY, java.util.Locale.ENGLISH))
     }
 }
+
+class WidgetTextTest {
+    @Test fun `countdown reads in minutes then hours`() {
+        assertEquals("in 25 min", countdownText(25 * 60_000L, 0L))
+        assertEquals("in 1 min", countdownText(30_000L, 0L)) // rounded up, as the dock's own countdown is
+        assertEquals("in 1 h 5 min", countdownText(65 * 60_000L, 0L))
+        assertEquals("in 2 h", countdownText(120 * 60_000L, 0L))
+    }
+
+    @Test fun `the focus clock shows minutes and seconds, then hours`() {
+        assertEquals("42:10", focusClock(42 * 60_000L + 10_000L))
+        assertEquals("0:00", focusClock(0L))
+        assertEquals("1:02:10", focusClock(3_730_000L))
+    }
+
+    @Test fun `track progress moves while playing and holds while paused`() {
+        val s = NowPlayingState("T", "A", null, null, "Music", playing = true, durationMs = 100_000L, positionMs = 20_000L, positionAt = 1_000L, speed = 1f)
+        assertEquals(0.2f, s.progress(1_000L), 1e-4f)
+        assertEquals(0.3f, s.progress(11_000L), 1e-4f)
+        assertEquals(0.2f, s.copy(playing = false).progress(11_000L), 1e-4f)
+        assertEquals(0f, s.copy(durationMs = 0L).progress(5_000L), 1e-4f)
+    }
+}

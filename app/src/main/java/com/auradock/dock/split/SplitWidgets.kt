@@ -43,7 +43,13 @@ import kotlin.math.cos
 import kotlin.math.sin
 
 /** What a widget draws from: the dock's data, whether the phone is on a 24-hour clock, and the day or night tones. */
-data class WidgetEnv(val state: DockUiState, val use24Hour: Boolean, val tones: SplitTones, val firstDay: java.time.DayOfWeek = phoneFirstDay())
+data class WidgetEnv(
+    val state: DockUiState,
+    val use24Hour: Boolean,
+    val tones: SplitTones,
+    val firstDay: java.time.DayOfWeek = phoneFirstDay(),
+    val actions: com.auradock.dock.DockActions = com.auradock.dock.DockActions()
+)
 
 /** One widget, filling a 405 x 364 half. Each is self-contained, so it works on either side. */
 @Composable
@@ -51,7 +57,15 @@ fun SplitWidget(kind: WidgetKind, env: WidgetEnv, modifier: Modifier = Modifier)
     when (kind) {
         WidgetKind.DIAL -> DialWidget(env, modifier)
         WidgetKind.MONTH -> MonthWidget(env, modifier)
-        else -> Box(modifier.fillMaxSize())
+        WidgetKind.BOLD_TIME -> BoldTimeWidget(env, modifier)
+        WidgetKind.DIGITAL -> DigitalWidget(env, modifier)
+        WidgetKind.WORLD -> WorldWidget(env, modifier)
+        WidgetKind.BIG_DATE -> BigDateWidget(env, modifier)
+        WidgetKind.UP_NEXT -> UpNextWidget(env, modifier)
+        WidgetKind.WEATHER -> WeatherWidget(env, modifier)
+        WidgetKind.NOW_PLAYING -> NowPlayingWidget(env, modifier)
+        WidgetKind.TASKS -> TasksWidget(env, modifier)
+        WidgetKind.FOCUS -> FocusWidget(env, modifier)
     }
 }
 

@@ -1,5 +1,6 @@
 package com.auradock.dock
 
+import kotlinx.coroutines.launch
 import com.auradock.ui.theme.AuraDockMotion
 import android.util.Log
 import android.view.Window
@@ -50,6 +51,8 @@ fun DockScreen(dockData: DockData, window: Window?, modifier: Modifier = Modifie
     val worldCities by dockData.worldCities.collectAsState()
     val splitStacks by dockData.splitStacks.collectAsState()
     val monthEventDays by dockData.monthEventDays.collectAsState(initial = emptySet())
+    val nowPlaying by dockData.nowPlaying.collectAsState()
+    val scope = androidx.compose.runtime.rememberCoroutineScope()
     val time by dockData.timeMillis.collectAsState(initial = dockData.currentTimeMillis())
     val weather by dockData.weather.collectAsState()
     val events by dockData.todayEvents.collectAsState(initial = emptyList())
@@ -72,7 +75,7 @@ fun DockScreen(dockData: DockData, window: Window?, modifier: Modifier = Modifie
     }
 
     // The dock just appeared: refresh the weather if it is 30+ minutes old (does nothing otherwise).
-    LaunchedEffect(Unit) { dockData.refreshWeather() }
+    LaunchedEffect(Unit) { dockData.refreshWeather(); dockData.startNowPlaying() }
 
     // "Pick up: <task>" for the first 30 seconds of a dock (not on the dock that asks the morning question). It follows the
     // session's start, so a screensaver handing over to the app does not start another half minute.
@@ -99,10 +102,12 @@ fun DockScreen(dockData: DockData, window: Window?, modifier: Modifier = Modifie
                     notifications = notifications, showMessageText = showText,
                     session = session?.let { SessionSnapshot(it.startedAt, it.counts.held, it.counts.through) },
                     lines = DockLines(resume = resume, meeting = meetingCountdown(events, time), intention = intentionNow),
-                    intentionPrompt = prompt, boldPalette = boldPalette, world = WorldUiState(worldHome, worldCities), split = SplitUiState(splitStacks, monthEventDays)),
+                    intentionPrompt = prompt, boldPalette = boldPalette, world = WorldUiState(worldHome, worldCities), split = SplitUiState(splitStacks, monthEventDays, nowPlaying)),
                 actions = DockActions(
                     touch = touch,
                     onStackChange = dockData::setSplitStack,
+                    media = dockData.mediaControls,
+                    onTaskDone = { id -> scope.launch { dockData.setTaskDone(id, true) } },
                     lines = DockLineActions(onToggleIntention = dockData::setIntentionDone),
                     onSaveIntention = { prompt = null; dockData.saveIntention(it) },
                     onSkipIntention = { prompt = null; dockData.skipIntention() }

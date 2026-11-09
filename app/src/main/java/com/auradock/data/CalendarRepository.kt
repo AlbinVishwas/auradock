@@ -28,7 +28,9 @@ data class CalendarEvent(
     val startTime: Long,
     val allDay: Boolean = false,
     /** The user declined it or it was cancelled: still listed, but never counted down to. */
-    val declined: Boolean = false
+    val declined: Boolean = false,
+    /** Where it is (a room, a Meet link), if the event says. */
+    val location: String? = null
 )
 
 @Singleton
@@ -136,7 +138,8 @@ class CalendarRepository @Inject constructor(
                 CalendarContract.Instances.END,
                 CalendarContract.Instances.ALL_DAY,
                 CalendarContract.Instances.SELF_ATTENDEE_STATUS,
-                CalendarContract.Instances.STATUS
+                CalendarContract.Instances.STATUS,
+                CalendarContract.Instances.EVENT_LOCATION
             )
 
             val rows = mutableListOf<InstanceRow>()
@@ -147,6 +150,7 @@ class CalendarRepository @Inject constructor(
                 val allDayColumn = cursor.getColumnIndexOrThrow(CalendarContract.Instances.ALL_DAY)
                 val selfStatusColumn = cursor.getColumnIndexOrThrow(CalendarContract.Instances.SELF_ATTENDEE_STATUS)
                 val statusColumn = cursor.getColumnIndexOrThrow(CalendarContract.Instances.STATUS)
+                val locationColumn = cursor.getColumnIndexOrThrow(CalendarContract.Instances.EVENT_LOCATION)
                 while (cursor.moveToNext()) {
                     rows += InstanceRow(
                         title = cursor.getString(titleColumn),
@@ -154,7 +158,8 @@ class CalendarRepository @Inject constructor(
                         end = cursor.getLong(endColumn),
                         allDay = cursor.getInt(allDayColumn) == 1,
                         declined = cursor.getInt(selfStatusColumn) == CalendarContract.Attendees.ATTENDEE_STATUS_DECLINED ||
-                            cursor.getInt(statusColumn) == CalendarContract.Events.STATUS_CANCELED
+                            cursor.getInt(statusColumn) == CalendarContract.Events.STATUS_CANCELED,
+                        location = cursor.getString(locationColumn)
                     )
                 }
             }

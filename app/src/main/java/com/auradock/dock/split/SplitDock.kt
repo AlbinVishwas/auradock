@@ -84,15 +84,17 @@ fun SplitDock(
     val stacks = state.split.stacks
     val zone = remember { ZoneId.systemDefault() }
     val night = dockIsNight(state.timeMillis, state.world.home, zone)
-    val env = WidgetEnv(state, use24Hour, AuraDockSplitTones.of(night))
-    val leftKinds = visibleStack(stacks.left, nowPlaying = true)
-    val rightKinds = visibleStack(stacks.right, nowPlaying = true)
+    val env = WidgetEnv(state, use24Hour, AuraDockSplitTones.of(night), actions = actions)
+    val playing = state.split.nowPlaying != null
+    val leftKinds = visibleStack(stacks.left, playing)
+    val rightKinds = visibleStack(stacks.right, playing)
     val left = remember { StackState() }
     val right = remember { StackState() }
     val scope = rememberCoroutineScope()
     val density = LocalDensity.current
     val pitchPx = with(density) { AuraDockSplit.Pitch.toPx() }
     val stripShown = strip.isNotEmpty() || caption != null
+
 
     // Keep the shown index inside the stack when widgets are removed.
     if (left.index >= leftKinds.size) left.index = 0

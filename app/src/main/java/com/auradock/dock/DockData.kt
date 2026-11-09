@@ -46,7 +46,9 @@ class DockData @Inject constructor(
     taskRepository: TaskRepository,
     sessionTracker: SessionTracker,
     private val intentions: IntentionRepository,
-    private val splitRepository: com.auradock.dock.split.SplitRepository
+    private val splitRepository: com.auradock.dock.split.SplitRepository,
+    private val nowPlayingRepository: com.auradock.dock.split.NowPlayingRepository,
+    private val tasks: TaskRepository
 ) {
     /** The focus session going on now, for the dock's ring and its "held for you" line. */
     val session: StateFlow<LiveSession?> = sessionTracker.live
@@ -68,6 +70,14 @@ class DockData @Inject constructor(
             kotlinx.coroutines.delay(15 * 60_000L)
         }
     }
+    /** What is playing now (null: nothing), and the controls. Listening starts when the dock appears and notification access is on. */
+    val nowPlaying = nowPlayingRepository.state
+    fun startNowPlaying() = nowPlayingRepository.start()
+    val mediaControls = com.auradock.dock.split.MediaControls(nowPlayingRepository::playPause, nowPlayingRepository::next, nowPlayingRepository::previous)
+
+    /** Ticks a task off from the Tasks widget. */
+    suspend fun setTaskDone(id: Long, done: Boolean) = tasks.setDone(id, done)
+
     fun setSplitStack(side: com.auradock.dock.split.SplitSide, stack: List<com.auradock.dock.split.WidgetKind>) = splitRepository.setStack(side, stack)
 
     /** Home for the World dock, and the extra cities picked. */

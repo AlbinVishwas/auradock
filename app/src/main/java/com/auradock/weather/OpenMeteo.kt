@@ -9,17 +9,23 @@ import javax.inject.Singleton
 import kotlin.math.round
 
 /** The two numbers we read from Open-Meteo's answer. */
-data class CurrentReading(val temperatureC: Double, val weatherCode: Int)
+data class CurrentReading(val temperatureC: Double, val weatherCode: Int, val highC: Double? = null, val lowC: Double? = null)
 
 /**
  * Reads the temperature and WMO code out of an Open-Meteo "current" response, or null if the answer is not what we
  * expect. Plain text in, plain data out, so it is unit-tested without a network.
  */
 fun parseCurrentReading(json: String): CurrentReading? = runCatching {
-    val current = JsonParser.parseString(json).asJsonObject.getAsJsonObject("current")
+    val root = JsonParser.parseString(json).asJsonObject
+    val current = root.getAsJsonObject("current")
+    // Today's high and low come from the daily block, when the answer has one.
+    val daily = root.getAsJsonObject("daily")
+    fun first(name: String): Double? = runCatching { daily?.getAsJsonArray(name)?.get(0)?.asDouble }.getOrNull()
     CurrentReading(
         temperatureC = current.get("temperature_2m").asDouble,
-        weatherCode = current.get("weather_code").asInt
+        weatherCode = current.get("weather_code").asInt,
+        highC = first("temperature_2m_max"),
+        lowC = first("temperature_2m_min")
     )
 }.getOrNull()
 
@@ -34,7 +40,7 @@ class OpenMeteoClient @Inject constructor() {
     fun fetchCurrent(latitude: Double, longitude: Double): CurrentReading? {
         val url = String.format(
             Locale.US,
-            "https://api.open-meteo.com/v1/forecast?latitude=%.2f&longitude=%.2f&current=temperature_2m,weather_code&timezone=auto",
+            "https://api.open-meteo.com/v1/forecast?latitude=%.2f&longitude=%.2f&current=temperature_2m,weather_code&daily=temperature_2m_max,temperature_2m_min&forecast_days=1&timezone=auto",
             roundedCoordinate(latitude),
             roundedCoordinate(longitude)
         )

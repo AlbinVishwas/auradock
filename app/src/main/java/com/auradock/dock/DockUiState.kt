@@ -4,6 +4,7 @@ import com.auradock.data.CalendarEvent
 import com.auradock.dock.lines.DockLines
 import com.auradock.data.NotificationItem
 import com.auradock.tasks.TaskEntity
+import com.auradock.dock.split.NowPlayingState
 import com.auradock.dock.split.SplitStacks
 import com.auradock.dock.world.WorldUiState
 import com.auradock.ui.theme.BoldPalette
@@ -42,7 +43,9 @@ data class DockUiState(
 /** What the Split dock needs besides the time. */
 data class SplitUiState(
     val stacks: SplitStacks = SplitStacks(),
-    val monthEventDays: Set<Int> = emptySet()
+    val monthEventDays: Set<Int> = emptySet(),
+    /** What is playing (null: nothing, so Now playing hides from its stack). */
+    val nowPlaying: NowPlayingState? = null
 )
 
 /** What the dock draws about the session: when it began, and how many notifications were held and let through. */

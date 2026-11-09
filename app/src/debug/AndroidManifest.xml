@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <application>
+        <!-- Debug builds only: drives a fake media session so Now playing can be tested without a music app. -->
+        <receiver android:name="com.auradock.debug.TestMediaReceiver" android:exported="true">
+            <intent-filter>
+                <action android:name="com.auradock.TEST_MEDIA" />
+            </intent-filter>
+        </receiver>
+    </application>
+</manifest>

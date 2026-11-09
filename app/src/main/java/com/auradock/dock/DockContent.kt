@@ -1,5 +1,8 @@
 package com.auradock.dock
 
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.graphics.Color
 import com.auradock.dock.lines.DockLineActions
 import com.auradock.dock.lines.DockLineStack
@@ -7,6 +10,7 @@ import com.auradock.dock.lines.IntentionPrompt
 import androidx.compose.ui.layout.FirstBaseline
 import androidx.compose.ui.layout.layout
 import com.auradock.ui.theme.AuraDockTypography
+import com.auradock.dock.split.MediaControls
 import com.auradock.dock.split.SplitDock
 import com.auradock.dock.split.SplitSide
 import com.auradock.dock.split.WidgetKind
@@ -81,7 +85,7 @@ fun DockContent(template: DockTemplate, state: DockUiState, modifier: Modifier =
         // The strip's own room under the template (Bold draws its strip inside the clock, so it needs none here).
         val stripRoom = if (rows == 0 || template == DockTemplate.BOLD || template == DockTemplate.WORLD || template == DockTemplate.SPLIT) AuraDockSizes.none else AuraDockDockLayout.stripBase + AuraDockDockLayout.stripLine * rows
         // The quiet lines (intention, ...) sit just above the strip and the session line; the template leaves room for them too.
-        val lineRoom = if (state.lines.count == 0) AuraDockSizes.none else AuraDockDockLayout.lineRow * state.lines.count
+        val lineRoom = if (state.lines.count == 0 || template == DockTemplate.SPLIT) AuraDockSizes.none else AuraDockDockLayout.lineRow * state.lines.count
         val linesBottom = if (stripRoom > AuraDockSizes.none) stripRoom else AuraDockDockLayout.stripBase
         // Make room under the template for the strip and the lines so they never overlap (the clock moves up a little).
         Box(
@@ -150,6 +154,8 @@ fun DockContent(template: DockTemplate, state: DockUiState, modifier: Modifier =
 data class DockActions(
     val touch: DockTouch? = null,
     val onStackChange: (SplitSide, List<WidgetKind>) -> Unit = { _, _ -> },
+    val media: MediaControls = MediaControls(),
+    val onTaskDone: (Long) -> Unit = {},
     val lines: DockLineActions = DockLineActions(),
     val onSaveIntention: (String) -> Unit = {},
     val onSkipIntention: () -> Unit = {}
