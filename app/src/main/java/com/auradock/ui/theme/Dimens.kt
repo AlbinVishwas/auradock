@@ -186,6 +186,9 @@ object AuraDockDockLayout {
     val lineGap: Dp = 12.dp
     val lineMaxWidth: Dp = 560.dp
 
+    /** The lowest opacity of the pulsing meeting line. */
+    const val MeetingPulseLow = 0.45f
+
     /** The morning prompt: a column 600 dp wide. */
     val promptWidth: Dp = 600.dp
     val promptGap: Dp = 20.dp

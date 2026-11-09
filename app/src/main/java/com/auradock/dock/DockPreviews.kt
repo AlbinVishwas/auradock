@@ -68,3 +68,17 @@ private val withIntentionDone = PreviewData.dockFull.copy(lines = com.auradock.d
 @PreviewLandscape @Composable private fun MinimalIntention() = AuraDockTheme { DockContent(DockTemplate.MINIMAL, withIntention) }
 @PreviewLandscape @Composable private fun IntentionQuestion() = AuraDockTheme { DockContent(DockTemplate.BOLD, PreviewData.dockFull.copy(intentionPrompt = "")) }
 @PreviewLandscape @Composable private fun IntentionQuestionSuggested() = AuraDockTheme { DockContent(DockTemplate.BOLD, PreviewData.dockFull.copy(intentionPrompt = "Draft the Q1 plan")) }
+
+// The next-meeting line: counting down at 8 minutes, pulsing at 2, and stacked over the intention.
+private fun withMeeting(minutes: Int, intention: Boolean = true) = PreviewData.dockFull.copy(
+    lines = com.auradock.dock.lines.DockLines(
+        meeting = com.auradock.data.MeetingCountdown("Design review with Meera", minutes),
+        intention = if (intention) com.auradock.intention.IntentionLine("Ship the invoice to Meera", done = false) else null
+    )
+)
+@PreviewLandscape @Composable private fun BoldMeeting() = AuraDockTheme { DockContent(DockTemplate.BOLD, withMeeting(8)) }
+@PreviewLandscape @Composable private fun BoldMeetingPulsing() = AuraDockTheme { DockContent(DockTemplate.BOLD, withMeeting(2)) }
+@PreviewLandscape @Composable private fun ClassicMeeting() = AuraDockTheme { DockContent(DockTemplate.CLASSIC, withMeeting(8)) }
+@PreviewLandscape @Composable private fun FocusMeeting() = AuraDockTheme { DockContent(DockTemplate.FOCUS, withMeeting(8)) }
+@PreviewLandscape @Composable private fun ProductivityMeeting() = AuraDockTheme { DockContent(DockTemplate.PRODUCTIVITY, withMeeting(8)) }
+@PreviewLandscape @Composable private fun MinimalMeeting() = AuraDockTheme { DockContent(DockTemplate.MINIMAL, withMeeting(8, intention = false)) }

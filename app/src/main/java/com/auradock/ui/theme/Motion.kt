@@ -20,6 +20,9 @@ object AuraDockMotion {
     const val Check = 120
     const val Standard = 250
     const val Strike = 220
+
+    /** The next-meeting line breathes: one slow fade out and back, in this many ms (opacity only, no movement). */
+    const val MeetingPulse = 2400
     const val DockFade = 320
     const val MinuteSwap = 300
     const val Slow = 400

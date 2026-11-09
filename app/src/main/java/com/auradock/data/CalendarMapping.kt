@@ -10,7 +10,9 @@ data class InstanceRow(
     val title: String?,
     val begin: Long,
     val end: Long,
-    val allDay: Boolean
+    val allDay: Boolean,
+    /** The user declined it, or it was cancelled. */
+    val declined: Boolean = false
 )
 
 /**
@@ -48,6 +50,7 @@ fun rowsToEvents(rows: List<InstanceRow>, today: LocalDate): List<CalendarEvent>
             CalendarEvent(
                 title = it.title?.takeIf { t -> t.isNotBlank() } ?: "(No title)",
                 startTime = it.begin,
-                allDay = it.allDay
+                allDay = it.allDay,
+                declined = it.declined
             )
         }

@@ -20,6 +20,7 @@ import androidx.compose.ui.Modifier
 import com.auradock.ui.components.BurnInProtection
 import com.auradock.dock.lines.DockLineActions
 import com.auradock.dock.lines.DockLines
+import com.auradock.data.meetingCountdown
 import com.auradock.intention.intentionLine
 import com.auradock.intention.needsOffer
 import com.auradock.weather.usableAt
@@ -73,7 +74,7 @@ fun DockScreen(dockData: DockData, window: Window?, modifier: Modifier = Modifie
                 state = DockUiState(timeMillis = time, weather = weather.usableAt(time), events = events, tasks = tasks,
                     notifications = notifications, showMessageText = showText,
                     session = session?.let { SessionSnapshot(it.startedAt, it.counts.held, it.counts.through) },
-                    lines = DockLines(intention = intentionLine(intentionEntry)),
+                    lines = DockLines(meeting = meetingCountdown(events, time), intention = intentionLine(intentionEntry)),
                     intentionPrompt = prompt),
                 actions = DockActions(
                     lines = DockLineActions(onToggleIntention = dockData::setIntentionDone),

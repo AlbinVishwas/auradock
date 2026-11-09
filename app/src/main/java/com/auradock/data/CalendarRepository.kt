@@ -26,7 +26,9 @@ data class CalendarEvent(
     val title: String,
     /** Start time in epoch millis. For all-day events this is a UTC midnight and must not be shown as a time. */
     val startTime: Long,
-    val allDay: Boolean = false
+    val allDay: Boolean = false,
+    /** The user declined it or it was cancelled: still listed, but never counted down to. */
+    val declined: Boolean = false
 )
 
 @Singleton
@@ -106,7 +108,9 @@ class CalendarRepository @Inject constructor(
                 CalendarContract.Instances.TITLE,
                 CalendarContract.Instances.BEGIN,
                 CalendarContract.Instances.END,
-                CalendarContract.Instances.ALL_DAY
+                CalendarContract.Instances.ALL_DAY,
+                CalendarContract.Instances.SELF_ATTENDEE_STATUS,
+                CalendarContract.Instances.STATUS
             )
 
             val rows = mutableListOf<InstanceRow>()
@@ -115,12 +119,16 @@ class CalendarRepository @Inject constructor(
                 val beginColumn = cursor.getColumnIndexOrThrow(CalendarContract.Instances.BEGIN)
                 val endColumn = cursor.getColumnIndexOrThrow(CalendarContract.Instances.END)
                 val allDayColumn = cursor.getColumnIndexOrThrow(CalendarContract.Instances.ALL_DAY)
+                val selfStatusColumn = cursor.getColumnIndexOrThrow(CalendarContract.Instances.SELF_ATTENDEE_STATUS)
+                val statusColumn = cursor.getColumnIndexOrThrow(CalendarContract.Instances.STATUS)
                 while (cursor.moveToNext()) {
                     rows += InstanceRow(
                         title = cursor.getString(titleColumn),
                         begin = cursor.getLong(beginColumn),
                         end = cursor.getLong(endColumn),
-                        allDay = cursor.getInt(allDayColumn) == 1
+                        allDay = cursor.getInt(allDayColumn) == 1,
+                        declined = cursor.getInt(selfStatusColumn) == CalendarContract.Attendees.ATTENDEE_STATUS_DECLINED ||
+                            cursor.getInt(statusColumn) == CalendarContract.Events.STATUS_CANCELED
                     )
                 }
             }

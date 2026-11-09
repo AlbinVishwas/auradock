@@ -1,7 +1,16 @@
 package com.auradock.dock.lines
 
 import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
+import androidx.compose.material3.Text
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -23,6 +32,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.Role
+import com.auradock.data.MeetingCountdown
 import com.auradock.intention.IntentionLine
 import com.auradock.ui.components.StrikeText
 import com.auradock.ui.theme.AuraDockColors
@@ -36,10 +46,12 @@ import com.auradock.ui.theme.AuraDockTypography
  * (its state in, its taps out), so the Split dock can place them as widgets of their own.
  */
 data class DockLines(
+    /** The next meeting, from ten minutes before it starts. Always on top. */
+    val meeting: MeetingCountdown? = null,
     val intention: IntentionLine? = null
 ) {
     /** How many rows the stack takes: the dock leaves room for exactly this many. */
-    val count: Int get() = listOfNotNull(intention).size
+    val count: Int get() = listOfNotNull(meeting, intention).size
 }
 
 /** What the lines can do when touched. Only the in-app dock acts on touches; the screensaver ignores them. */
@@ -52,6 +64,7 @@ data class DockLineActions(
 fun DockLineStack(lines: DockLines, dimmed: Boolean, actions: DockLineActions, modifier: Modifier = Modifier) {
     if (lines.count == 0) return
     Column(modifier = modifier.widthIn(max = AuraDockDockLayout.lineMaxWidth), horizontalAlignment = Alignment.CenterHorizontally) {
+        lines.meeting?.let { MeetingDockLine(it, dimmed) }
         lines.intention?.let { IntentionDockLine(it, dimmed, actions.onToggleIntention) }
     }
 }
@@ -98,5 +111,40 @@ private fun LineCircle(done: Boolean, dimmed: Boolean, onClick: () -> Unit) {
         ) {
             if (tick > 0f) Icon(Icons.Rounded.Check, contentDescription = null, tint = AuraDockColors.Background.copy(alpha = tick), modifier = Modifier.size(AuraDockDockLayout.lineCircle - AuraDockSizes.line * 4))
         }
+    }
+}
+
+/**
+ * The next meeting: its title and "in 8 min", the time in coral. From two minutes out the whole line breathes (opacity only: no
+ * movement, no sound).
+ */
+@Composable
+fun MeetingDockLine(meeting: MeetingCountdown, dimmed: Boolean, modifier: Modifier = Modifier) {
+    val pulse = rememberInfiniteTransition(label = "meetingPulse")
+    val breathing by pulse.animateFloat(
+        initialValue = 1f,
+        targetValue = AuraDockDockLayout.MeetingPulseLow,
+        animationSpec = infiniteRepeatable(
+            animation = tween(AuraDockMotion.MeetingPulse / 2, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "meetingAlpha"
+    )
+    Row(
+        modifier = modifier
+            .heightIn(min = AuraDockDockLayout.lineRow)
+            .graphicsLayer { alpha = if (meeting.pulsing) breathing else 1f },
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(AuraDockDockLayout.lineGap)
+    ) {
+        Text(
+            text = meeting.title,
+            style = AuraDockTypography.DockLine,
+            color = if (dimmed) AuraDockColors.DockLineDim else AuraDockColors.DockLine,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.weight(1f, fill = false)
+        )
+        Text(text = "in ${meeting.minutes} min", style = AuraDockTypography.DockLine, color = AuraDockColors.DockOverdue, maxLines = 1)
     }
 }
