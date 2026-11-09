@@ -1,9 +1,12 @@
 package com.auradock.dock
 
 import android.graphics.Paint as NativePaint
+import android.graphics.LinearGradient
+import android.graphics.Path as NativePath
 import android.graphics.PorterDuff
 import android.graphics.PorterDuffXfermode
 import android.graphics.Rect as NativeRect
+import android.graphics.Shader
 import android.graphics.Typeface
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.tween
@@ -103,7 +106,10 @@ fun BoldClock(timeMillis: Long, use24Hour: Boolean, modifier: Modifier = Modifie
 @Composable
 private fun BoldDigits(text: String, typeface: Typeface, inks: Map<Char, Ink>, modifier: Modifier) {
     val plan = remember(text, inks) { planBold(text) { inks.getValue(it) } }
-    Canvas(modifier = modifier.graphicsLayer { compositingStrategy = CompositingStrategy.Offscreen }) {
+    Canvas(modifier = modifier.graphicsLayer {
+        compositingStrategy = CompositingStrategy.Offscreen
+        alpha = AuraDockBold.Brightness
+    }) {
         val safeW = size.width - 2 * AuraDockBold.SafeSide.toPx()
         val safeH = size.height - 2 * AuraDockBold.SafeVertical.toPx()
         val em = boldFontSizePx(plan, safeW, safeH)
@@ -116,11 +122,27 @@ private fun BoldDigits(text: String, typeface: Typeface, inks: Map<Char, Ink>, m
             textSize = em
             xfermode = PorterDuffXfermode(PorterDuff.Mode.SCREEN)
         }
+        val path = NativePath()
+        val frost = NativePaint(NativePaint.ANTI_ALIAS_FLAG).apply { xfermode = PorterDuffXfermode(PorterDuff.Mode.SCREEN) }
         drawIntoCanvas { canvas ->
             plan.digits.forEachIndexed { i, d ->
                 val tone = if (i % 2 == 0) AuraDockColors.Coral else AuraDockColors.CoralLight
                 paint.color = tone.copy(alpha = AuraDockBold.DigitAlpha).toArgb()
-                canvas.nativeCanvas.drawText(d.char.toString(), originX + d.penX * em, originY, paint)
+                val x = originX + d.penX * em
+                val c = canvas.nativeCanvas
+                path.rewind()
+                paint.getTextPath(d.char.toString(), 0, 1, x, originY, path)
+                c.drawPath(path, paint)
+                // Frosted: a very soft lighter wash from the glyph's top edge, inside the glyph only. No blur, glow or shadow.
+                val top = originY + d.ink.top * em
+                frost.shader = LinearGradient(
+                    0f, top, 0f, top + AuraDockBold.FrostReach * d.ink.height * em,
+                    AuraDockColors.BoldFrost.toArgb(), AuraDockColors.BoldFrost.copy(alpha = 0f).toArgb(), Shader.TileMode.CLAMP
+                )
+                c.save()
+                c.clipPath(path)
+                c.drawRect(x + d.ink.left * em, top, x + d.ink.right * em, originY + d.ink.bottom * em, frost)
+                c.restore()
             }
         }
         // The colon is drawn last, above the digits, with the same screen blend.

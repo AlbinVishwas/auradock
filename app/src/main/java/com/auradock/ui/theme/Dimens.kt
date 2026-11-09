@@ -252,6 +252,13 @@ object AuraDockBold {
     /** Digits are drawn at 80% opacity, so overlapping ones screen into a lighter tone. */
     const val DigitAlpha = 0.8f
 
+    /** Overall brightness of the clock (burn-in safe): the finished layer is drawn at this opacity. */
+    const val Brightness = 0.85f
+
+    /** The frosted feel: each glyph is a touch lighter at its top edge (white at this opacity, fading out over [FrostReach] of its height). */
+    const val FrostAlpha = 0.02f
+    const val FrostReach = 0.35f
+
     /** Each digit's ink overlaps the previous digit's ink by this much, for every pair. */
     const val OverlapEm = 0.06f
 
