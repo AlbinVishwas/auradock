@@ -71,6 +71,8 @@ object AuraDockTypography {
     val StepTitle = TextStyle(fontFamily = MonaSansFamily, fontWeight = FontWeight.ExtraBold, fontSize = 32.sp, lineHeight = 35.2.sp)
 
     /** The dashboard greeting: Mona Sans ExtraBold 40. */
+    /** The greeting on the handoff's empty-day frame: 36 / 1.1, tracking -0.01 em. */
+    val GreetingCompact = TextStyle(fontFamily = MonaSansFamily, fontWeight = FontWeight.ExtraBold, fontSize = 36.sp, lineHeight = 39.6.sp, letterSpacing = (-0.36).sp)
     val Greeting = TextStyle(fontFamily = MonaSansFamily, fontWeight = FontWeight.ExtraBold, fontSize = 40.sp, lineHeight = 44.sp, letterSpacing = (-0.4).sp)
 
     /** Running text under a step title: Inter Regular 17 / 1.45. */

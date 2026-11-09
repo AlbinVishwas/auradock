@@ -70,6 +70,7 @@ fun DashboardRoute(viewModel: StandbyViewModel, navigation: Navigation, modifier
     val intention by viewModel.intention.collectAsState()
     val shutdownOffer by viewModel.shutdownOffer.collectAsState()
     val screensaverBanner by viewModel.screensaverBanner.collectAsState()
+    val focusOn by viewModel.focusWhileDocked.collectAsState()
 
     DashboardScreen(
         state = DashboardUiState(
@@ -85,7 +86,8 @@ fun DashboardRoute(viewModel: StandbyViewModel, navigation: Navigation, modifier
             weeklyFocus = weekly,
             intention = intention,
             offerShutdown = shutdownOffer,
-            screensaverBanner = screensaverBanner
+            screensaverBanner = screensaverBanner,
+            focusOn = focusOn
         ),
         actions = DashboardActions(
             onEnableWeather = { viewModel.askPermission(SetupPermission.LOCATION) },

@@ -45,6 +45,7 @@ import com.auradock.ui.theme.AuraDockColors
 import com.auradock.ui.theme.AuraDockMotion
 import com.auradock.ui.theme.AuraDockRadii
 import com.auradock.ui.theme.AuraDockSizes
+import com.auradock.ui.theme.AuraDockEmptyDay
 import com.auradock.ui.theme.AuraDockSpacing
 import com.auradock.ui.theme.AuraDockTypography
 
@@ -86,7 +87,7 @@ fun TaskCard(
                 text = "Nothing planned.\nEnjoy the quiet.",
                 style = AuraDockTypography.EmptyState,
                 color = AuraDockColors.OnSurfaceVariant,
-                modifier = Modifier.padding(top = AuraDockSpacing.xl - AuraDockSpacing.xs, bottom = AuraDockSpacing.lg)
+                modifier = Modifier.padding(top = AuraDockSpacing.xl - AuraDockSpacing.xs, bottom = AuraDockSpacing.lg - AuraDockEmptyDay.TodayBottomTrim)
             )
         } else if (tasks != null) {
             Column(modifier = Modifier.padding(top = AuraDockSpacing.xs)) {

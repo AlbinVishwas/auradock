@@ -90,7 +90,8 @@ object AuraDockSizes {
     /** The icon disc on a permission card. */
     val iconDisc: Dp = 40.dp
     /** Dashboard (handoff): the dock thumbnail is 157 dp high; a task row's tap area is 38 dp wide (circle + gap); the 44 dp calendar tile. */
-    val thumbnailHeight: Dp = 157.dp
+    /** The frames draw the preview 157 high plus its 1 dp border on each side. */
+    val thumbnailHeight: Dp = 159.dp
     val taskCircleTap: Dp = 38.dp
     val calendarTileSize: Dp = 44.dp
     val calendarAllow: Dp = 40.dp
@@ -305,4 +306,25 @@ object AuraDockBold {
         '9' -> 5f
         else -> 0f
     }
+}
+
+/**
+ * The few offsets that make the dashboard match the handoff's empty-day frame (Dashboard-Empty), measured against it on the emulator:
+ * Compose places the same text a little differently from the browser, so the header is nudged to bring the cards to the frame's positions.
+ */
+object AuraDockEmptyDay {
+    /** The greeting sits this much higher than the standard top padding puts it. */
+    val TopTrim = 7.dp
+
+    /** More space between the greeting and the date line. */
+    val DateGapExtra = 3.5.dp
+
+    /** More space between the date line and the Today card. */
+    val HeaderBottomExtra = 1.dp
+
+    /** The empty Today card has this much less under "Enjoy the quiet." than the standard spacing leaves. */
+    val TodayBottomTrim = 2.5.dp
+
+    /** The frame's calendar card is this much shorter underneath its one line. */
+    val CalendarBottom = 11.5.dp
 }

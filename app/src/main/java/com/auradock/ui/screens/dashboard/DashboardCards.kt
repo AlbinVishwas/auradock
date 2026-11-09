@@ -39,6 +39,8 @@ import com.auradock.data.CalendarEvent
 import com.auradock.dock.DockContent
 import com.auradock.dock.DockTemplate
 import com.auradock.dock.DockUiState
+import com.auradock.ui.components.FrameIcons
+import com.auradock.ui.theme.AuraDockEmptyDay
 import com.auradock.ui.components.LocalDockMorph
 import com.auradock.ui.components.PrimaryPill
 import com.auradock.ui.components.ScaledPreview
@@ -104,20 +106,26 @@ fun CalendarCard(
         return
     }
     SectionCard(modifier, androidx.compose.foundation.layout.PaddingValues(start = inset, end = inset, top = inset, bottom = AuraDockSpacing.smd - AuraDockSpacing.xxs)) {
+        if (events != null && events.isEmpty()) {
+            // The empty-day frame: the name and "No events today" on the left, the calendar mark centred on the card on the right.
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(bottom = AuraDockEmptyDay.CalendarBottom),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column {
+                    Text(text = "Calendar", style = AuraDockTypography.Section, color = AuraDockColors.OnBackground)
+                    Text(text = "No events today", style = AuraDockTypography.Secondary, color = AuraDockColors.OnSurfaceVariant, modifier = Modifier.padding(top = AuraDockSpacing.sm - AuraDockSpacing.xxs))
+                }
+                Icon(FrameIcons.Calendar, contentDescription = null, tint = AuraDockColors.Outline, modifier = Modifier.size(AuraDockSizes.icon + AuraDockSpacing.xxs))
+            }
+        } else {
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.Bottom) {
             Text(text = "Calendar", style = AuraDockTypography.Section, color = AuraDockColors.OnBackground)
             if (!events.isNullOrEmpty()) Text(text = if (events.size == 1) "1 event" else "${events.size} events", style = AuraDockTypography.Meta, color = AuraDockColors.Tertiary)
         }
-        if (events != null && events.isEmpty()) {
-            Row(
-                modifier = Modifier.fillMaxWidth().padding(top = AuraDockSpacing.sm - AuraDockSpacing.xxs, bottom = AuraDockSpacing.smd),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(text = "No events today", style = AuraDockTypography.Secondary, color = AuraDockColors.OnSurfaceVariant)
-                Icon(Icons.Outlined.CalendarToday, contentDescription = null, tint = AuraDockColors.Tertiary, modifier = Modifier.size(AuraDockSizes.icon))
-            }
-        } else if (events != null) {
+        }
+        if (events != null && events.isNotEmpty()) {
             val next = events.firstOrNull { !it.allDay && it.startTime >= nowMillis }
             Column(modifier = Modifier.padding(top = AuraDockSpacing.xs)) {
                 events.forEachIndexed { index, event ->
@@ -176,7 +184,9 @@ fun DockCard(
     dockState: DockUiState,
     onChange: () -> Unit,
     onDockNow: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    /** The name, the "Opens when charging" line and Change under the preview. The empty-day frame draws only the preview and Dock now. */
+    showLabel: Boolean = true
 ) {
     Column(
         modifier = modifier.fillMaxWidth().clip(RoundedCornerShape(AuraDockRadii.card)).background(AuraDockColors.Surface).padding(AuraDockSpacing.md),
@@ -191,7 +201,7 @@ fun DockCard(
                 DockContent(template = template, state = dockState)
             }
         }
-        Row(
+        if (showLabel) Row(
             modifier = Modifier.fillMaxWidth().padding(horizontal = AuraDockSpacing.xs),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
@@ -211,7 +221,7 @@ fun DockCard(
         var pillBounds by remember { mutableStateOf(Rect.Zero) }
         PrimaryPill(
             text = "Dock now",
-            icon = Icons.Outlined.DesktopWindows,
+            icon = FrameIcons.DockNow,
             onClick = { morph(pillBounds, onDockNow) },
             modifier = Modifier.reportBounds { pillBounds = it }
         )
@@ -220,10 +230,33 @@ fun DockCard(
 
 /** Templates and Focus: two outlined tiles side by side, each with an icon, a name and a line under it. */
 @Composable
-fun NavTiles(templateCount: Int, onOpenTemplates: () -> Unit, onOpenFocus: () -> Unit, modifier: Modifier = Modifier) {
+fun NavTiles(templateCount: Int, focusText: String, onOpenTemplates: () -> Unit, onOpenFocus: () -> Unit, modifier: Modifier = Modifier) {
     Row(modifier = modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(AuraDockSpacing.smd)) {
-        NavTile(Icons.Outlined.ViewCarousel, "Templates", "$templateCount docks", onOpenTemplates, Modifier.weight(1f))
-        NavTile(Icons.Outlined.DarkMode, "Focus", "While docked", onOpenFocus, Modifier.weight(1f))
+        NavTile(FrameIcons.Templates, "Templates", "$templateCount docks", onOpenTemplates, Modifier.weight(1f))
+        NavTile(Icons.Outlined.DarkMode, "Focus", focusText, onOpenFocus, Modifier.weight(1f))
+    }
+}
+
+/** The empty-day frame's tiles: the icon and the name on one line, nothing under it. */
+@Composable
+fun NavTilesOneLine(onOpenTemplates: () -> Unit, onOpenFocus: () -> Unit, modifier: Modifier = Modifier) {
+    Row(modifier = modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(AuraDockSpacing.smd)) {
+        NavTileOneLine(FrameIcons.Templates, "Templates", onOpenTemplates, Modifier.weight(1f))
+        NavTileOneLine(Icons.Outlined.DarkMode, "Focus", onOpenFocus, Modifier.weight(1f))
+    }
+}
+
+@Composable
+private fun NavTileOneLine(icon: ImageVector, title: String, onClick: () -> Unit, modifier: Modifier = Modifier) {
+    val shape = RoundedCornerShape(AuraDockRadii.row)
+    Row(
+        modifier = modifier.clip(shape).border(AuraDockSizes.line, AuraDockColors.TileOutline, shape).clickable(role = Role.Button, onClick = onClick)
+            .padding(horizontal = AuraDockSpacing.md, vertical = AuraDockSpacing.smd + AuraDockSpacing.xxs),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(AuraDockSpacing.smd)
+    ) {
+        Icon(icon, contentDescription = null, tint = AuraDockColors.OnBackground, modifier = Modifier.size(AuraDockSizes.factIcon))
+        Text(text = title, style = AuraDockTypography.Body, color = AuraDockColors.OnBackground)
     }
 }
 

@@ -63,6 +63,8 @@ import com.auradock.ui.theme.LocalAuraDockSpacing
 import com.auradock.ui.theme.AuraDockSpacing
 import com.auradock.ui.theme.fromScreenBottom
 import com.auradock.ui.theme.fromScreenTop
+import com.auradock.ui.theme.AuraDockEmptyDay
+import androidx.compose.ui.unit.dp
 import com.auradock.intention.IntentionLine
 import com.auradock.screensaver.ScreensaverBanner
 import com.auradock.sessions.SessionSummary
@@ -91,7 +93,9 @@ data class DashboardUiState(
     /** The undock card gets a second step: "Tomorrow's top task?" (an evening session, not yet asked this evening). */
     val offerShutdown: Boolean = false,
     /** A quiet line about the screensaver test, if there is one to say. */
-    val screensaverBanner: ScreensaverBanner = ScreensaverBanner.NONE
+    val screensaverBanner: ScreensaverBanner = ScreensaverBanner.NONE,
+    /** Focus while docked is switched on (the Focus tile says so). */
+    val focusOn: Boolean = true
 )
 
 /** What the user can do on the dashboard. */
@@ -126,6 +130,8 @@ fun DashboardScreen(
     val timeMillis = state.timeMillis
     val tasks = state.tasks
 
+    // The handoff's empty-day frame is a simpler layout; anything on the day brings the fuller one back.
+    val emptyDay = isEmptyDay(tasks?.isEmpty(), state.intention != null, state.calendarPermission, state.events?.isEmpty())
     val dateText = formatDashboardDate(timeMillis)
     val timeFormat = remember(context) { DateFormat.getTimeFormat(context) }
     // Task list add/edit sheet. -1 means "new task"; null means the sheet is closed.
@@ -137,15 +143,16 @@ fun DashboardScreen(
             .fillMaxSize()
             .background(AuraDockColors.Background)
             .verticalScroll(rememberScrollState())
-            .padding(start = AuraDockSpacing.mdl, end = AuraDockSpacing.mdl, top = fromScreenTop(AuraDockSpacing.huge), bottom = AuraDockSpacing.xxl),
+            .padding(start = AuraDockSpacing.mdl, end = AuraDockSpacing.mdl, top = fromScreenTop(AuraDockSpacing.huge) - (if (emptyDay) AuraDockEmptyDay.TopTrim else 0.dp), bottom = AuraDockSpacing.xxl),
         verticalArrangement = Arrangement.spacedBy(AuraDockSpacing.md)
     ) {
         // Everything settles in with blur to focus, one row after the other (40 ms apart).
         BlurIn(index = 0) {
-            Column(modifier = Modifier.padding(start = AuraDockSpacing.xs, end = AuraDockSpacing.xs, bottom = AuraDockSpacing.smd)) {
-                Text(text = greetingFor(timeMillis), color = AuraDockColors.OnBackground, style = AuraDockTypography.Greeting)
-                WeatherRow(date = dateText, weather = state.weather, permission = state.locationPermission, onEnable = actions.onEnableWeather)
-                state.weeklyFocus?.let { WeeklyFocusLine(it) }
+            Column(modifier = Modifier.padding(start = AuraDockSpacing.xs, end = AuraDockSpacing.xs, bottom = AuraDockSpacing.smd + (if (emptyDay) AuraDockEmptyDay.HeaderBottomExtra else 0.dp))) {
+                Text(text = greetingFor(timeMillis), color = AuraDockColors.OnBackground, style = if (emptyDay) AuraDockTypography.GreetingCompact else AuraDockTypography.Greeting)
+                WeatherRow(date = dateText, weather = state.weather, permission = state.locationPermission, onEnable = actions.onEnableWeather, extraTop = if (emptyDay) AuraDockEmptyDay.DateGapExtra else 0.dp)
+                // The empty-day frame has no "start a focus session" line under the date.
+                state.weeklyFocus?.takeUnless { emptyDay && it.isEmpty }?.let { WeeklyFocusLine(it) }
                 ScreensaverNote(state.screensaverBanner, onDone = actions.onDismissScreensaverNote, onTryAgain = actions.onTryScreensaverAgain)
             }
         }
@@ -179,13 +186,15 @@ fun DashboardScreen(
                 template = state.template,
                 dockState = DockUiState(timeMillis, state.weather, state.events.orEmpty(), tasks.orEmpty()),
                 onChange = actions.onOpenTemplates,
-                onDockNow = actions.onDockNow
+                onDockNow = actions.onDockNow,
+                showLabel = !emptyDay
             )
         }
 
         BlurIn(index = 4) {
             Column(verticalArrangement = Arrangement.spacedBy(AuraDockSpacing.xs)) {
-                NavTiles(templateCount = DockTemplate.available.size, onOpenTemplates = actions.onOpenTemplates, onOpenFocus = actions.onOpenFocus)
+                if (emptyDay) NavTilesOneLine(onOpenTemplates = actions.onOpenTemplates, onOpenFocus = actions.onOpenFocus)
+                else NavTiles(templateCount = DockTemplate.available.size, focusText = focusTileText(state.focusOn), onOpenTemplates = actions.onOpenTemplates, onOpenFocus = actions.onOpenFocus)
                 // Not in the handoff: the only way back to Setup, so a skipped permission can still be fixed.
                 GreyTextButton(text = "Setup", onClick = actions.onOpenSetup, modifier = Modifier.fillMaxWidth())
             }
@@ -225,9 +234,9 @@ private const val NEW_TASK = -1L
 
 /** One Secondary line under the title: "Thursday, 5 November · 31° Clear · Navi Mumbai". Without weather, a way to allow location. */
 @Composable
-private fun WeatherRow(date: String, weather: Weather?, permission: CalendarPermissionUiState, onEnable: () -> Unit) {
+private fun WeatherRow(date: String, weather: Weather?, permission: CalendarPermissionUiState, onEnable: () -> Unit, extraTop: androidx.compose.ui.unit.Dp = 0.dp) {
     val spacing = LocalAuraDockSpacing.current
-    Column(modifier = Modifier.padding(top = spacing.xs)) {
+    Column(modifier = Modifier.padding(top = spacing.xs + extraTop)) {
         Text(
             text = if (weather != null) "$date · ${temperatureLabel(weather.temperatureC)} ${conditionLine(weather)}" else date,
             style = AuraDockTypography.Secondary,
