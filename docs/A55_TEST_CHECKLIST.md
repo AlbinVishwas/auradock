@@ -491,3 +491,42 @@ Install `AuraDock-0.3.0.apk` over 0.2.3 (data stays). These need the real phone:
   night (sun below the horizon at home) it drops its second hand and redraws once a minute. World recalculates every 5 minutes. Pass: no more than a few
   percent more than Bold, and no warm phone.
 - [ ] **Readability of the Split night tones.** At night the greys step down (white to mid grey); the Dial and Month should still be readable from the bed.
+
+
+## Battery checks (0.3.1)
+
+Three one-hour runs on the real A55, each from the same start: screen brightness the same, Wi-Fi on, phone on the stand, **not charging**
+(a charger hides the drain; unplug USB and use a wireless adb session, or run the commands afterwards from a cable and read the numbers from the run window).
+Do them in this order, with the phone resting back to about the same battery level in between.
+
+Start of every run (replace `<serial>` with the A55's serial from `adb devices`; never run these against the emulator for a battery result):
+
+```bash
+adb -s <serial> shell dumpsys batterystats --enable full-wake-history
+adb -s <serial> shell dumpsys batterystats --reset
+adb -s <serial> shell dumpsys battery | grep -E "level|status"
+```
+
+Then set the scenario, leave the phone alone for exactly one hour, and finish with:
+
+```bash
+adb -s <serial> shell dumpsys battery | grep -E "level|status"
+adb -s <serial> shell dumpsys batterystats --charged com.auradock > battery-<scenario>.txt
+adb -s <serial> shell dumpsys batterystats --charged | grep -A12 "Estimated power use"
+adb -s <serial> shell dumpsys power | grep -E "Wake Locks|SCREEN_(BRIGHT|DIM)"
+```
+
+In `battery-<scenario>.txt` read: `Uid u0aNNN:` (its `Computed drain`, mAh), `Foreground activities`, `Foreground services`, `Wake lock`, and CPU
+(`Total cpu time`). In the system table, AuraDock's mAh is the number to compare. The `adb shell dumpsys batterystats --reset` line makes each file cover one run only.
+
+- [ ] **Dock from anywhere on (idle).** Settings: Dock from anywhere on, phone charging off the stand and unplugged, screen off or the phone in a pocket-like rest.
+  Scenario name `watcher`. Pass: under 1% in the hour, and `Foreground services` for `DockWatcherService` shows no CPU spin or wake locks beyond short bursts.
+- [ ] **World template docked.** Template World, docked on the stand, screen on at the usual brightness. Scenario name `world`. World recalculates every 5 minutes.
+  Pass: AuraDock's share is small next to the screen; no more than a few tenths of a percent over the Bold run below.
+- [ ] **Dial with a second hand.** Template Split with the Dial, daytime so the second hand is ticking once a second (it drops at night). Scenario name `dial`.
+  Pass: no more than a couple of percent more than World; no warm phone.
+- [ ] **Compare.** Put the three `Computed drain` numbers side by side in this file's table below and note the date.
+
+| Date | Phone | watcher mAh | world mAh | dial mAh | Notes |
+|---|---|---|---|---|---|
+|  |  |  |  |  |  |

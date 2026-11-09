@@ -15,3 +15,21 @@ Any work that changes how a screen looks (including a Claude Design handoff) fol
 - Restyle only the stateless `XScreen` composables; their ViewModel wiring is in `ui/routes/Routes.kt` and stays untouched.
 - Keep the `@Preview`s (full, empty, permission-missing) up to date.
 
+
+## Sentry
+Crash, ANR and performance reporting (Sentry Android SDK, plugin for R8 mapping upload). Code in `app/src/main/java/com/auradock/monitoring/`.
+- **No personal content is ever sent.** Not message text, notification content, task or intention titles, event titles, contact names or numbers, media
+  titles, user input, screenshots, view hierarchy or session replay; `sendDefaultPii` is off. `Scrubber.kt` allow-lists what leaves the phone and drops the rest.
+  Breadcrumbs and non-fatal reports carry codes, states and counts only (`Monitoring.breadcrumb(topic, state, ...)`, `Monitoring.nonFatal(code, ...)`).
+  Any new breadcrumb or report must keep to that, and a change to the scrubber needs its unit tests.
+- Off in debug builds. The Settings switch "Share crash reports" (on by default) stops all sending at once. The hidden debug page has "Send test events"
+  (debug builds only, environment `dev`).
+- Secrets live outside the repo in `~/.auradock-signing/sentry.properties` (`dsn`, `auth.token`, `org`, `project`). Never print, log or copy the token; if the file
+  is missing the build still works with Sentry off.
+- **Reading issues through the MCP:** use the Sentry MCP server (connect it in Claude's connectors; it needs a token with `event:read` and `project:read`,
+  which the build token does not have). Search issues in the project by release (`0.3.1 (11)` is versionName plus versionCode) and
+  environment (`production` for release builds, `dev` for test events). Non-fatal reports are the issues titled `AuraNonFatal` with an `aura.code`
+  tag (for example `dnd.restore_failed`, `vip.still_on_loan`, `dream.no_sensor_reading`); read the breadcrumbs for what led up to it. Stack traces are
+  deobfuscated from the uploaded R8 mapping. If the MCP is not connected, read issues in the Sentry web dashboard.
+- Sentry dashboard (set once): turn on spike protection, set per-key rate limits on the DSN, and keep inbound filters for legacy browsers and
+  localhost on. The app also rate-limits itself (at most 10 of the same issue per device per hour).
