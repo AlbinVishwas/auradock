@@ -124,6 +124,7 @@ class DockDreamService : DreamService(), LifecycleOwner, SavedStateRegistryOwner
 
     override fun onAttachedToWindow() {
         super.onAttachedToWindow()
+        com.auradock.monitoring.Monitoring.markDockStart("screensaver")
         isInteractive = true  // touches reach the dock: one tap shows "Undo focus", two leave, swipes and a long press work on the Split dock
         isFullscreen = true   // hide the status bar
         window.setBackgroundDrawable(ColorDrawable(AndroidColor.BLACK))

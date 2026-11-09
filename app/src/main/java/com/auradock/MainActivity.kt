@@ -238,6 +238,14 @@ class MainActivity : ComponentActivity() {
                     else -> "dashboard"
                 }
 
+                // A trace for each screen opening (ends once it has drawn): codes only, sampled with the rest of the traces.
+                LaunchedEffect(targetState) {
+                    val span = com.auradock.monitoring.Monitoring.startScreenLoad(targetState)
+                    androidx.compose.runtime.withFrameNanos { }
+                    androidx.compose.runtime.withFrameNanos { }
+                    com.auradock.monitoring.Monitoring.finish(span)
+                }
+
                 val system = SystemSettings(
                     screensaverSelected = screensaverSelected,
                     openScreensaverSettings = { openScreensaverSettings(this@MainActivity) },
@@ -375,7 +383,7 @@ class MainActivity : ComponentActivity() {
         if (intent?.getBooleanExtra(EXTRA_DOCK_NOW, false) == true) {
             intent.removeExtra(EXTRA_DOCK_NOW)
             sessions.noteWatcherLaunch()
-            standbyViewModel.enterDock()
+            standbyViewModel.enterDock("watcher")
         }
     }
 

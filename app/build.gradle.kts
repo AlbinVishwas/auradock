@@ -5,6 +5,7 @@ plugins {
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.ksp)
     alias(libs.plugins.hilt)
+    alias(libs.plugins.sentry)
 }
 
 // Release signing details live in keystore.properties (gitignored, never committed). Without it the release build is
@@ -13,6 +14,19 @@ val keystoreProperties = Properties().apply {
     val file = rootProject.file("keystore.properties")
     if (file.exists()) file.inputStream().use { load(it) }
 }
+
+// Sentry settings live OUTSIDE the repo, in ~/.auradock-signing/sentry.properties (dsn, auth.token, org, project). Nothing from that file is ever
+// committed. Without it the build still succeeds, with crash reporting off and no mapping upload. The auth token is used only by the Gradle plugin
+// to upload the R8 mapping; it is never put into the app.
+val sentryProperties = Properties().apply {
+    val file = File(System.getProperty("user.home"), ".auradock-signing/sentry.properties")
+    if (file.exists()) file.inputStream().use { load(it) }
+}
+val sentryDsn: String = sentryProperties.getProperty("dsn", "").trim()
+val sentryAuthToken: String = sentryProperties.getProperty("auth.token", "").trim()
+val sentryOrg: String = sentryProperties.getProperty("org", "").trim()
+val sentryProject: String = sentryProperties.getProperty("project", "").trim()
+val sentryCanUpload = sentryAuthToken.isNotEmpty() && sentryOrg.isNotEmpty() && sentryProject.isNotEmpty()
 
 android {
     namespace  = "com.auradock"
@@ -25,6 +39,9 @@ android {
         versionCode            = 10
         versionName            = "0.3.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        // The DSN is a public identifier (it ships in every app that uses Sentry). It is empty when sentry.properties is missing: then Sentry stays off.
+        buildConfigField("String", "SENTRY_DSN", "\"$sentryDsn\"")
 
         vectorDrawables {
             useSupportLibrary = true
@@ -62,6 +79,7 @@ android {
 
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 
     packaging {
@@ -75,8 +93,26 @@ android {
     }
 }
 
+// The Sentry Gradle plugin: uploads the R8 mapping on release builds (so crash stack traces are readable) and does nothing in debug builds.
+sentry {
+    org.set(sentryOrg)
+    projectName.set(sentryProject)
+    if (sentryAuthToken.isNotEmpty()) authToken.set(sentryAuthToken)
+    includeProguardMapping.set(sentryCanUpload)
+    autoUploadProguardMapping.set(sentryCanUpload)
+    uploadNativeSymbols.set(false)
+    includeNativeSources.set(false)
+    includeSourceContext.set(false)
+    // No automatic instrumentation of the app's own code: the dock's traces are written by hand (see monitoring/), so nothing else is recorded.
+    tracingInstrumentation { enabled.set(false) }
+    autoInstallation { enabled.set(false) }
+    ignoredBuildTypes.set(setOf("debug"))
+    telemetry.set(false)
+}
+
 dependencies {
     implementation(libs.core.ktx)
+    implementation(libs.sentry.android)
     implementation(libs.appcompat)
 
     // Compose

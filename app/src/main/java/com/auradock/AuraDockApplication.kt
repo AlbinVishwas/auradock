@@ -16,6 +16,7 @@ class AuraDockApplication : Application() {
 
     override fun onCreate() {
         super.onCreate() // Hilt injects taskNotifier here
+        com.auradock.monitoring.Monitoring.init(this) // crash and performance reporting, no personal content; off in debug builds
         taskNotifier.ensureChannel()
         // If the app was killed while docked, Do Not Disturb may still be ours: no dock is showing in a fresh process, so
         // this puts the user's own settings back.

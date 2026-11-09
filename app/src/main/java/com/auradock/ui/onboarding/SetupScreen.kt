@@ -41,7 +41,9 @@ data class SetupUiState(
     val screensaverSelected: Boolean,
     val screensaverTest: ScreensaverTestUiState = ScreensaverTestUiState(),
     /** E.g. "0.2.2 (8)". Tapping it seven times opens the hidden debug page. */
-    val version: String = ""
+    val version: String = "",
+    /** "Share crash reports": on by default. */
+    val shareCrashReports: Boolean = true
 )
 
 /** What the user can do on the Setup page. */
@@ -50,7 +52,8 @@ data class SetupActions(
     val onOpenScreensaverSettings: () -> Unit = {},
     val onOpenDisplaySettings: () -> Unit = {},
     val onOpenScreensaverTest: () -> Unit = {},
-    val onOpenDebug: () -> Unit = {}
+    val onOpenDebug: () -> Unit = {},
+    val onShareCrashReports: (Boolean) -> Unit = {}
 )
 
 /** Every permission with its status (handoff Setup), so ones skipped in the walkthrough can be allowed later. */
@@ -108,6 +111,14 @@ fun SetupScreen(
                 style = AuraDockTypography.Meta,
                 color = AuraDockColors.OnSurfaceVariant
             )
+        }
+        // "Share crash reports": crash and performance data to Sentry, never anything personal. Off closes it at once.
+        Column(modifier = Modifier.padding(top = AuraDockSpacing.sm, start = AuraDockSpacing.sm, end = AuraDockSpacing.sm), verticalArrangement = Arrangement.spacedBy(AuraDockSpacing.xs)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(text = "Share crash reports", style = AuraDockTypography.RowLabel, color = AuraDockColors.OnBackground, modifier = Modifier.weight(1f))
+                com.auradock.ui.components.AuraSwitch(checked = state.shareCrashReports, onCheckedChange = actions.onShareCrashReports)
+            }
+            Text(text = "Sends crash and performance data with no personal content.", style = AuraDockTypography.Meta, color = AuraDockColors.OnSurfaceVariant)
         }
         if (state.version.isNotEmpty()) {
             var taps by androidx.compose.runtime.remember { androidx.compose.runtime.mutableIntStateOf(0) }

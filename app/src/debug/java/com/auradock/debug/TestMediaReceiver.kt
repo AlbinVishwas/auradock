@@ -23,6 +23,8 @@ class TestMediaReceiver : BroadcastReceiver() {
             "stop" -> { session?.release(); session = null }
             "pause" -> set(PlaybackState.STATE_PAUSED)
             "play" -> set(PlaybackState.STATE_PLAYING)
+            // The same as the debug page's "Send test events", for scripted checks: a test crash event and a non-fatal report to Sentry's dev environment.
+            "sentry" -> Thread { com.auradock.monitoring.Monitoring.sendTestEvents(context.applicationContext as android.app.Application) }.start()
         }
     }
 

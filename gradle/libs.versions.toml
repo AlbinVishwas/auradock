@@ -14,6 +14,8 @@ composeBom      = "2026.06.01"
 activityCompose = "1.13.0"
 gson            = "2.15.0"
 room            = "2.8.5"
+sentry          = "8.63.0"
+sentryPlugin    = "6.26.0"
 
 [libraries]
 core-ktx                = { group = "androidx.core",                 name = "core-ktx",                      version.ref = "coreKtx" }
@@ -39,9 +41,11 @@ gson                    = { group = "com.google.code.gson",          name = "gso
 room-runtime            = { group = "androidx.room",                 name = "room-runtime",                  version.ref = "room" }
 room-ktx                = { group = "androidx.room",                 name = "room-ktx",                      version.ref = "room" }
 room-compiler           = { group = "androidx.room",                 name = "room-compiler",                 version.ref = "room" }
+sentry-android          = { group = "io.sentry",                     name = "sentry-android-core",           version.ref = "sentry" }
 
 [plugins]
 kotlin-compose     = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 android-application = { id = "com.android.application",          version.ref = "agp" }
 ksp                 = { id = "com.google.devtools.ksp",           version.ref = "ksp" }
 hilt                = { id = "com.google.dagger.hilt.android",   version.ref = "hilt" }
+sentry              = { id = "io.sentry.android.gradle",          version.ref = "sentryPlugin" }

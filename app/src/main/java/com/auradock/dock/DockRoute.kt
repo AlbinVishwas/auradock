@@ -77,6 +77,12 @@ fun DockScreen(dockData: DockData, window: Window?, modifier: Modifier = Modifie
     // The dock just appeared: refresh the weather if it is 30+ minutes old (does nothing otherwise).
     LaunchedEffect(Unit) { dockData.refreshWeather(); dockData.startNowPlaying() }
 
+    // The dock is on screen: ends its start trace and starts the one that covers the time it is up (its slow and frozen frames).
+    DisposableEffect(Unit) {
+        com.auradock.monitoring.Monitoring.dockShown()
+        onDispose { com.auradock.monitoring.Monitoring.dockHidden() }
+    }
+
     // "Pick up: <task>" for the first 30 seconds of a dock (not on the dock that asks the morning question). It follows the
     // session's start, so a screensaver handing over to the app does not start another half minute.
     val sessionStart = session?.startedAt

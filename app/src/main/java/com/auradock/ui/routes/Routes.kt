@@ -181,13 +181,14 @@ private fun allow(viewModel: StandbyViewModel, permission: SetupPermission) = vi
 fun SetupRoute(viewModel: StandbyViewModel, system: SystemSettings, onOpenScreensaverTest: () -> Unit, onOpenDebug: () -> Unit, modifier: Modifier = Modifier) {
     val test by viewModel.screensaverSteps.collectAsState()
     SetupScreen(
-        state = SetupUiState(granted = rememberGrantedPermissions(viewModel), screensaverSelected = system.screensaverSelected, screensaverTest = test, version = viewModel.versionLabel),
+        state = SetupUiState(granted = rememberGrantedPermissions(viewModel), screensaverSelected = system.screensaverSelected, screensaverTest = test, version = viewModel.versionLabel, shareCrashReports = viewModel.shareCrashReports.collectAsState().value),
         actions = SetupActions(
             onAllowPermission = { allow(viewModel, it) },
             onOpenScreensaverSettings = system.openScreensaverSettings,
             onOpenDisplaySettings = system.openDisplaySettings,
             onOpenScreensaverTest = onOpenScreensaverTest,
-            onOpenDebug = onOpenDebug
+            onOpenDebug = onOpenDebug,
+            onShareCrashReports = viewModel::setShareCrashReports
         ),
         modifier = modifier
     )
@@ -289,5 +290,5 @@ fun FocusSettingsRoute(viewModel: StandbyViewModel, modifier: Modifier = Modifie
 @Composable
 fun DebugRoute(viewModel: StandbyViewModel, modifier: Modifier = Modifier) {
     val summary by androidx.compose.runtime.produceState<com.auradock.analytics.ActivationSummary?>(initialValue = null) { value = viewModel.debugSummary() }
-    DebugScreen(summary = summary, version = viewModel.versionLabel, modifier = modifier)
+    DebugScreen(summary = summary, version = viewModel.versionLabel, onSendTestEvents = viewModel::sendTestEvents, modifier = modifier)
 }

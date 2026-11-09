@@ -516,7 +516,10 @@ class StandbyViewModel @Inject constructor(
         _onboardingPreviewing.value = previewing
     }
 
-    fun enterDock() = dockMode.update { it.enterManual() }
+    fun enterDock(source: String = "dock_now") {
+        com.auradock.monitoring.Monitoring.markDockStart(source)
+        dockMode.update { it.enterManual() }
+    }
 
     private val _undoFocusShowing = MutableStateFlow(false)
 
@@ -588,6 +591,19 @@ class StandbyViewModel @Inject constructor(
     fun setTemplate(template: DockTemplate) {
         templateRepository.select(template)
         events.log(AnalyticsEvents.TEMPLATE_CHANGED, template.name)
+    }
+
+    /** "Share crash reports" (Setup): on by default; turning it off stops all Sentry sending at once. */
+    private val _shareCrashReports = MutableStateFlow(com.auradock.monitoring.Monitoring.isSharing(context))
+    val shareCrashReports: StateFlow<Boolean> = _shareCrashReports.asStateFlow()
+    fun setShareCrashReports(share: Boolean) {
+        _shareCrashReports.value = share
+        com.auradock.monitoring.Monitoring.setSharing(context.applicationContext as android.app.Application, share)
+    }
+
+    /** Debug builds only (the debug page's button): sends a test crash and a non-fatal report to the Sentry dev environment. */
+    fun sendTestEvents() {
+        viewModelScope.launch(kotlinx.coroutines.Dispatchers.IO) { com.auradock.monitoring.Monitoring.sendTestEvents(context.applicationContext as android.app.Application) }
     }
 
     /** The version shown at the bottom of Setup, e.g. "0.2.2 (8)". */

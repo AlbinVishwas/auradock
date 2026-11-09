@@ -1,5 +1,6 @@
 package com.auradock.ui.debug
 
+import androidx.compose.foundation.clickable
 import com.auradock.ui.theme.fromScreenBottom
 import android.text.format.DateFormat
 import androidx.compose.foundation.background
@@ -34,7 +35,7 @@ import java.util.Date
  * log, and how often each event happened. Stateless; everything on it stays on this phone.
  */
 @Composable
-fun DebugScreen(summary: ActivationSummary?, version: String, modifier: Modifier = Modifier) {
+fun DebugScreen(summary: ActivationSummary?, version: String, modifier: Modifier = Modifier, onSendTestEvents: () -> Unit = {}) {
     val context = LocalContext.current
     fun at(millis: Long?): String = millis?.let { DateFormat.getMediumDateFormat(context).format(Date(it)) + " " + DateFormat.getTimeFormat(context).format(Date(it)) } ?: "not yet"
     Column(
@@ -49,6 +50,17 @@ fun DebugScreen(summary: ActivationSummary?, version: String, modifier: Modifier
         Column(modifier = Modifier.padding(start = AuraDockSpacing.sm, end = AuraDockSpacing.sm, bottom = AuraDockSpacing.md)) {
             Text(text = "Debug", color = AuraDockColors.OnBackground, style = AuraDockTypography.StepTitle)
             Text(text = "AuraDock $version. Counted on this phone only.", color = AuraDockColors.OnSurfaceVariant, style = AuraDockTypography.Secondary, modifier = Modifier.padding(top = AuraDockSpacing.sm))
+        }
+        if (com.auradock.BuildConfig.DEBUG) {
+            // Debug builds only: sends a test crash and a non-fatal report to Sentry's dev environment (nothing personal in either).
+            Row(
+                modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(AuraDockRadii.card)).background(AuraDockColors.Surface)
+                    .clickable(onClick = onSendTestEvents).padding(AuraDockSpacing.md),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(text = "Send test events", style = AuraDockTypography.CardTitle, color = AuraDockColors.OnBackground)
+                Text(text = "dev environment", style = AuraDockTypography.Meta, color = AuraDockColors.OnSurfaceVariant)
+            }
         }
         if (summary == null) {
             Text(text = "Loading…", color = AuraDockColors.OnSurfaceVariant, style = AuraDockTypography.Secondary, modifier = Modifier.padding(horizontal = AuraDockSpacing.sm))
