@@ -191,7 +191,7 @@ private fun BoldDigits(text: String, typeface: Typeface, inks: Map<Char, Ink>, p
 
 /** One notification under the Bold clock: a chat-bubble icon and "App · who", Inter Medium 16, grey. */
 @Composable
-private fun BoldStripLine(text: String, caption: String? = null) {
+internal fun BoldStripLine(text: String, caption: String? = null) {
     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(AuraDockBold.StripIconGap)) {
         Icon(
             imageVector = Icons.Outlined.ChatBubbleOutline,

@@ -7,6 +7,7 @@ import com.auradock.dock.lines.IntentionPrompt
 import androidx.compose.ui.layout.FirstBaseline
 import androidx.compose.ui.layout.layout
 import com.auradock.ui.theme.AuraDockTypography
+import com.auradock.dock.world.WorldClock
 import com.auradock.ui.theme.AuraDockBold
 import com.auradock.ui.theme.AuraDockSpacing
 import com.auradock.ui.theme.AuraDockSizes
@@ -74,7 +75,7 @@ fun DockContent(template: DockTemplate, state: DockUiState, modifier: Modifier =
         val caption = state.session?.let { heldCaption(it.held, it.through) }
         val rows = maxOf(lines.size, if (caption != null) 1 else 0)
         // The strip's own room under the template (Bold draws its strip inside the clock, so it needs none here).
-        val stripRoom = if (rows == 0 || template == DockTemplate.BOLD) AuraDockSizes.none else AuraDockDockLayout.stripBase + AuraDockDockLayout.stripLine * rows
+        val stripRoom = if (rows == 0 || template == DockTemplate.BOLD || template == DockTemplate.WORLD) AuraDockSizes.none else AuraDockDockLayout.stripBase + AuraDockDockLayout.stripLine * rows
         // The quiet lines (intention, ...) sit just above the strip and the session line; the template leaves room for them too.
         val lineRoom = if (state.lines.count == 0) AuraDockSizes.none else AuraDockDockLayout.lineRow * state.lines.count
         val linesBottom = if (stripRoom > AuraDockSizes.none) stripRoom else AuraDockDockLayout.stripBase
@@ -93,6 +94,14 @@ fun DockContent(template: DockTemplate, state: DockUiState, modifier: Modifier =
                 timeMillis = state.timeMillis,
                 use24Hour = DateFormat.is24HourFormat(LocalContext.current),
                 palette = state.boldPalette,
+                strip = lines,
+                caption = caption
+            )
+            DockTemplate.WORLD -> WorldClock(
+                timeMillis = state.timeMillis,
+                use24Hour = DateFormat.is24HourFormat(LocalContext.current),
+                homeName = state.weather?.city,
+                state = state.world,
                 strip = lines,
                 caption = caption
             )
@@ -118,8 +127,8 @@ fun DockContent(template: DockTemplate, state: DockUiState, modifier: Modifier =
             )
         }
         NotificationStrip(
-            lines = if (template == DockTemplate.BOLD) emptyList() else lines,
-            caption = if (template == DockTemplate.BOLD) null else caption,
+            lines = if (template == DockTemplate.BOLD || template == DockTemplate.WORLD) emptyList() else lines,
+            caption = if (template == DockTemplate.BOLD || template == DockTemplate.WORLD) null else caption,
             dimmed = template == DockTemplate.MINIMAL,
             modifier = Modifier.align(Alignment.BottomCenter)
         )

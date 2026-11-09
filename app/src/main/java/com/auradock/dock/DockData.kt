@@ -58,6 +58,10 @@ class DockData @Inject constructor(
 
     val selectedTemplate: StateFlow<DockTemplate> = templateRepository.selected
 
+    /** Home for the World dock, and the extra cities picked. */
+    val worldHome = weatherRepository.place
+    val worldCities = templateRepository.worldCities
+
     /** The Bold clock's colourway. */
     val boldPalette: StateFlow<BoldPalette> = templateRepository.boldPalette
 

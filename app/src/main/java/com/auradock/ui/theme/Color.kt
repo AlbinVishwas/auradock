@@ -32,6 +32,8 @@ object AuraDockPalette {
     val Field = Color(0xFF262626)
     val QuietPill = Color(0xFF2E2E2E)
     val Inactive = Color(0xFF3A3A3A)
+    /** The World dock's lit land dots (a new value from the World frames: #D9D9D9). */
+    val WorldDay = Color(0xFFD9D9D9)
     val Outline = Color(0xFF5C5C5C)
     val Tertiary = Color(0xFF8A8A8A)
     val Secondary = Color(0xFFA3A3A3)
@@ -139,6 +141,10 @@ object AuraDockColors {
 
     /** The two big dots of the Bold clock's colon: translucent grey. */
     /** The frosted wash at the top of each Bold digit: white at 2%. */
+    /** World dock: land in daylight (new, #D9D9D9); land at night is [Inactive]; the day and night line is [Outline]. */
+    val WorldDay = AuraDockPalette.WorldDay
+    val WorldNight = AuraDockPalette.Inactive
+    val WorldLine = AuraDockPalette.Outline
     val BoldFrost = Color.White.copy(alpha = AuraDockBold.FrostAlpha)
     val BoldColon = Color(0xFFEBEBEB).copy(alpha = 0.75f)
 

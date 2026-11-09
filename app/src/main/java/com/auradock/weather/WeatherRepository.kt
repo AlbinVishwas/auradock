@@ -39,6 +39,14 @@ class WeatherRepository @Inject constructor(
     /** The last weather we have (it may be old: use [usableAt] before showing it). Null means "—". */
     val weather: StateFlow<Weather?> = _weather.asStateFlow()
 
+    private val _place = MutableStateFlow(loadPlace())
+
+    /** Where the last weather was read (null until it has been): the World dock's home dot. */
+    val place: StateFlow<com.auradock.dock.world.GeoPoint?> = _place.asStateFlow()
+
+    private fun loadPlace(): com.auradock.dock.world.GeoPoint? =
+        if (prefs.contains("lat") && prefs.contains("lon")) com.auradock.dock.world.GeoPoint(prefs.getFloat("lat", 0f).toDouble(), prefs.getFloat("lon", 0f).toDouble()) else null
+
     fun hasLocationPermission(): Boolean = location.hasPermission()
 
     fun refreshIfStale() {
@@ -98,6 +106,7 @@ class WeatherRepository @Inject constructor(
             .putFloat("lat", lat.toFloat())
             .putFloat("lon", lon.toFloat())
             .apply()
+        _place.value = com.auradock.dock.world.GeoPoint(lat, lon)
     }
 
     private fun android.content.SharedPreferences.nearLastPlace(lat: Double, lon: Double): Boolean =

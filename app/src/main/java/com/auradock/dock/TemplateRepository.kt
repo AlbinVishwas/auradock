@@ -1,6 +1,9 @@
 package com.auradock.dock
 
 import android.content.Context
+import com.auradock.dock.world.WorldCities
+import com.auradock.dock.world.WorldCity
+import com.auradock.ui.theme.AuraDockWorld
 import com.auradock.ui.theme.BoldPalette
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -36,6 +39,17 @@ class TemplateRepository @Inject constructor(
         prefs.edit().putString(KEY_BOLD_PALETTE, palette.name).apply()
     }
 
+    private val _worldCities = MutableStateFlow(parseWorldCities(prefs.getString(KEY_WORLD_CITIES, null)))
+
+    /** The extra cities of the World dock (names from [WorldCities], at most two). */
+    val worldCities: StateFlow<List<WorldCity>> = _worldCities.asStateFlow()
+
+    fun setWorldCities(cities: List<WorldCity>) {
+        val kept = cities.distinctBy { it.name }.take(AuraDockWorld.MaxExtraCities)
+        _worldCities.value = kept
+        prefs.edit().putString(KEY_WORLD_CITIES, kept.joinToString("|") { it.name }).apply()
+    }
+
     fun select(template: DockTemplate) {
         _selected.value = template
         prefs.edit().putString(KEY_TEMPLATE, template.name).apply()
@@ -45,5 +59,9 @@ class TemplateRepository @Inject constructor(
         const val PREFS_NAME = "auradock_prefs"
         const val KEY_TEMPLATE = "dock_template"
         const val KEY_BOLD_PALETTE = "bold_palette"
+        const val KEY_WORLD_CITIES = "world_cities"
+
+        fun parseWorldCities(stored: String?): List<WorldCity> =
+            stored.orEmpty().split("|").mapNotNull { WorldCities.byName(it) }.take(AuraDockWorld.MaxExtraCities)
     }
 }

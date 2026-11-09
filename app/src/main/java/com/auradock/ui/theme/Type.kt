@@ -204,6 +204,29 @@ object AuraDockTypography {
     /** The notification line under the Bold clock: Inter Medium 16. */
     val BoldStrip = TextStyle(fontFamily = InterFamily, fontWeight = FontWeight.Medium, fontSize = 16.sp)
 
+    // ---- The World dock (frames Dock-World*): the home city in Mona Sans Bold, the time in the display face (Host Grotesk where the frame says Nunito) ----
+    /** The home city: Mona Sans Bold 30, coral, tight tracking. */
+    val DockWorldCity = TextStyle(fontFamily = MonaSansFamily, fontWeight = FontWeight.Bold, fontSize = 30.sp, lineHeight = 33.sp, letterSpacing = (-0.9).sp)
+
+    /** The same with a notification showing: 26. */
+    val DockWorldCityCompact = TextStyle(fontFamily = MonaSansFamily, fontWeight = FontWeight.Bold, fontSize = 26.sp, lineHeight = 28.6.sp, letterSpacing = (-0.78).sp)
+
+    /** The home time: Host Grotesk ExtraBold 120, line 0.8, tabular figures. */
+    val DockWorldTime = TextStyle(
+        fontFamily = DisplayGrotesk, fontWeight = FontWeight.ExtraBold, fontSize = 120.sp, lineHeight = 96.sp, letterSpacing = (-1.2).sp,
+        fontFeatureSettings = "tnum", platformStyle = PlatformTextStyle(includeFontPadding = false),
+        lineHeightStyle = LineHeightStyle(LineHeightStyle.Alignment.Center, LineHeightStyle.Trim.Both)
+    )
+
+    /** The same with a notification showing: 102. */
+    val DockWorldTimeCompact = DockWorldTime.copy(fontSize = 102.sp, lineHeight = 81.6.sp, letterSpacing = (-1.02).sp)
+
+    /** A city's name on the map: Inter Medium 13 (grey); its time beside it is [DockWorldPillTime]. */
+    val DockWorldPillLabel = TextStyle(fontFamily = InterFamily, fontWeight = FontWeight.Medium, fontSize = 13.sp, lineHeight = 16.sp)
+
+    /** A city's time on the map: Mona Sans Bold 13, tabular figures. */
+    val DockWorldPillTime = TextStyle(fontFamily = MonaSansFamily, fontWeight = FontWeight.Bold, fontSize = 13.sp, lineHeight = 16.sp, fontFeatureSettings = "tnum")
+
     /** The AM/PM marker beside a clock: Inter Medium 18. */
     val ClockMeridiem = TextStyle(fontFamily = InterFamily, fontWeight = FontWeight.Medium, fontSize = 18.sp)
 

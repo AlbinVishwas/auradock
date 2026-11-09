@@ -17,6 +17,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import com.auradock.dock.world.WorldUiState
 import com.auradock.ui.components.BurnInProtection
 import com.auradock.dock.lines.DockLineActions
 import com.auradock.dock.lines.DockLines
@@ -44,6 +45,8 @@ private const val MINIMAL_BRIGHTNESS = 0.05f
 fun DockScreen(dockData: DockData, window: Window?, modifier: Modifier = Modifier, interactive: Boolean = false) {
     val template by dockData.selectedTemplate.collectAsState()
     val boldPalette by dockData.boldPalette.collectAsState()
+    val worldHome by dockData.worldHome.collectAsState()
+    val worldCities by dockData.worldCities.collectAsState()
     val time by dockData.timeMillis.collectAsState(initial = dockData.currentTimeMillis())
     val weather by dockData.weather.collectAsState()
     val events by dockData.todayEvents.collectAsState(initial = emptyList())
@@ -93,7 +96,7 @@ fun DockScreen(dockData: DockData, window: Window?, modifier: Modifier = Modifie
                     notifications = notifications, showMessageText = showText,
                     session = session?.let { SessionSnapshot(it.startedAt, it.counts.held, it.counts.through) },
                     lines = DockLines(resume = resume, meeting = meetingCountdown(events, time), intention = intentionNow),
-                    intentionPrompt = prompt, boldPalette = boldPalette),
+                    intentionPrompt = prompt, boldPalette = boldPalette, world = WorldUiState(worldHome, worldCities)),
                 actions = DockActions(
                     lines = DockLineActions(onToggleIntention = dockData::setIntentionDone),
                     onSaveIntention = { prompt = null; dockData.saveIntention(it) },

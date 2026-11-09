@@ -36,6 +36,12 @@ import androidx.compose.ui.util.lerp
 import com.auradock.dock.DockContent
 import com.auradock.dock.DockTemplate
 import com.auradock.dock.DockUiState
+import com.auradock.dock.world.WorldCity
+import com.auradock.ui.components.AuraSheet
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import com.auradock.ui.components.Badge
 import com.auradock.ui.components.PagerDots
 import com.auradock.ui.components.PrimaryPill
@@ -79,7 +85,9 @@ fun TemplateGalleryScreen(
     /** Shown above the button (the walkthrough's progress dots). When set, the button always applies, even to the template in use. */
     footer: (@Composable () -> Unit)? = null,
     /** Tapping a colour dot under the Bold card (the gallery only; null hides the row). The card previews it at once. */
-    onPickPalette: ((BoldPalette) -> Unit)? = null
+    onPickPalette: ((BoldPalette) -> Unit)? = null,
+    /** The World dock's extra cities (the gallery only; null hides the row). */
+    onPickCities: ((List<WorldCity>) -> Unit)? = null
 ) {
     val selected = state.selected
     val templates = state.templates
@@ -89,8 +97,10 @@ fun TemplateGalleryScreen(
     val haptic = LocalHapticFeedback.current
     val back = LocalOnBackPressedDispatcherOwner.current?.onBackPressedDispatcher
 
+    var citiesOpen by remember { mutableStateOf(false) }
+    Box(modifier = modifier.fillMaxSize()) {
     Column(
-        modifier = modifier
+        modifier = Modifier
             .fillMaxSize()
             .background(AuraDockColors.Background)
             .padding(top = if (walkthrough) fromScreenTop(AuraDockSpacing.huge) else AuraDockSpacing.sm, bottom = fromScreenBottom(AuraDockSpacing.xxl - AuraDockSpacing.sm))
@@ -121,6 +131,13 @@ fun TemplateGalleryScreen(
             verticalArrangement = Arrangement.spacedBy(AuraDockSpacing.xl - AuraDockSpacing.xs, Alignment.CenterVertically)
         ) {
             TemplateCarousel(pagerState, templates, selected, state.dockState)
+            if (onPickCities != null && shown == DockTemplate.WORLD) {
+                WorldCitiesRow(
+                    cities = state.dockState.world.extras,
+                    onClick = { citiesOpen = true },
+                    modifier = Modifier.padding(horizontal = AuraDockGallery.textInset)
+                )
+            }
             if (onPickPalette != null && DockTemplate.BOLD in templates) {
                 PaletteDots(
                     current = state.dockState.boldPalette,
@@ -181,6 +198,12 @@ fun TemplateGalleryScreen(
                 enabled = true
             )
         }
+    }
+    if (citiesOpen && onPickCities != null) {
+        AuraSheet(onDismiss = { citiesOpen = false }) {
+            WorldCitiesSheetContent(selected = state.dockState.world.extras, onChange = onPickCities)
+        }
+    }
     }
 }
 

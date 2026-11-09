@@ -125,6 +125,11 @@ class StandbyViewModel @Inject constructor(
     /** The saved template choice (shared with the screensaver). */
     val currentTemplate: StateFlow<DockTemplate> = templateRepository.selected
 
+    /** The World dock: where the weather was read (home) and the extra cities picked in the gallery. */
+    val worldHome: StateFlow<com.auradock.dock.world.GeoPoint?> = weatherRepository.place
+    val worldCities: StateFlow<List<com.auradock.dock.world.WorldCity>> = templateRepository.worldCities
+    fun setWorldCities(cities: List<com.auradock.dock.world.WorldCity>) = templateRepository.setWorldCities(cities)
+
     /** The Bold clock's colourway (saved; the gallery previews it live as each dot is tapped). */
     val boldPalette: StateFlow<BoldPalette> = templateRepository.boldPalette
     fun setBoldPalette(palette: BoldPalette) = templateRepository.selectBoldPalette(palette)

@@ -6,13 +6,14 @@ enum class DockTemplate(val label: String, val description: String, val shows: S
     CLASSIC("Classic", "Big date, city and temperature.", "Date, city, temperature", "A glance at the day"),
     FOCUS("Focus", "Giant digits, your next event and top task.", "Time, next event, top task", "Working at a desk"),
     MINIMAL("Minimal", "Just the time, dimmed for OLED.", "Time, dimmed", "The bedside at night"),
-    PRODUCTIVITY("Productivity", "Clock, tasks, events and weather.", "Time, tasks, events, weather", "Planning the day");
+    PRODUCTIVITY("Productivity", "Clock, tasks, events and weather.", "Time, tasks, events, weather", "Planning the day"),
+    WORLD("World", "A dotted map with day and night, and your time.", "Time, map, up to two more cities", "Keeping in touch across time zones");
 
     companion object {
         val default = BOLD
 
         /** Templates the gallery offers, Bold first. */
-        val available = listOf(BOLD, CLASSIC, FOCUS, MINIMAL, PRODUCTIVITY)
+        val available = listOf(BOLD, CLASSIC, FOCUS, MINIMAL, PRODUCTIVITY, WORLD)
     }
 }
 

@@ -21,6 +21,7 @@ import com.auradock.ui.onboarding.SetupActions
 import com.auradock.ui.onboarding.SetupPermission
 import com.auradock.ui.onboarding.SetupScreen
 import com.auradock.ui.onboarding.SetupUiState
+import com.auradock.dock.world.WorldUiState
 import com.auradock.ui.screens.TemplateGalleryScreen
 import com.auradock.ui.screens.TemplateGalleryUiState
 import com.auradock.ui.screens.dashboard.DashboardActions
@@ -72,11 +73,14 @@ fun DashboardRoute(viewModel: StandbyViewModel, navigation: Navigation, modifier
     val screensaverBanner by viewModel.screensaverBanner.collectAsState()
     val focusOn by viewModel.focusWhileDocked.collectAsState()
     val boldPalette by viewModel.boldPalette.collectAsState()
+    val dashWorldHome by viewModel.worldHome.collectAsState()
+    val dashWorldCities by viewModel.worldCities.collectAsState()
 
     DashboardScreen(
         state = DashboardUiState(
             template = template,
             boldPalette = boldPalette,
+            world = WorldUiState(dashWorldHome, dashWorldCities),
             timeMillis = time,
             weather = weather.usableAt(time),
             locationPermission = locationPermission,
@@ -124,9 +128,11 @@ private fun rememberGalleryState(viewModel: StandbyViewModel): TemplateGalleryUi
     val events by viewModel.todayEvents.collectAsState()
     val tasks by viewModel.tasks.collectAsState()
     val palette by viewModel.boldPalette.collectAsState()
+    val worldHome by viewModel.worldHome.collectAsState()
+    val worldCities by viewModel.worldCities.collectAsState()
     return TemplateGalleryUiState(
         selected = template,
-        dockState = DockUiState(time, weather.usableAt(time), events.orEmpty(), tasks.orEmpty(), boldPalette = palette)
+        dockState = DockUiState(time, weather.usableAt(time), events.orEmpty(), tasks.orEmpty(), boldPalette = palette, world = WorldUiState(worldHome, worldCities))
     )
 }
 
@@ -139,6 +145,7 @@ fun TemplateGalleryRoute(viewModel: StandbyViewModel, navigation: Navigation, mo
             navigation.backToDashboard()
         },
         onPickPalette = viewModel::setBoldPalette,
+        onPickCities = viewModel::setWorldCities,
         modifier = modifier
     )
 }

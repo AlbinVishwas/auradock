@@ -306,6 +306,49 @@ object AuraDockBold {
     val StripLineGap = 6.dp
 }
 
+/** The World dock (frames Dock-World*): sizes in the design frame's units, drawn at the frame's scale (see WorldProjection). */
+object AuraDockWorld {
+    /** Land dots 3, the home dot 8, a city dot 4, all with a 2 stroke in the stage's black; the day and night line 2. */
+    const val LandDotRadius = 3f
+    const val HomeDotRadius = 8f
+    const val CityDotRadius = 4f
+    const val DotStroke = 2f
+    const val LineStroke = 2f
+
+    /** The line fades out toward the poles' ends: full strength down to this height in the frame, 10% at [LineFadeEnd], not drawn below [LineClip]. */
+    const val LineFadeStart = 110f
+    const val LineFadeEnd = 345f
+    const val LineClip = 347f
+    const val LineMinAlpha = 0.10f
+
+    /** The map is recalculated this often: the day and night line barely moves in five minutes. */
+    const val RefreshMillis = 5 * 60_000L
+
+    /** A city's label pill: 6 radius, 7 x 3 padding, 5 between its two words, 9 to the right of its dot. */
+    val PillRadius = 6.dp
+    val PillPadH = 7.dp
+    val PillPadV = 3.dp
+    val PillGap = 5.dp
+    const val PillDotOffset = 9f
+
+    /** The home label sits 40 from the left and 24 from the bottom (70 with a notification), 18 between the city and the time. */
+    val SideInset = 40.dp
+    val BottomInset = 24.dp
+    val BottomInsetNotification = 70.dp
+    val LabelGap = 18.dp
+    val LabelGapNotification = 15.dp
+
+    /** The time's line box is 0.8 em high with its baseline 0.072 em above the bottom (Nunito's metrics in the frame's CSS, kept for Host Grotesk). */
+    const val TimeLineEm = 0.8f
+    const val TimeBaselineEm = 0.072f
+
+    /** At night the home city is dimmed to 70% and the time goes grey. */
+    const val NightCityAlpha = 0.7f
+
+    /** The most extra cities the founder variant takes. */
+    const val MaxExtraCities = 2
+}
+
 /**
  * The few offsets that make the dashboard match the handoff's empty-day frame (Dashboard-Empty), measured against it on the emulator:
  * Compose places the same text a little differently from the browser, so the header is nudged to bring the cards to the frame's positions.
