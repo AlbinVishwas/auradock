@@ -18,6 +18,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import com.auradock.ui.components.BurnInProtection
+import com.auradock.dock.lines.DockLineActions
+import com.auradock.dock.lines.DockLines
+import com.auradock.intention.intentionLine
+import com.auradock.intention.needsOffer
 import com.auradock.weather.usableAt
 
 /** Screen brightness (0..1) for the dimmed Minimal template. */
@@ -32,7 +36,7 @@ private const val MINIMAL_BRIGHTNESS = 0.05f
  * composable, they look identical by construction.
  */
 @Composable
-fun DockScreen(dockData: DockData, window: Window?, modifier: Modifier = Modifier) {
+fun DockScreen(dockData: DockData, window: Window?, modifier: Modifier = Modifier, interactive: Boolean = false) {
     val template by dockData.selectedTemplate.collectAsState()
     val time by dockData.timeMillis.collectAsState(initial = dockData.currentTimeMillis())
     val weather by dockData.weather.collectAsState()
@@ -41,6 +45,18 @@ fun DockScreen(dockData: DockData, window: Window?, modifier: Modifier = Modifie
     val notifications by dockData.stripNotifications.collectAsState(initial = emptyList())
     val showText by dockData.showMessageText.collectAsState()
     val session by dockData.session.collectAsState()
+    val intention by dockData.intention.collectAsState(initial = null)
+    val intentionEntry = intention?.entry
+
+    // The first dock of the day asks its question (only where touches work). Once asked it is not asked again today.
+    var prompt by remember { mutableStateOf<String?>(null) }
+    LaunchedEffect(interactive, intention) {
+        val today = intention ?: return@LaunchedEffect
+        if (interactive && prompt == null && needsOffer(today.entry)) {
+            prompt = today.entry?.text.orEmpty()
+            dockData.intentionOffered()
+        }
+    }
 
     // The dock just appeared: refresh the weather if it is 30+ minutes old (does nothing otherwise).
     LaunchedEffect(Unit) { dockData.refreshWeather() }
@@ -56,7 +72,14 @@ fun DockScreen(dockData: DockData, window: Window?, modifier: Modifier = Modifie
                 template = template,
                 state = DockUiState(timeMillis = time, weather = weather.usableAt(time), events = events, tasks = tasks,
                     notifications = notifications, showMessageText = showText,
-                    session = session?.let { SessionSnapshot(it.startedAt, it.counts.held, it.counts.through) }),
+                    session = session?.let { SessionSnapshot(it.startedAt, it.counts.held, it.counts.through) },
+                    lines = DockLines(intention = intentionLine(intentionEntry)),
+                    intentionPrompt = prompt),
+                actions = DockActions(
+                    lines = DockLineActions(onToggleIntention = dockData::setIntentionDone),
+                    onSaveIntention = { prompt = null; dockData.saveIntention(it) },
+                    onSkipIntention = { prompt = null; dockData.skipIntention() }
+                ),
                 modifier = drift.fillMaxSize()
             )
         }

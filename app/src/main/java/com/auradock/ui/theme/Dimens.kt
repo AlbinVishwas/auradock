@@ -179,6 +179,16 @@ object AuraDockDockLayout {
     val sessionLineHeight: Dp = 2.dp
     val sessionLineBottom: Dp = 12.dp
     const val SessionLapMinutes = 60
+
+    /** The quiet lines under the clock: one row each, the circle 16 dp, at most 560 dp wide. */
+    val lineRow: Dp = 36.dp
+    val lineCircle: Dp = 16.dp
+    val lineGap: Dp = 12.dp
+    val lineMaxWidth: Dp = 560.dp
+
+    /** The morning prompt: a column 600 dp wide. */
+    val promptWidth: Dp = 600.dp
+    val promptGap: Dp = 20.dp
 }
 
 /** The onboarding animation's drawing sizes. */

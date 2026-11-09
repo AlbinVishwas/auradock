@@ -63,6 +63,7 @@ import com.auradock.ui.theme.LocalAuraDockSpacing
 import com.auradock.ui.theme.AuraDockSpacing
 import com.auradock.ui.theme.fromScreenBottom
 import com.auradock.ui.theme.fromScreenTop
+import com.auradock.intention.IntentionLine
 import com.auradock.sessions.SessionSummary
 import com.auradock.sessions.WeeklyFocus
 import com.auradock.sessions.summaryIsFresh
@@ -83,7 +84,9 @@ data class DashboardUiState(
     /** A focus session just ended: its card shows for three seconds (null: no card). */
     val undockSummary: SessionSummary? = null,
     /** Focus time over the last seven days; null while it loads (nothing is drawn then). */
-    val weeklyFocus: WeeklyFocus? = null
+    val weeklyFocus: WeeklyFocus? = null,
+    /** The morning intention, shown at the top of the Today card (null: none today). */
+    val intention: IntentionLine? = null
 )
 
 /** What the user can do on the dashboard. */
@@ -98,7 +101,8 @@ data class DashboardActions(
     val onOpenSetup: () -> Unit = {},
     val onDockNow: () -> Unit = {},
     val onEnableCalendarAccess: () -> Unit = {},
-    val onDismissUndockSummary: () -> Unit = {}
+    val onDismissUndockSummary: () -> Unit = {},
+    val onToggleIntention: (done: Boolean) -> Unit = {}
 )
 
 /** The "today" screen. Stateless: draws [state] and reports taps through [actions]. */
@@ -138,6 +142,8 @@ fun DashboardScreen(
         BlurIn(index = 1) {
             TaskCard(
                 tasks = tasks,
+                intention = state.intention,
+                onToggleIntention = actions.onToggleIntention,
                 timeMillis = timeMillis,
                 formatTime = { timeFormat.format(Date(it)) },
                 onAdd = { sheetTaskId = NEW_TASK },

@@ -1,6 +1,9 @@
 package com.auradock.dock
 
 import androidx.compose.ui.graphics.Color
+import com.auradock.dock.lines.DockLineActions
+import com.auradock.dock.lines.DockLineStack
+import com.auradock.dock.lines.IntentionPrompt
 import androidx.compose.ui.layout.FirstBaseline
 import androidx.compose.ui.layout.layout
 import com.auradock.ui.theme.AuraDockTypography
@@ -60,7 +63,7 @@ import com.auradock.weather.temperatureLabel
  * template is [DockScreen].
  */
 @Composable
-fun DockContent(template: DockTemplate, state: DockUiState, modifier: Modifier = Modifier) {
+fun DockContent(template: DockTemplate, state: DockUiState, modifier: Modifier = Modifier, actions: DockActions = DockActions()) {
     Box(
         modifier = modifier
             .fillMaxSize()
@@ -70,13 +73,21 @@ fun DockContent(template: DockTemplate, state: DockUiState, modifier: Modifier =
         val lines = stripLines(state.notifications, state.showMessageText)
         val caption = state.session?.let { heldCaption(it.held, it.through) }
         val rows = maxOf(lines.size, if (caption != null) 1 else 0)
-        // Make room under the template for the strip so the two never overlap (the clock moves up a little).
+        // The strip's own room under the template (Bold draws its strip inside the clock, so it needs none here).
+        val stripRoom = if (rows == 0 || template == DockTemplate.BOLD) AuraDockSizes.none else AuraDockDockLayout.stripBase + AuraDockDockLayout.stripLine * rows
+        // The quiet lines (intention, ...) sit just above the strip and the session line; the template leaves room for them too.
+        val lineRoom = if (state.lines.count == 0) AuraDockSizes.none else AuraDockDockLayout.lineRow * state.lines.count
+        val linesBottom = if (stripRoom > AuraDockSizes.none) stripRoom else AuraDockDockLayout.stripBase
+        // Make room under the template for the strip and the lines so they never overlap (the clock moves up a little).
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(bottom = if (rows == 0 || template == DockTemplate.BOLD) AuraDockSizes.none else AuraDockDockLayout.stripBase + AuraDockDockLayout.stripLine * rows),
+                .padding(bottom = stripRoom + lineRoom),
             contentAlignment = Alignment.Center
         ) {
+        if (state.intentionPrompt != null) {
+            IntentionPrompt(prefill = state.intentionPrompt, onSave = actions.onSaveIntention, onSkip = actions.onSkipIntention)
+        } else
         when (template) {
             DockTemplate.BOLD -> BoldClock(
                 timeMillis = state.timeMillis,
@@ -89,6 +100,14 @@ fun DockContent(template: DockTemplate, state: DockUiState, modifier: Modifier =
             DockTemplate.PRODUCTIVITY -> SafeZone { ProductivityLayout(state) }
             DockTemplate.CLASSIC -> SafeZone { ClassicLayout(state) }
         }
+        }
+        if (state.intentionPrompt == null) {
+            DockLineStack(
+                lines = state.lines,
+                dimmed = template == DockTemplate.MINIMAL,
+                actions = actions.lines,
+                modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = linesBottom)
+            )
         }
         state.session?.let {
             SessionLine(
@@ -105,6 +124,13 @@ fun DockContent(template: DockTemplate, state: DockUiState, modifier: Modifier =
         )
     }
 }
+
+/** What touching the live dock can do: tick a line, answer the morning question. The screensaver passes none. */
+data class DockActions(
+    val lines: DockLineActions = DockLineActions(),
+    val onSaveIntention: (String) -> Unit = {},
+    val onSkipIntention: () -> Unit = {}
+)
 
 /** Keeps a template inside the safe zone: 40 dp at the sides, 24 dp at the top and bottom. */
 @Composable

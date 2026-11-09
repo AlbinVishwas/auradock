@@ -234,7 +234,7 @@ class MainActivity : ComponentActivity() {
                                     indication = null
                                 ) { standbyViewModel.dismissDock() }
                         ) {
-                            DockScreen(dockData = dockData, window = this@MainActivity.window)
+                            DockScreen(dockData = dockData, window = this@MainActivity.window, interactive = true)
                         }
 
                         "onboarding" -> OnboardingRoute(standbyViewModel, system)

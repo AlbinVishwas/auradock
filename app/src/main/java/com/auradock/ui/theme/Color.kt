@@ -157,6 +157,14 @@ object AuraDockColors {
     val SessionFillDim = AuraDockPalette.Outline
     val SessionTrackDim = AuraDockPalette.Inactive.copy(alpha = 0.6f)
     val DockDivider = AuraDockPalette.Inactive
+
+    /** The quiet lines under the clock (morning intention, next meeting, pick up): grey, with the ring and the done state a step quieter. */
+    val DockLine = AuraDockPalette.Secondary
+    val DockLineDone = AuraDockPalette.Outline
+    val DockLineRing = AuraDockPalette.Outline
+    val DockLineDim = AuraDockPalette.Outline
+    val DockLineDoneDim = AuraDockPalette.Inactive
+    val DockLineRingDim = AuraDockPalette.Inactive
     /** Minimal: OLED-dim grey digits. */
     val DimDigits = AuraDockPalette.Outline
     val DimColon = AuraDockPalette.Inactive

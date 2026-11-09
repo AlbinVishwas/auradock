@@ -7,6 +7,8 @@ import com.auradock.data.NotificationItem
 import com.auradock.data.NotificationRepository
 import com.auradock.data.latestPerApp
 import com.auradock.focus.FocusSettings
+import com.auradock.intention.IntentionRepository
+import com.auradock.intention.IntentionToday
 import com.auradock.permissions.isNotificationAccessEnabled
 import com.auradock.tasks.TaskEntity
 import com.auradock.tasks.TaskRepository
@@ -40,10 +42,18 @@ class DockData @Inject constructor(
     templateRepository: TemplateRepository,
     private val weatherRepository: WeatherRepository,
     taskRepository: TaskRepository,
-    sessionTracker: SessionTracker
+    sessionTracker: SessionTracker,
+    private val intentions: IntentionRepository
 ) {
     /** The focus session going on now, for the dock's ring and its "held for you" line. */
     val session: StateFlow<LiveSession?> = sessionTracker.live
+
+    /** Today's morning intention (null until it has been read). */
+    val intention: Flow<IntentionToday> = intentions.today
+    fun intentionOffered() { intentions.markOffered() }
+    fun saveIntention(text: String) { intentions.save(text) }
+    fun skipIntention() { intentions.skip() }
+    fun setIntentionDone(done: Boolean) { intentions.setDone(done) }
 
     val selectedTemplate: StateFlow<DockTemplate> = templateRepository.selected
 

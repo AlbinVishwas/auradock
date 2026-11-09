@@ -187,6 +187,12 @@ object AuraDockTypography {
     /** A section label on the dock ("Next", "Today"): Inter Medium 14, sentence case. */
     val DockLabel = TextStyle(fontFamily = InterFamily, fontWeight = FontWeight.Medium, fontSize = 14.sp)
 
+    /** The quiet lines under the clock (intention, next meeting, pick up): Inter Medium 18. */
+    val DockLine = DockCondition
+
+    /** The morning question on the dock: Mona Sans Bold 30. */
+    val DockPrompt = TextStyle(fontFamily = MonaSansFamily, fontWeight = FontWeight.Bold, fontSize = 30.sp)
+
     /** The notification strip: a quiet Inter Medium 13 caption. */
     val DockStrip = Caption
 

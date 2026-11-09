@@ -37,7 +37,9 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.text.style.TextOverflow
+import com.auradock.intention.IntentionLine
 import com.auradock.tasks.TaskEntity
+import com.auradock.ui.components.StrikeText
 import com.auradock.tasks.isOverdue
 import com.auradock.ui.theme.AuraDockColors
 import com.auradock.ui.theme.AuraDockMotion
@@ -62,7 +64,10 @@ fun TaskCard(
     onEdit: (TaskEntity) -> Unit,
     onToggle: (TaskEntity) -> Unit,
     onDelete: (TaskEntity) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    /** The morning intention: the first row of the card, with its own circle. */
+    intention: IntentionLine? = null,
+    onToggleIntention: (Boolean) -> Unit = {}
 ) {
     val left = tasks?.count { !it.done } ?: 0
     Column(
@@ -75,6 +80,7 @@ fun TaskCard(
             Text(text = "Today", style = AuraDockTypography.Section, color = AuraDockColors.OnBackground)
             if (tasks != null && tasks.isNotEmpty()) Text(text = "$left left", style = AuraDockTypography.Meta, color = AuraDockColors.Tertiary)
         }
+        if (intention != null) IntentionRow(intention, onToggleIntention, divider = false)
         if (tasks != null && tasks.isEmpty()) {
             Text(
                 text = "Nothing planned.\nEnjoy the quiet.",
@@ -101,6 +107,21 @@ fun TaskCard(
             }
         }
         AddRow(onAdd, divider = tasks != null)
+    }
+}
+
+/** The morning intention at the top of the card: "Today's one thing" over the line, with the same circle and strike as a task. */
+@Composable
+private fun IntentionRow(intention: IntentionLine, onToggle: (Boolean) -> Unit, divider: Boolean) {
+    Column(modifier = Modifier.fillMaxWidth().padding(top = AuraDockSpacing.sm)) {
+        Row(modifier = Modifier.fillMaxWidth().height(IntrinsicSize.Min), verticalAlignment = Alignment.CenterVertically) {
+            CheckCircle(done = intention.done, highlight = false, onClick = { onToggle(!intention.done) })
+            Column(modifier = Modifier.weight(1f).padding(vertical = AuraDockSpacing.md - AuraDockSpacing.xxs)) {
+                Text(text = "The one thing", style = AuraDockTypography.Caption, color = AuraDockColors.Tertiary)
+                StrikeText(text = intention.text, struck = intention.done, style = AuraDockTypography.Body, color = AuraDockColors.OnBackground)
+            }
+        }
+        if (divider) Box(Modifier.fillMaxWidth().size(width = AuraDockSizes.none, height = AuraDockSizes.line).background(AuraDockColors.RowDivider))
     }
 }
 
@@ -168,7 +189,7 @@ private fun TaskRow(
                         .clickable(onClick = onEdit)
                         .padding(vertical = AuraDockSpacing.md - AuraDockSpacing.xxs)
                 ) {
-                    StrikeText(text = task.title, struck = task.done)
+                    StrikeText(text = task.title, struck = task.done, style = AuraDockTypography.Body, color = AuraDockColors.OnBackground)
                     if (highlight && dueLabel != null) {
                         Text(
                             text = "Overdue · $dueLabel",
@@ -220,30 +241,4 @@ private fun CheckCircle(done: Boolean, highlight: Boolean, onClick: () -> Unit) 
             )
         }
     }
-}
-
-/** Task title; when [struck] a line draws across it left to right and the text fades to grey. */
-@Composable
-private fun StrikeText(text: String, struck: Boolean, modifier: Modifier = Modifier) {
-    val progress by animateFloatAsState(if (struck) 1f else 0f, AuraDockMotion.tween(AuraDockMotion.Strike), label = "strike")
-    val color by animateColorAsState(if (struck) AuraDockColors.Tertiary else AuraDockColors.OnBackground, AuraDockMotion.tween(AuraDockMotion.Strike), label = "strikeFade")
-    Text(
-        text = text,
-        style = AuraDockTypography.Body,
-        color = color,
-        maxLines = 2,
-        overflow = TextOverflow.Ellipsis,
-        modifier = modifier.drawWithContent {
-            drawContent()
-            if (progress > 0f) {
-                val y = size.height / 2f
-                drawLine(
-                    color = AuraDockColors.Tertiary,
-                    start = Offset(0f, y),
-                    end = Offset(size.width * progress, y),
-                    strokeWidth = AuraDockSizes.strikeLine.toPx()
-                )
-            }
-        }
-    )
 }

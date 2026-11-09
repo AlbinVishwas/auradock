@@ -1,6 +1,7 @@
 package com.auradock.dock
 
 import com.auradock.data.CalendarEvent
+import com.auradock.dock.lines.DockLines
 import com.auradock.data.NotificationItem
 import com.auradock.tasks.TaskEntity
 import com.auradock.weather.Weather
@@ -22,7 +23,11 @@ data class DockUiState(
     /** Whether the strip may show the message text itself. Off unless the user turns it on. */
     val showMessageText: Boolean = false,
     /** The focus session going on now (the live dock only; null for thumbnails, which draw no line and no counts). */
-    val session: SessionSnapshot? = null
+    val session: SessionSnapshot? = null,
+    /** The quiet lines under the clock (morning intention, and the lines later items add). Empty in thumbnails. */
+    val lines: DockLines = DockLines(),
+    /** Set while the morning question is showing: the text to start the field with ("" when there is none). */
+    val intentionPrompt: String? = null
 )
 
 /** What the dock draws about the session: when it began, and how many notifications were held and let through. */

@@ -56,3 +56,15 @@ private val heldSession = SessionSnapshot(startedAt = PreviewData.dockFull.timeM
 @PreviewLandscape @Composable private fun BoldQuietSession() = AuraDockTheme {
     DockContent(DockTemplate.BOLD, PreviewData.dockFull.copy(session = heldSession.copy(held = 0, through = 0)))
 }
+
+// The quiet lines under the clock: the morning intention open and done, and the morning question.
+private val withIntention = PreviewData.dockFull.copy(lines = com.auradock.dock.lines.DockLines(intention = com.auradock.intention.IntentionLine("Ship the invoice to Meera", done = false)))
+private val withIntentionDone = PreviewData.dockFull.copy(lines = com.auradock.dock.lines.DockLines(intention = com.auradock.intention.IntentionLine("Ship the invoice to Meera", done = true)))
+@PreviewLandscape @Composable private fun BoldIntention() = AuraDockTheme { DockContent(DockTemplate.BOLD, withIntention) }
+@PreviewLandscape @Composable private fun BoldIntentionDone() = AuraDockTheme { DockContent(DockTemplate.BOLD, withIntentionDone) }
+@PreviewLandscape @Composable private fun ClassicIntention() = AuraDockTheme { DockContent(DockTemplate.CLASSIC, withIntention) }
+@PreviewLandscape @Composable private fun FocusIntention() = AuraDockTheme { DockContent(DockTemplate.FOCUS, withIntention) }
+@PreviewLandscape @Composable private fun ProductivityIntention() = AuraDockTheme { DockContent(DockTemplate.PRODUCTIVITY, withIntention) }
+@PreviewLandscape @Composable private fun MinimalIntention() = AuraDockTheme { DockContent(DockTemplate.MINIMAL, withIntention) }
+@PreviewLandscape @Composable private fun IntentionQuestion() = AuraDockTheme { DockContent(DockTemplate.BOLD, PreviewData.dockFull.copy(intentionPrompt = "")) }
+@PreviewLandscape @Composable private fun IntentionQuestionSuggested() = AuraDockTheme { DockContent(DockTemplate.BOLD, PreviewData.dockFull.copy(intentionPrompt = "Draft the Q1 plan")) }
