@@ -12,7 +12,7 @@ import com.auradock.sessions.SessionCheckpointEntity
 import com.auradock.tasks.TaskDao
 import com.auradock.tasks.TaskEntity
 
-@Database(entities = [TaskEntity::class, FocusSessionEntity::class, SessionCheckpointEntity::class, IntentionEntity::class], version = 4, exportSchema = false)
+@Database(entities = [TaskEntity::class, FocusSessionEntity::class, SessionCheckpointEntity::class, IntentionEntity::class], version = 5, exportSchema = false)
 abstract class AuraDockDatabase : RoomDatabase() {
     abstract fun taskDao(): TaskDao
     abstract fun focusSessionDao(): FocusSessionDao
@@ -47,5 +47,12 @@ val MIGRATION_3_4 = object : Migration(3, 4) {
             "CREATE TABLE IF NOT EXISTS `daily_intention` (`day` TEXT NOT NULL, `text` TEXT NOT NULL, `done` INTEGER NOT NULL, " +
                 "`doneAt` INTEGER, `status` TEXT NOT NULL, PRIMARY KEY(`day`))"
         )
+    }
+}
+
+/** 0.2.1: a task can wait for a later day (tomorrow's top task from the evening shutdown). */
+val MIGRATION_4_5 = object : Migration(4, 5) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL("ALTER TABLE `tasks` ADD COLUMN `showFrom` INTEGER NOT NULL DEFAULT 0")
     }
 }

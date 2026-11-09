@@ -71,6 +71,24 @@ class StandbyViewModel @Inject constructor(
     val weeklyFocus: StateFlow<WeeklyFocus?> = focusStats.weekly
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
 
+    /** True while the card of a finished session may ask "Tomorrow's top task?" (an evening session, not yet asked this evening). */
+    val shutdownOffer: StateFlow<Boolean> = sessions.summary.map { it != null && intentions.shutdownEligible(it.endedAt) }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), false)
+
+    /** The question was shown: not again this evening. */
+    fun shutdownShown(endedAt: Long) = intentions.markShutdownOffered(endedAt)
+
+    /** Tomorrow's top task: a task that appears tomorrow (at [dueAt] if given), and tomorrow's suggested morning intention. */
+    fun saveTomorrowTask(title: String, dueAt: Long?) {
+        viewModelScope.launch {
+            val now = minuteClockNow()
+            taskRepository.add(title, dueAt, showFrom = com.auradock.intention.tomorrowStart(now))
+            intentions.suggestForTomorrow(title)
+        }
+        if (dueAt != null) askForNotificationsOnce()
+    }
+    private fun minuteClockNow() = currentTimeMillis.value
+
     /** Today's morning intention for the top of the Today card (null when there is none). */
     val intention: StateFlow<IntentionLine?> = intentions.today.map { intentionLine(it.entry) }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)

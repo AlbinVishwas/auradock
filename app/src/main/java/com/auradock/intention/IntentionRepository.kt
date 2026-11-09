@@ -1,6 +1,8 @@
 package com.auradock.intention
 
+import android.content.Context
 import com.auradock.time.MinuteClock
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -18,7 +20,13 @@ data class IntentionToday(val entry: IntentionEntity?)
 
 /** The one place the morning intention is read and changed. Everything stays in the local database. */
 @Singleton
-class IntentionRepository @Inject constructor(private val dao: IntentionDao, private val clock: MinuteClock) {
+class IntentionRepository @Inject constructor(
+    @ApplicationContext context: Context,
+    private val dao: IntentionDao,
+    private val clock: MinuteClock
+) {
+    private val prefs = context.getSharedPreferences("auradock_prefs", Context.MODE_PRIVATE)
+
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
     /** Today's entry; the day rolls over at 4 am by itself. */
@@ -55,5 +63,25 @@ class IntentionRepository @Inject constructor(private val dao: IntentionDao, pri
         val current = dao.get(today()) ?: return@launch
         if (current.status != IntentionStatus.SET.name) return@launch
         dao.upsert(current.copy(done = done, doneAt = if (done) clock.currentMillis() else null))
+    }
+
+    /** True if the undock card of a session that ended at [endedAt] should ask "Tomorrow's top task?" (once per evening). */
+    fun shutdownEligible(endedAt: Long): Boolean = shouldOfferShutdown(endedAt, prefs.getString(KEY_SHUTDOWN_DAY, null))
+
+    /** The question has been shown: not again this evening. */
+    fun markShutdownOffered(endedAt: Long) {
+        prefs.edit().putString(KEY_SHUTDOWN_DAY, intentionDay(endedAt)).apply()
+    }
+
+    /** Tomorrow's top task becomes tomorrow's suggested morning intention (it is only a suggestion until they save it). */
+    fun suggestForTomorrow(raw: String) = scope.launch {
+        val text = cleanIntention(raw) ?: return@launch
+        val day = nextIntentionDay(clock.currentMillis())
+        val existing = dao.get(day)
+        if (existing == null || existing.status == IntentionStatus.SUGGESTED.name) dao.upsert(IntentionEntity(day, text, status = IntentionStatus.SUGGESTED.name))
+    }
+
+    private companion object {
+        const val KEY_SHUTDOWN_DAY = "shutdown_offered_day"
     }
 }

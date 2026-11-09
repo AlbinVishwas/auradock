@@ -1,6 +1,7 @@
 package com.auradock.tasks
 
 import com.auradock.tasks.reminders.TaskAlarmScheduler
+import com.auradock.data.todayRange
 import com.auradock.time.MinuteClock
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
@@ -26,16 +27,16 @@ class TaskRepository @Inject constructor(
      */
     @OptIn(ExperimentalCoroutinesApi::class)
     val todayTasks: Flow<List<TaskEntity>> = clock.minutes
-        .map { startOfToday(it) }
+        .map { todayRange(it) }
         .distinctUntilChanged()
-        .flatMapLatest { start -> dao.observeAll().map { visibleTasks(it, start) } }
+        .flatMapLatest { (start, end) -> dao.observeAll().map { visibleTasks(it, start, end) } }
 
     suspend fun get(id: Long): TaskEntity? = dao.get(id)
 
     /** Returns the new task's id, or null if [title] is blank. */
-    suspend fun add(title: String, dueAt: Long?): Long? {
+    suspend fun add(title: String, dueAt: Long?, showFrom: Long = 0): Long? {
         val clean = cleanTitle(title) ?: return null
-        val task = TaskEntity(title = clean, dueAt = dueAt, createdAt = clock.currentMillis())
+        val task = TaskEntity(title = clean, dueAt = dueAt, createdAt = clock.currentMillis(), showFrom = showFrom)
         val id = dao.insert(task)
         alarms.schedule(task.copy(id = id))
         return id

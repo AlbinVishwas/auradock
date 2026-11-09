@@ -6,6 +6,7 @@ import com.auradock.data.AuraDockDatabase
 import com.auradock.data.MIGRATION_1_2
 import com.auradock.data.MIGRATION_2_3
 import com.auradock.data.MIGRATION_3_4
+import com.auradock.data.MIGRATION_4_5
 import com.auradock.intention.IntentionDao
 import com.auradock.sessions.FocusSessionDao
 import com.auradock.tasks.TaskDao
@@ -24,7 +25,7 @@ object DatabaseModule {
     @Singleton
     @Provides
     fun provideDatabase(@ApplicationContext context: Context): AuraDockDatabase =
-        Room.databaseBuilder(context, AuraDockDatabase::class.java, "auradock.db").addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4).build()
+        Room.databaseBuilder(context, AuraDockDatabase::class.java, "auradock.db").addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5).build()
 
     @Provides
     fun provideTaskDao(db: AuraDockDatabase): TaskDao = db.taskDao()

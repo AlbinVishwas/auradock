@@ -86,7 +86,9 @@ data class DashboardUiState(
     /** Focus time over the last seven days; null while it loads (nothing is drawn then). */
     val weeklyFocus: WeeklyFocus? = null,
     /** The morning intention, shown at the top of the Today card (null: none today). */
-    val intention: IntentionLine? = null
+    val intention: IntentionLine? = null,
+    /** The undock card gets a second step: "Tomorrow's top task?" (an evening session, not yet asked this evening). */
+    val offerShutdown: Boolean = false
 )
 
 /** What the user can do on the dashboard. */
@@ -102,7 +104,10 @@ data class DashboardActions(
     val onDockNow: () -> Unit = {},
     val onEnableCalendarAccess: () -> Unit = {},
     val onDismissUndockSummary: () -> Unit = {},
-    val onToggleIntention: (done: Boolean) -> Unit = {}
+    val onToggleIntention: (done: Boolean) -> Unit = {},
+    /** The "Tomorrow's top task?" step was shown, for the session that ended at this time. */
+    val onShutdownShown: (endedAt: Long) -> Unit = {},
+    val onSaveTomorrow: (title: String, dueAt: Long?) -> Unit = { _, _ -> }
 )
 
 /** The "today" screen. Stateless: draws [state] and reports taps through [actions]. */
@@ -198,6 +203,10 @@ fun DashboardScreen(
         state.undockSummary?.takeIf { summaryIsFresh(it.endedAt, timeMillis) }?.let {
             UndockSummaryCard(
                 summary = it,
+                offerShutdown = state.offerShutdown,
+                nowMillis = timeMillis,
+                onShutdownShown = { actions.onShutdownShown(it.endedAt) },
+                onSaveTomorrow = actions.onSaveTomorrow,
                 onDismiss = actions.onDismissUndockSummary,
                 modifier = Modifier.align(Alignment.BottomCenter).padding(horizontal = AuraDockSpacing.mdl).padding(bottom = fromScreenBottom(AuraDockSpacing.xl))
             )

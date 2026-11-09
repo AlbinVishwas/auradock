@@ -1,5 +1,6 @@
 package com.auradock.tasks
 
+import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
@@ -17,5 +18,7 @@ data class TaskEntity(
     val dueAt: Long? = null,
     val done: Boolean = false,
     val createdAt: Long,
-    val completedAt: Long? = null
+    val completedAt: Long? = null,
+    /** Not shown before this moment (epoch millis; 0 = always). Tomorrow's top task from the evening shutdown waits for midnight. */
+    @ColumnInfo(defaultValue = "0") val showFrom: Long = 0
 )

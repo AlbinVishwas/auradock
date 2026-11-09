@@ -15,8 +15,8 @@ import java.time.ZoneId
 /** Midnight at the start of the local day containing [nowMillis]. */
 fun startOfToday(nowMillis: Long, zone: ZoneId = ZoneId.systemDefault()): Long = todayRange(nowMillis, zone).first
 
-fun isVisibleToday(task: TaskEntity, startOfToday: Long): Boolean =
-    !task.done || (task.completedAt ?: 0L) >= startOfToday
+fun isVisibleToday(task: TaskEntity, startOfToday: Long, endOfToday: Long = Long.MAX_VALUE): Boolean =
+    task.showFrom < endOfToday && (!task.done || (task.completedAt ?: 0L) >= startOfToday)
 
 /** Not done, has a due time, and that time has arrived. */
 fun isOverdue(task: TaskEntity, nowMillis: Long): Boolean =
@@ -26,8 +26,8 @@ fun isOverdue(task: TaskEntity, nowMillis: Long): Boolean =
  * What the dashboard shows: unfinished tasks first, the ones with a due time in time order (those without a
  * time after them, oldest first); finished tasks at the bottom in the order they were finished.
  */
-fun visibleTasks(all: List<TaskEntity>, startOfToday: Long): List<TaskEntity> =
-    all.filter { isVisibleToday(it, startOfToday) }
+fun visibleTasks(all: List<TaskEntity>, startOfToday: Long, endOfToday: Long = Long.MAX_VALUE): List<TaskEntity> =
+    all.filter { isVisibleToday(it, startOfToday, endOfToday) }
         .sortedWith(
             compareBy<TaskEntity> { it.done }
                 .thenBy { if (it.done) 0L else (it.dueAt ?: Long.MAX_VALUE) }

@@ -1,6 +1,10 @@
 package com.auradock.ui.screens.dashboard
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
 import com.auradock.dock.DockTemplate
 import com.auradock.sessions.SessionCounts
 import com.auradock.sessions.SessionSummary
@@ -101,3 +105,16 @@ private fun DashboardWeeklyFocusOneDay() = AuraDockTheme { DashboardScreen(Full.
 @PreviewPortrait
 @Composable
 private fun DashboardWeeklyFocusEmpty() = AuraDockTheme { DashboardScreen(Full.copy(weeklyFocus = week(0, 0, 0, 0, 0, 0, 0)), DashboardActions()) }
+
+// The evening shutdown: the undock card's second step.
+@PreviewPortrait
+@Composable
+private fun UndockTomorrowStep() = AuraDockTheme {
+    androidx.compose.foundation.layout.Box(Modifier.fillMaxSize().background(com.auradock.ui.theme.AuraDockColors.Background).padding(horizontal = com.auradock.ui.theme.AuraDockSpacing.mdl), contentAlignment = androidx.compose.ui.Alignment.BottomCenter) {
+        UndockSummaryCard(summary(72, 3, 6, 2), onDismiss = {}, offerShutdown = true, startOnTomorrow = true)
+    }
+}
+
+// The intention at the top of the Today card, open and done.
+@PreviewPortrait @Composable private fun DashboardIntention() = AuraDockTheme { DashboardScreen(Full.copy(intention = com.auradock.intention.IntentionLine("Ship the invoice to Meera", false)), DashboardActions()) }
+@PreviewPortrait @Composable private fun DashboardIntentionDone() = AuraDockTheme { DashboardScreen(Full.copy(intention = com.auradock.intention.IntentionLine("Ship the invoice to Meera", true)), DashboardActions()) }
