@@ -4,6 +4,7 @@ import android.content.Context
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
+import com.auradock.focus.vip.VipContacts
 import com.auradock.sessions.SessionTracker
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -26,7 +27,8 @@ class DockFocusController @Inject constructor(
     @ApplicationContext context: Context,
     private val settings: FocusSettings,
     private val dnd: DndController,
-    private val sessions: SessionTracker
+    private val sessions: SessionTracker,
+    private val vipContacts: VipContacts
 ) {
     private val prefs = context.getSharedPreferences("auradock_focus_state", Context.MODE_PRIVATE)
     private val active = mutableSetOf<DockSource>()
@@ -82,7 +84,10 @@ class DockFocusController @Inject constructor(
         val state = load()
         val want = settings.focusWhileDocked.value && access && active.isNotEmpty()
         // Without DND access we cannot change anything, so a pending restore would fail too: keep waiting for access.
-        if (!access && state.changed) return
+        if (!access && state.changed) {
+            vipContacts.giveBack()
+            return
+        }
 
         when (val action = planDnd(want, state, dnd.snapshot())) {
             DndAction.None -> Unit
@@ -105,6 +110,8 @@ class DockFocusController @Inject constructor(
                 Log.d(TAG, "DND was changed by the user while docked: left alone")
             }
         }
+        // People who can always reach the user ring through only while our focus is on; the moment it is not, they are put back.
+        if (want && load().changed) vipContacts.lend() else vipContacts.giveBack()
     }
 
     private fun load(): DockDndState {

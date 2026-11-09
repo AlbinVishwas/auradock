@@ -138,6 +138,24 @@ class MainActivity : ComponentActivity() {
                     standbyViewModel.onPostNotificationsResult(granted, permanentlyDenied)
                 }
 
+                val contactsReadLauncher = rememberLauncherForActivityResult(
+                    contract = ActivityResultContracts.RequestPermission()
+                ) { granted ->
+                    val permanentlyDenied = !granted &&
+                        !ActivityCompat.shouldShowRequestPermissionRationale(this@MainActivity, Manifest.permission.READ_CONTACTS)
+                    standbyViewModel.onContactsReadResult(granted, permanentlyDenied)
+                }
+                val contactsWriteLauncher = rememberLauncherForActivityResult(
+                    contract = ActivityResultContracts.RequestPermission()
+                ) { granted ->
+                    val permanentlyDenied = !granted &&
+                        !ActivityCompat.shouldShowRequestPermissionRationale(this@MainActivity, Manifest.permission.WRITE_CONTACTS)
+                    standbyViewModel.onContactsWriteResult(granted, permanentlyDenied)
+                }
+                val contactPicker = rememberLauncherForActivityResult(
+                    contract = ActivityResultContracts.PickContact()
+                ) { uri -> if (uri != null) standbyViewModel.onContactPicked(uri) }
+
                 LaunchedEffect(Unit) {
                     standbyViewModel.permissionActions.collect { action ->
                         when (action) {
@@ -174,6 +192,10 @@ class MainActivity : ComponentActivity() {
                             PermissionAction.OpenExactAlarmSettings -> {
                                 openExactAlarmSettings(this@MainActivity)
                             }
+
+                            PermissionAction.RequestContactsRead -> contactsReadLauncher.launch(Manifest.permission.READ_CONTACTS)
+                            PermissionAction.RequestContactsWrite -> contactsWriteLauncher.launch(Manifest.permission.WRITE_CONTACTS)
+                            PermissionAction.PickContact -> contactPicker.launch(null)
                         }
                     }
                 }
@@ -312,6 +334,7 @@ class MainActivity : ComponentActivity() {
         super.onResume()
         screensaverSelected = isAuraDockScreensaver(this) // the user may have just picked it
         standbyViewModel.refreshExactAlarmAccess() // the user may have just allowed it in settings
+        standbyViewModel.refreshContactsAccess()
         standbyViewModel.refreshDndAccess()        // ...or just allowed Do Not Disturb access
         standbyViewModel.refreshPostNotifications()
         standbyViewModel.refreshLocationPermission()

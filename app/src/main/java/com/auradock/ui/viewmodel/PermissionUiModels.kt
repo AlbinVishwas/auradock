@@ -9,6 +9,9 @@ sealed class PermissionAction {
     data object OpenExactAlarmSettings : PermissionAction()
     data object OpenDndAccessSettings : PermissionAction()
     data object OpenOverlaySettings : PermissionAction()
+    data object RequestContactsRead : PermissionAction()
+    data object RequestContactsWrite : PermissionAction()
+    data object PickContact : PermissionAction()
 }
 
 enum class CalendarPermissionUiState {

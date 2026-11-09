@@ -136,7 +136,7 @@ class SessionTracker @Inject constructor(
 
     /** A notification came in. [picked] is true if it is from one of the user's picked apps. */
     @Synchronized
-    fun onNotification(raw: RawNotification, picked: Boolean) {
+    fun onNotification(raw: RawNotification, picked: Boolean, vip: Boolean = false) {
         if (machine.live == null || machine.closing) return
         if (!seenKeys.add(raw.key)) return // an update to one already counted
         val arrival = classifyArrival(
@@ -146,7 +146,8 @@ class SessionTracker @Inject constructor(
             own = raw.packageName == context.packageName,
             picked = picked,
             dndActive = raw.dndActive,
-            allowedByDnd = raw.allowedByDnd
+            allowedByDnd = raw.allowedByDnd,
+            vip = vip
         )
         if (arrival == Arrival.IGNORED) seenKeys.remove(raw.key)
         machine.count(arrival)

@@ -65,9 +65,25 @@ class AuraNotificationListenerService : NotificationListenerService() {
             ongoing = sbn.isOngoing,
             groupSummary = (sbn.notification.flags and android.app.Notification.FLAG_GROUP_SUMMARY) != 0,
             dndActive = dndActive,
-            allowedByDnd = allowed
+            allowedByDnd = allowed,
+            personUris = personUris(extras)
         )
     }
+
+    /** The contact links the sending app attached to name the sender (people list and messaging-style senders). */
+    private fun personUris(extras: android.os.Bundle): List<String> = runCatching {
+        val uris = mutableListOf<String>()
+        if (android.os.Build.VERSION.SDK_INT >= 28) {
+            extras.getParcelableArrayList<android.os.Parcelable>(android.app.Notification.EXTRA_PEOPLE_LIST)
+                ?.forEach { (it as? android.app.Person)?.uri?.let(uris::add) }
+            extras.getParcelableArray(android.app.Notification.EXTRA_MESSAGES)?.forEach { message ->
+                ((message as? android.os.Bundle)?.getParcelable<android.os.Parcelable>("sender_person") as? android.app.Person)
+                    ?.uri?.let(uris::add)
+            }
+        }
+        extras.getStringArray(android.app.Notification.EXTRA_PEOPLE)?.let(uris::addAll)
+        uris
+    }.getOrDefault(emptyList())
 
     private fun appLabel(packageName: String): String = try {
         packageManager.getApplicationLabel(packageManager.getApplicationInfo(packageName, 0)).toString()

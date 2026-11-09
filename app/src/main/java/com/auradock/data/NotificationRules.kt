@@ -13,7 +13,9 @@ data class RawNotification(
     /** Do Not Disturb is filtering right now (not "allow all"). Only the focus session counts read this. */
     val dndActive: Boolean = false,
     /** Android would let this one through the current Do Not Disturb filter (a starred contact, say). */
-    val allowedByDnd: Boolean = false
+    val allowedByDnd: Boolean = false,
+    /** Contact links (`content://com.android.contacts/contacts/lookup/<key>/<id>`) the sending app named as the sender. Never stored. */
+    val personUris: List<String> = emptyList()
 )
 
 /** A notification as the dock shows it. [key] is Android's unique id for it, used to update or remove it exactly. */

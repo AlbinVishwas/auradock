@@ -411,3 +411,18 @@ after 6 pm) can be done on the day, or by changing the phone's clock.
   task, nor on the dock that asks the morning question.
 - [ ] **Stacking.** Meeting soon, intention open and a re-dock all at once: Pick up, then the meeting, then the intention, with the clock still
   readable on Bold.
+- [ ] **People who can always reach you (add).** Focus settings, "People who can always reach you", tap "Add a person". Pass: the Contacts
+  permission is asked only now (not at install or first launch); Allow opens the contact picker; the person you choose appears as a chip and the
+  count says "1 of 5". Add up to five; at five "Remove someone to add another" shows. The cross on a chip removes the person. Denying the
+  permission just leaves the list as it was.
+- [ ] **Ring-through (use a second phone to call).** Turn on "Let their calls ring through" and allow changing contacts. Dock, with Do Not Disturb
+  access allowed. Pass: a call from the VIP rings on the A55 (and one from a number that is not a VIP or a Favourite stays silent); the VIP appears
+  under Favourites in the Contacts app only while docked. After undocking (wait about 4 seconds) they are not a Favourite any more.
+- [ ] **A real Favourite stays one.** Mark one VIP as a Favourite in Contacts first. Dock and undock. Pass: they are still a Favourite afterwards.
+- [ ] **A killed app puts people back.** Dock, then force-stop AuraDock. The VIP is still a Favourite (expected). Open AuraDock. Pass: they are
+  not a Favourite any more. If "Still on loan" is shown on the Focus page, "Put back" clears it at once.
+- [ ] **Their messages count as let through.** Dock for three minutes. A WhatsApp or SMS message from a VIP, and one from someone else, arrive.
+  Pass: the undock card counts the VIP's as let through and the other as held. (A message is matched by the contact link the app attaches, or by
+  the sender's name matching exactly; if a messaging app does neither, the name in its title may differ from your Contacts name.)
+- [ ] **Google contacts sync.** With a Google account, add a VIP, dock and undock, then look at contacts.google.com. Pass: the VIP is not left
+  as a Favourite there. Note anything odd: the Favourite mark syncs, so it can show there briefly while docked.

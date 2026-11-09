@@ -1,6 +1,9 @@
 package com.auradock.focus
 
 import android.content.Context
+import com.auradock.focus.vip.Vip
+import com.auradock.focus.vip.decodeVips
+import com.auradock.focus.vip.encodeVips
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -61,7 +64,38 @@ class FocusSettings @Inject constructor(
         prefs.edit().putBoolean(KEY_ANYWHERE, enabled).apply()
     }
 
+    private val _vips = MutableStateFlow(decodeVips(prefs.getString(KEY_VIPS, "").orEmpty()))
+
+    /** The (up to five) people who can always reach the user. Names and contact keys only, kept on the phone. */
+    val vips: StateFlow<List<Vip>> = _vips.asStateFlow()
+
+    fun addVip(vip: Vip): Boolean {
+        val next = com.auradock.focus.vip.addVip(_vips.value, vip)
+        if (next == _vips.value) return false
+        saveVips(next)
+        return true
+    }
+
+    fun removeVip(lookupKey: String) = saveVips(com.auradock.focus.vip.removeVip(_vips.value, lookupKey))
+
+    private fun saveVips(list: List<Vip>) {
+        _vips.value = list
+        prefs.edit().putString(KEY_VIPS, encodeVips(list)).apply()
+    }
+
+    private val _vipRingThrough = MutableStateFlow(prefs.getBoolean(KEY_VIP_RING, false))
+
+    /** Off until the user switches it on (which also asks for the permission to change contacts). */
+    val vipRingThrough: StateFlow<Boolean> = _vipRingThrough.asStateFlow()
+
+    fun setVipRingThrough(enabled: Boolean) {
+        _vipRingThrough.value = enabled
+        prefs.edit().putBoolean(KEY_VIP_RING, enabled).apply()
+    }
+
     private companion object {
+        const val KEY_VIPS = "vips"
+        const val KEY_VIP_RING = "vip_ring_through"
         const val KEY_ANYWHERE = "dock_from_anywhere"
         const val KEY_FOCUS = "focus_while_docked"
         const val KEY_APPS = "picked_apps"

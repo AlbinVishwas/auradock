@@ -99,6 +99,12 @@ class SessionRulesTest {
     }
 
     @Test
+    fun `a message from a VIP goes through even when its app is not picked and nothing is silenced`() {
+        assertEquals(Arrival.THROUGH, classifyArrival(false, false, false, false, false, dndActive = false, allowedByDnd = false, vip = true))
+        assertEquals(Arrival.IGNORED, classifyArrival(true, false, false, false, false, dndActive = true, allowedByDnd = false, vip = true))
+    }
+
+    @Test
     fun `a picked app's notification goes through, and so does one Do Not Disturb allows`() {
         assertEquals(Arrival.THROUGH, arrival(picked = true))
         assertEquals(Arrival.THROUGH, arrival(allowedByDnd = true))

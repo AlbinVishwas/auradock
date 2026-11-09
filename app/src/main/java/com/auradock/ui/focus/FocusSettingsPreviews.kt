@@ -1,6 +1,7 @@
 package com.auradock.ui.focus
 
 import androidx.compose.runtime.Composable
+import com.auradock.focus.vip.Vip
 import com.auradock.ui.preview.PreviewComponent
 import com.auradock.ui.preview.PreviewData
 import com.auradock.ui.preview.PreviewPortrait
@@ -66,3 +67,34 @@ private fun DockFromAnywhereWaiting() = AuraDockTheme { DockFromAnywhereCard(ena
 @PreviewComponent
 @Composable
 private fun DockFromAnywhereOn() = AuraDockTheme { DockFromAnywhereCard(enabled = true, overlayGranted = true, onToggle = {}, onAllowOverlay = {}) }
+
+private val SomeVips = listOf(Vip("a", "Asha Rao"), Vip("b", "Mum"), Vip("c", "Dr. Fernandes"))
+
+/** The card with nobody on it yet. */
+@PreviewComponent
+@Composable
+private fun VipCardEmpty() = AuraDockTheme { VipCard(VipUiState(), VipActions()) }
+
+/** Three people and ring-through on. */
+@PreviewComponent
+@Composable
+private fun VipCardPeople() = AuraDockTheme { VipCard(VipUiState(vips = SomeVips, ringThrough = true), VipActions()) }
+
+/** Five people (the limit): adding is closed. */
+@PreviewComponent
+@Composable
+private fun VipCardFull() = AuraDockTheme {
+    VipCard(VipUiState(vips = SomeVips + listOf(Vip("d", "Ravi"), Vip("e", "Priya")), ringThrough = true), VipActions())
+}
+
+/** Something was left on loan (the app was killed while docked): the card offers to put it back. */
+@PreviewComponent
+@Composable
+private fun VipCardOnLoan() = AuraDockTheme { VipCard(VipUiState(vips = SomeVips, ringThrough = true, onLoan = 2), VipActions()) }
+
+/** The whole Focus page with the card filled in (full-page preview). */
+@PreviewPortrait
+@Composable
+private fun FocusWithPeople() = AuraDockTheme {
+    FocusSettingsScreen(Full.copy(vip = VipUiState(vips = SomeVips, ringThrough = true)), FocusSettingsActions())
+}

@@ -5,6 +5,9 @@
     <!-- Weather: approximate location only (about a city block), never precise. -->
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.READ_CALENDAR" />
+    <!-- Only asked when the user adds a person who can always reach them (read) or switches on ring-through (write). -->
+    <uses-permission android:name="android.permission.READ_CONTACTS" />
+    <uses-permission android:name="android.permission.WRITE_CONTACTS" />
     <!-- Task reminders: show notifications (Android 13+), fire at the exact minute (Android 12+, user-granted),
          and set the alarms again after a restart. -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />

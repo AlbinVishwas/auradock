@@ -2,6 +2,7 @@ package com.auradock.data
 
 import android.util.Log
 import com.auradock.focus.FocusSettings
+import com.auradock.focus.vip.isFromVip
 import com.auradock.sessions.SessionTracker
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -49,7 +50,8 @@ class NotificationRepository @Inject constructor(
 
     fun onPosted(raw: RawNotification) {
         val picked = settings.pickedApps.value.toSet()
-        sessions.onNotification(raw, picked = raw.packageName in picked) // counted for the focus session; the text is never kept
+        val vip = isFromVip(settings.vips.value, raw.personUris, raw.title)
+        sessions.onNotification(raw, picked = raw.packageName in picked, vip = vip) // counted for the focus session; the text is never kept
         if (isRelevant(raw, picked)) {
             _items.update { upsert(it, raw.toItem()) }
             Log.d(TAG, "cached ${raw.packageName} (${_items.value.size} total)")

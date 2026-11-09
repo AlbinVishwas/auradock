@@ -10,6 +10,8 @@ import com.auradock.focus.AppCatalog
 import com.auradock.focus.AppEntry
 import com.auradock.focus.DndController
 import com.auradock.focus.DockFocusController
+import com.auradock.focus.vip.Vip
+import com.auradock.focus.vip.VipContacts
 import com.auradock.focus.FocusSettings
 import com.auradock.onboarding.OnboardingState
 import com.auradock.permissions.canScheduleExactAlarms
@@ -59,6 +61,7 @@ class StandbyViewModel @Inject constructor(
     private val focusSettings: FocusSettings,
     private val dndController: DndController,
     private val dockFocus: DockFocusController,
+    private val vipContacts: VipContacts,
     private val dockWatcher: DockWatcherController,
     private val onboardingState: OnboardingState,
     private val sessions: SessionTracker,
@@ -250,6 +253,68 @@ class StandbyViewModel @Inject constructor(
     fun openDndAccessSettings() {
         _permissionActions.tryEmit(PermissionAction.OpenDndAccessSettings)
     }
+
+    // ── People who can always reach you ───────────────────────────────────────
+
+    val vips: StateFlow<List<Vip>> = focusSettings.vips
+
+    private val _canWriteContacts = MutableStateFlow(vipContacts.canWrite())
+
+    /** On only if the switch is on *and* the permission to change contacts is still granted. */
+    val vipRingThrough: StateFlow<Boolean> = combine(focusSettings.vipRingThrough, _canWriteContacts) { on, can -> on && can }
+        .stateIn(viewModelScope, SharingStarted.Eagerly, false)
+
+    /** How many people AuraDock is still holding a loaned mark for (0 unless something went wrong). */
+    val vipsOnLoan: StateFlow<Int> = vipContacts.onLoan
+
+    /** "Add a person": ask for the contacts permission only now, then open the contact picker. */
+    fun addVipTapped() {
+        _permissionActions.tryEmit(if (vipContacts.canRead()) PermissionAction.PickContact else PermissionAction.RequestContactsRead)
+    }
+
+    fun onContactsReadResult(granted: Boolean, permanentlyDenied: Boolean) {
+        when {
+            granted -> _permissionActions.tryEmit(PermissionAction.PickContact)
+            permanentlyDenied -> _permissionActions.tryEmit(PermissionAction.OpenAppSettings)
+        }
+    }
+
+    fun onContactPicked(contact: android.net.Uri) {
+        vipContacts.read(contact)?.let { focusSettings.addVip(it) }
+        dockFocus.refresh()
+    }
+
+    fun removeVip(vip: Vip) {
+        focusSettings.removeVip(vip.lookupKey)
+        dockFocus.refresh()
+    }
+
+    /** Switching on asks for the permission to change contacts first; the switch turns on once it is granted. */
+    fun setVipRingThrough(enabled: Boolean) {
+        if (enabled && !vipContacts.canWrite()) {
+            _permissionActions.tryEmit(PermissionAction.RequestContactsWrite)
+            return
+        }
+        focusSettings.setVipRingThrough(enabled)
+        dockFocus.refresh() // off: anything loaned goes back at once
+    }
+
+    fun onContactsWriteResult(granted: Boolean, permanentlyDenied: Boolean) {
+        _canWriteContacts.value = vipContacts.canWrite()
+        when {
+            granted -> setVipRingThrough(true)
+            permanentlyDenied -> _permissionActions.tryEmit(PermissionAction.OpenAppSettings)
+        }
+    }
+
+    /** The user may have just changed the contacts permissions in system settings. */
+    fun refreshContactsAccess() {
+        _canWriteContacts.value = vipContacts.canWrite()
+        dockFocus.refresh()
+    }
+
+    /** "Put back": gives every loaned mark back now. */
+    fun putVipsBack() = vipContacts.giveBack()
 
     // ── Dock from anywhere (background watcher) ───────────────────────────────
 

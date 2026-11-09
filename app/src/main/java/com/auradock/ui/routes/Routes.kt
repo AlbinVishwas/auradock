@@ -9,6 +9,8 @@ import com.auradock.dock.DockUiState
 import com.auradock.ui.focus.FocusSettingsActions
 import com.auradock.ui.focus.FocusSettingsScreen
 import com.auradock.ui.focus.FocusSettingsUiState
+import com.auradock.ui.focus.VipActions
+import com.auradock.ui.focus.VipUiState
 import com.auradock.ui.onboarding.OnboardingActions
 import com.auradock.ui.onboarding.OnboardingScreen
 import com.auradock.ui.onboarding.OnboardingUiState
@@ -202,6 +204,9 @@ fun FocusSettingsRoute(viewModel: StandbyViewModel, modifier: Modifier = Modifie
     val showText by viewModel.showMessageText.collectAsState()
     val dockFromAnywhere by viewModel.dockFromAnywhere.collectAsState()
     val overlayGranted by viewModel.overlayGranted.collectAsState()
+    val vips by viewModel.vips.collectAsState()
+    val ringThrough by viewModel.vipRingThrough.collectAsState()
+    val onLoan by viewModel.vipsOnLoan.collectAsState()
 
     FocusSettingsScreen(
         state = FocusSettingsUiState(
@@ -212,7 +217,8 @@ fun FocusSettingsRoute(viewModel: StandbyViewModel, modifier: Modifier = Modifie
             pickedApps = picked,
             showMessageText = showText,
             dockFromAnywhere = dockFromAnywhere,
-            overlayGranted = overlayGranted
+            overlayGranted = overlayGranted,
+            vip = VipUiState(vips = vips, ringThrough = ringThrough, onLoan = onLoan)
         ),
         actions = FocusSettingsActions(
             onToggleFocus = { viewModel.setFocusWhileDocked(it) },
@@ -222,6 +228,12 @@ fun FocusSettingsRoute(viewModel: StandbyViewModel, modifier: Modifier = Modifie
             onToggleMessageText = { viewModel.setShowMessageText(it) },
             onToggleDockFromAnywhere = { viewModel.setDockFromAnywhere(it) },
             onAllowOverlay = { viewModel.openOverlaySettings() },
+            vip = VipActions(
+                onAdd = { viewModel.addVipTapped() },
+                onRemove = { viewModel.removeVip(it) },
+                onToggleRingThrough = { viewModel.setVipRingThrough(it) },
+                onPutBack = { viewModel.putVipsBack() }
+            ),
             loadIcon = { viewModel.appIcon(it) }
         ),
         onOpenSetup = onOpenSetup,

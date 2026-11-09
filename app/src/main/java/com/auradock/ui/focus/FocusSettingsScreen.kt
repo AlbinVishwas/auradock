@@ -88,7 +88,8 @@ data class FocusSettingsUiState(
     val pickedApps: List<String>,
     val showMessageText: Boolean,
     val dockFromAnywhere: Boolean,
-    val overlayGranted: Boolean
+    val overlayGranted: Boolean,
+    val vip: VipUiState = VipUiState()
 )
 
 /** What the user can do in Focus settings. */
@@ -100,6 +101,7 @@ data class FocusSettingsActions(
     val onToggleMessageText: (Boolean) -> Unit = {},
     val onToggleDockFromAnywhere: (Boolean) -> Unit = {},
     val onAllowOverlay: () -> Unit = {},
+    val vip: VipActions = VipActions(),
     /** Loads an app's icon; null (no icon) is fine, the row then shows a blank. */
     val loadIcon: suspend (String) -> ImageBitmap? = { null }
 )
@@ -145,7 +147,7 @@ private fun FocusPage(state: FocusSettingsUiState, actions: FocusSettingsActions
         FocusCard {
             SwitchRow(
                 title = "Focus while docked",
-                body = "Do Not Disturb turns on when you dock. Starred contacts can still call.",
+                body = "Do Not Disturb turns on when you dock. Your Favourites and the people below can still call.",
                 checked = state.focusWhileDocked,
                 onChange = actions.onToggleFocus
             )
@@ -182,6 +184,8 @@ private fun FocusPage(state: FocusSettingsUiState, actions: FocusSettingsActions
                 AccessRow(Icons.Outlined.ChatBubbleOutline, "Notification access", "Needed to show their messages", actions.onOpenNotificationAccess)
             }
         }
+
+        VipCard(state.vip, actions.vip)
 
         FocusCard {
             SwitchRow(

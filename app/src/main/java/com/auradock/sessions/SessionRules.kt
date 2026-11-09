@@ -46,7 +46,7 @@ enum class Arrival { HELD, THROUGH, IGNORED }
 /**
  * Decides how one incoming notification counts. [picked]: from one of the user's picked apps (the dock shows it).
  * [dndActive]: Do Not Disturb is filtering right now. [allowedByDnd]: Android would let this one through the filter (a starred
- * contact, say). Nothing is counted for AuraDock's own notifications, ongoing ones, group headers or empty ones.
+ * contact, say). [vip]: it is from one of the people who can always reach the user. Nothing is counted for AuraDock's own notifications, ongoing ones, group headers or empty ones.
  */
 fun classifyArrival(
     ongoing: Boolean,
@@ -55,10 +55,11 @@ fun classifyArrival(
     own: Boolean,
     picked: Boolean,
     dndActive: Boolean,
-    allowedByDnd: Boolean
+    allowedByDnd: Boolean,
+    vip: Boolean = false
 ): Arrival = when {
     ongoing || groupSummary || empty || own -> Arrival.IGNORED
-    picked -> Arrival.THROUGH
+    picked || vip -> Arrival.THROUGH
     !dndActive -> Arrival.IGNORED // nothing was silenced, so there is nothing held to report
     allowedByDnd -> Arrival.THROUGH
     else -> Arrival.HELD
