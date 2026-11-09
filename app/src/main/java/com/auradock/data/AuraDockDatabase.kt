@@ -6,10 +6,11 @@ import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.auradock.sessions.FocusSessionDao
 import com.auradock.sessions.FocusSessionEntity
+import com.auradock.sessions.SessionCheckpointEntity
 import com.auradock.tasks.TaskDao
 import com.auradock.tasks.TaskEntity
 
-@Database(entities = [TaskEntity::class, FocusSessionEntity::class], version = 2, exportSchema = false)
+@Database(entities = [TaskEntity::class, FocusSessionEntity::class, SessionCheckpointEntity::class], version = 3, exportSchema = false)
 abstract class AuraDockDatabase : RoomDatabase() {
     abstract fun taskDao(): TaskDao
     abstract fun focusSessionDao(): FocusSessionDao
@@ -22,6 +23,16 @@ val MIGRATION_1_2 = object : Migration(1, 2) {
             "CREATE TABLE IF NOT EXISTS `focus_sessions` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
                 "`startedAt` INTEGER NOT NULL, `endedAt` INTEGER NOT NULL, `source` TEXT NOT NULL, " +
                 "`notificationsHeld` INTEGER NOT NULL, `vipThrough` INTEGER NOT NULL, `tasksCompleted` INTEGER NOT NULL)"
+        )
+    }
+}
+
+/** 0.2.1: the open session is checkpointed every minute. */
+val MIGRATION_2_3 = object : Migration(2, 3) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL(
+            "CREATE TABLE IF NOT EXISTS `session_checkpoint` (`id` INTEGER PRIMARY KEY NOT NULL, `startedAt` INTEGER NOT NULL, " +
+                "`lastAt` INTEGER NOT NULL, `source` TEXT NOT NULL, `notificationsHeld` INTEGER NOT NULL, `vipThrough` INTEGER NOT NULL)"
         )
     }
 }

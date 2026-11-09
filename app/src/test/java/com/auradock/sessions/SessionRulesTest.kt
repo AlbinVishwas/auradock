@@ -117,4 +117,22 @@ class SessionRulesTest {
         assertEquals(Arrival.IGNORED, arrival(empty = true))
         assertEquals(Arrival.IGNORED, arrival(own = true, picked = true))
     }
+
+    @Test
+    fun `a session left open is closed at its last checkpoint`() {
+        val cp = SessionCheckpointEntity(startedAt = 1_000, lastAt = 1_000 + 7 * minute, source = "WATCHER", notificationsHeld = 3, vipThrough = 1)
+        val done = recoveredSession(cp)
+        assertEquals(1_000 + 7 * minute, done.endedAt)
+        assertEquals(SessionSource.WATCHER, done.source)
+        assertEquals(SessionCounts(3, 1), done.counts)
+        assertTrue(done.worthKeeping)
+    }
+
+    @Test
+    fun `a recovered session under two minutes is not kept and an unknown source falls back`() {
+        val cp = SessionCheckpointEntity(startedAt = 0, lastAt = 30_000, source = "???", notificationsHeld = 0, vipThrough = 0)
+        val done = recoveredSession(cp)
+        assertFalse(done.worthKeeping)
+        assertEquals(SessionSource.DOCK_NOW, done.source)
+    }
 }

@@ -115,3 +115,14 @@ class SessionMachine {
         return FinishedSession(session.startedAt, closed, session.source, session.counts)
     }
 }
+
+/** How often the open session is written down, so a killed app loses at most this much. */
+const val CHECKPOINT_INTERVAL_MS = 60_000L
+
+/** A session left open by a killed app, closed at its last checkpoint. Whether it is long enough to keep is [FinishedSession.worthKeeping]. */
+fun recoveredSession(checkpoint: SessionCheckpointEntity): FinishedSession = FinishedSession(
+    startedAt = checkpoint.startedAt,
+    endedAt = maxOf(checkpoint.startedAt, checkpoint.lastAt),
+    source = SessionSource.entries.firstOrNull { it.name == checkpoint.source } ?: SessionSource.DOCK_NOW,
+    counts = SessionCounts(checkpoint.notificationsHeld, checkpoint.vipThrough)
+)

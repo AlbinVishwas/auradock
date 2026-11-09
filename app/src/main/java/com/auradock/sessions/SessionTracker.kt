@@ -12,6 +12,7 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -27,6 +28,7 @@ data class SessionSummary(val endedAt: Long, val durationMs: Long, val tasksComp
  * notification arrives ([onNotification]), keeps the live session for the dock to draw, and saves a finished one that is
  * long enough. All the rules are in [SessionMachine], [classifyArrival] and [FinishedSession.worthKeeping].
  */
+@OptIn(ExperimentalCoroutinesApi::class)
 @Singleton
 class SessionTracker @Inject constructor(
     @ApplicationContext private val context: Context,
@@ -35,7 +37,8 @@ class SessionTracker @Inject constructor(
 ) {
     private val machine = SessionMachine()
     private val handler = Handler(Looper.getMainLooper())
-    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+    // One thread for everything that touches the database, so a recovery always finishes before the next checkpoint is written.
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO.limitedParallelism(1))
     private val seenKeys = mutableSetOf<String>()
     @Volatile private var watcherAskedAt = 0L
 
@@ -48,6 +51,50 @@ class SessionTracker @Inject constructor(
 
     /** The latest finished session worth showing a card for, until the card is dismissed. */
     val summary: StateFlow<SessionSummary?> = _summary.asStateFlow()
+
+    /**
+     * Call once at app start. If the app was killed while docked, the open session's last checkpoint is closed as a finished
+     * session (kept if it was two minutes or more) and cleared.
+     */
+    fun recoverOpenSession() {
+        scope.launch {
+            val checkpoint = sessions.checkpoint() ?: return@launch
+            val done = recoveredSession(checkpoint)
+            if (done.worthKeeping) {
+                val tasksDone = tasks.countCompletedBetween(done.startedAt, done.endedAt)
+                sessions.insert(
+                    FocusSessionEntity(
+                        startedAt = done.startedAt, endedAt = done.endedAt, source = done.source.name,
+                        notificationsHeld = done.counts.held, vipThrough = done.counts.through, tasksCompleted = tasksDone
+                    )
+                )
+                Log.d(TAG, "recovered an open session: ${done.durationMs / 1000} s, ${done.counts}")
+            }
+            sessions.clearCheckpoint()
+        }
+    }
+
+    /** Writes the open session down (start time and latest counts). [at] is the last moment it was known to be open. */
+    private fun writeCheckpoint(session: LiveSession, at: Long) {
+        scope.launch {
+            sessions.saveCheckpoint(
+                SessionCheckpointEntity(
+                    startedAt = session.startedAt, lastAt = at, source = session.source.name,
+                    notificationsHeld = session.counts.held, vipThrough = session.counts.through
+                )
+            )
+        }
+    }
+
+    private val tick = object : Runnable {
+        override fun run() {
+            synchronized(this@SessionTracker) {
+                val session = machine.live
+                if (session != null && !machine.closing) writeCheckpoint(session, System.currentTimeMillis())
+            }
+            handler.postDelayed(this, CHECKPOINT_INTERVAL_MS)
+        }
+    }
 
     fun dismissSummary() {
         _summary.value = null
@@ -67,9 +114,16 @@ class SessionTracker @Inject constructor(
             now - watcherAskedAt < WATCHER_WINDOW_MS -> SessionSource.WATCHER
             else -> SessionSource.DOCK_NOW
         }
-        if (machine.live == null && active.isNotEmpty()) seenKeys.clear()
+        val starting = machine.live == null && active.isNotEmpty()
+        if (starting) seenKeys.clear()
         machine.onShowing(active.isNotEmpty(), source, now)
         _live.value = machine.live
+        if (starting) {
+            machine.live?.let { writeCheckpoint(it, now) }
+            handler.removeCallbacks(tick)
+            handler.postDelayed(tick, CHECKPOINT_INTERVAL_MS)
+        }
+        if (active.isEmpty()) machine.provisional()?.let { writeCheckpoint(LiveSession(it.startedAt, it.source, it.counts), it.endedAt) }
         if (active.isNotEmpty()) {
             _summary.value = null // a dock is back (or a new session): the old card is no longer news
         } else {
@@ -120,8 +174,10 @@ class SessionTracker @Inject constructor(
     private fun finishNow() {
         val done = machine.finishIfDue(System.currentTimeMillis()) ?: return
         _live.value = machine.live
+        handler.removeCallbacks(tick)
         if (!done.worthKeeping) {
             Log.d(TAG, "session of ${done.durationMs / 1000} s ignored (under two minutes)")
+            scope.launch { sessions.clearCheckpoint() }
             return
         }
         scope.launch {
@@ -136,6 +192,7 @@ class SessionTracker @Inject constructor(
                     tasksCompleted = tasksDone
                 )
             )
+            sessions.clearCheckpoint()
             // The card was announced when the dock closed ([announce]); setting it again here would show it twice.
             Log.d(TAG, "session saved: ${done.durationMs / 1000} s, $tasksDone tasks, ${done.counts}")
         }
