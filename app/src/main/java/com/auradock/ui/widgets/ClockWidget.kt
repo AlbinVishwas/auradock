@@ -2,6 +2,7 @@ package com.auradock.ui.widgets
 
 import com.auradock.ui.theme.AuraDockMotion
 import com.auradock.ui.theme.AuraDockSizes
+import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Text
@@ -83,27 +84,6 @@ fun ClockWidget(
         label = "colonAlpha"
     )
 
-    // ── Step 4b: Minute crossfade ─────────────────────────────────────────────
-    // Targets 0f when minute changes, then snaps back to 1f.
-    // The 0→1 tween is what the user sees as a smooth appear; the 1→0 is instant.
-    var minuteAlphaTarget by remember { mutableFloatStateOf(1f) }
-    val previousMinute    = remember { mutableIntStateOf(minute) }
-
-    LaunchedEffect(minute) {
-        if (minute != previousMinute.intValue) {
-            previousMinute.intValue = minute
-            minuteAlphaTarget = 0f
-            // Snap to 0 immediately, then animate back to 1
-        }
-        minuteAlphaTarget = 1f
-    }
-
-    val minuteAlpha by animateFloatAsState(
-        targetValue   = minuteAlphaTarget,
-        animationSpec = tween(durationMillis = AuraDockMotion.MinuteSwap, easing = AuraDockMotion.Easing),
-        label         = "minuteFade"
-    )
-
     Box(
         contentAlignment = Alignment.Center,
         modifier         = modifier.fillMaxWidth()
@@ -134,13 +114,13 @@ fun ClockWidget(
                         modifier = Modifier.padding(horizontal = AuraDockSpacing.xxs)
                     )
 
-                    // Minute — fades in on each tick
-                    Text(
-                        text  = minuteStr,
-                        style = AuraDockTypography.ClockDisplay.copy(
-                            color = digitColor.copy(alpha = minuteAlpha)
+                    // Minute — crossfades (300 ms) when it changes
+                    Crossfade(targetState = minuteStr, animationSpec = tween(AuraDockMotion.MinuteSwap), label = "minuteCrossfade") { shown ->
+                        Text(
+                            text  = shown,
+                            style = AuraDockTypography.ClockDisplay.copy(color = digitColor)
                         )
-                    )
+                    }
 
                     // AM / PM suffix — visible only in 12h mode
                     if (!use24Hour) {

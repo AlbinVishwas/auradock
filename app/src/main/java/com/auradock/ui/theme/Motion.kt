@@ -36,6 +36,9 @@ object AuraDockMotion {
     /** Blur to focus in a list: the delay between one row and the next. */
     const val Stagger = 40
 
+    /** A ticked task waits this long (so the tick is seen) before it eases down to the done rows: 600 ms. */
+    const val TaskSink = 600
+
     /** How long "Undo focus" stays on the dock after a touch: four seconds. */
     const val UndoFocus = 4000
 

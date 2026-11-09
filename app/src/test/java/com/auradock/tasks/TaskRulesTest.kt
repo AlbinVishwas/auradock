@@ -170,3 +170,23 @@ class TaskRulesTest {
         assertNull(topTask(listOf(task(1, "done", done = true, completedAt = at(day, 9))), at(day, 12)))
     }
 }
+
+class DisplayOrderTest {
+    private fun task(id: Long, done: Boolean) = TaskEntity(id = id, title = "t$id", createdAt = id, done = done)
+
+    @Test fun `done tasks sink to the bottom in their own order`() {
+        val list = listOf(task(1, true), task(2, false), task(3, true), task(4, false))
+        org.junit.Assert.assertEquals(listOf(2L, 4L, 1L, 3L), displayOrder(list).map { it.id })
+    }
+
+    @Test fun `a task that has only just been ticked keeps its place while it settles`() {
+        val list = listOf(task(1, false), task(2, true), task(3, false))
+        org.junit.Assert.assertEquals(listOf(1L, 2L, 3L), displayOrder(list, settling = setOf(2L)).map { it.id })
+        org.junit.Assert.assertEquals(listOf(1L, 3L, 2L), displayOrder(list, settling = emptySet()).map { it.id })
+    }
+
+    @Test fun `newly done is what was not done before`() {
+        org.junit.Assert.assertEquals(setOf(3L), newlyDone(setOf(1L, 2L), setOf(1L, 2L, 3L)))
+        org.junit.Assert.assertEquals(emptySet<Long>(), newlyDone(setOf(1L), setOf(1L)))
+    }
+}

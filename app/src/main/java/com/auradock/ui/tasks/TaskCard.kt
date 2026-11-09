@@ -39,6 +39,9 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.text.style.TextOverflow
 import com.auradock.intention.IntentionLine
 import com.auradock.tasks.TaskEntity
+import com.auradock.ui.components.rememberTick
+import com.auradock.ui.components.animateRowPlacement
+import com.auradock.tasks.displayOrder
 import com.auradock.ui.components.StrikeText
 import com.auradock.tasks.isOverdue
 import com.auradock.ui.theme.AuraDockColors
@@ -71,6 +74,7 @@ fun TaskCard(
     onToggleIntention: (Boolean) -> Unit = {}
 ) {
     val left = tasks?.count { !it.done } ?: 0
+    val settling = rememberSettlingDone(tasks)
     Column(
         modifier = modifier
             .clip(RoundedCornerShape(AuraDockRadii.card))
@@ -92,9 +96,10 @@ fun TaskCard(
         } else if (tasks != null) {
             Column(modifier = Modifier.padding(top = AuraDockSpacing.xs)) {
                 // Done tasks sink to the bottom; each group keeps its order.
-                tasks.sortedBy { it.done }.forEachIndexed { index, task ->
+                displayOrder(tasks, settling).forEachIndexed { index, task ->
                     key(task.id) {
                         TaskRow(
+                            modifier = Modifier.animateRowPlacement(),
                             task = task,
                             overdue = isOverdue(task, timeMillis),
                             dueLabel = task.dueAt?.let(formatTime),
@@ -114,9 +119,10 @@ fun TaskCard(
 /** The morning intention at the top of the card: "Today's one thing" over the line, with the same circle and strike as a task. */
 @Composable
 private fun IntentionRow(intention: IntentionLine, onToggle: (Boolean) -> Unit, divider: Boolean) {
+    val tick = rememberTick()
     Column(modifier = Modifier.fillMaxWidth().padding(top = AuraDockSpacing.sm)) {
         Row(modifier = Modifier.fillMaxWidth().height(IntrinsicSize.Min), verticalAlignment = Alignment.CenterVertically) {
-            CheckCircle(done = intention.done, highlight = false, onClick = { onToggle(!intention.done) })
+            CheckCircle(done = intention.done, highlight = false, onClick = { if (!intention.done) tick(); onToggle(!intention.done) })
             Column(modifier = Modifier.weight(1f).padding(vertical = AuraDockSpacing.md - AuraDockSpacing.xxs)) {
                 Text(text = "The one thing", style = AuraDockTypography.Caption, color = AuraDockColors.Tertiary)
                 StrikeText(text = intention.text, struck = intention.done, style = AuraDockTypography.Body, color = AuraDockColors.OnBackground)
@@ -147,6 +153,7 @@ private fun AddRow(onAdd: () -> Unit, divider: Boolean) {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun TaskRow(
+    modifier: Modifier = Modifier,
     task: TaskEntity,
     overdue: Boolean,
     dueLabel: String?,
@@ -155,6 +162,7 @@ private fun TaskRow(
     onToggle: () -> Unit,
     onDelete: () -> Unit
 ) {
+    val tick = rememberTick()
     val dismissState = rememberSwipeToDismissBoxState(
         confirmValueChange = { value ->
             if (value == SwipeToDismissBoxValue.EndToStart) {
@@ -167,6 +175,7 @@ private fun TaskRow(
     )
 
     SwipeToDismissBox(
+        modifier = modifier,
         state = dismissState,
         enableDismissFromStartToEnd = false,
         backgroundContent = {
@@ -183,7 +192,7 @@ private fun TaskRow(
         Column(modifier = Modifier.fillMaxWidth().background(AuraDockColors.Surface)) {
             if (divider) Box(Modifier.fillMaxWidth().size(width = AuraDockSizes.none, height = AuraDockSizes.line).background(AuraDockColors.RowDivider))
             Row(modifier = Modifier.fillMaxWidth().height(IntrinsicSize.Min), verticalAlignment = Alignment.CenterVertically) {
-                CheckCircle(done = task.done, highlight = highlight, onClick = onToggle)
+                CheckCircle(done = task.done, highlight = highlight, onClick = { if (!task.done) tick(); onToggle() })
                 Column(
                     modifier = Modifier
                         .weight(1f)

@@ -1,5 +1,8 @@
 package com.auradock.dock
 
+import androidx.compose.animation.Crossfade
+import androidx.compose.animation.core.tween
+import com.auradock.ui.theme.AuraDockMotion
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -96,6 +99,8 @@ fun BoldClock(timeMillis: Long, use24Hour: Boolean, modifier: Modifier = Modifie
         val fontSize = with(fixed) { emPx.toSp() }
 
         Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.padding(top = if (stripShown) AuraDockBold.StripTopPad else 0.dp)) {
+        // The minute changes with a 300 ms crossfade: the old time fades out as the new one fades in.
+        Crossfade(targetState = text, animationSpec = tween(AuraDockMotion.MinuteSwap), label = "boldMinute") { shownText ->
         Row(
             // The padding sits inside the layer, so the leaning digits are not clipped at its edge.
             modifier = Modifier
@@ -116,8 +121,8 @@ fun BoldClock(timeMillis: Long, use24Hour: Boolean, modifier: Modifier = Modifie
             verticalAlignment = Alignment.CenterVertically
         ) {
             var digitIndex = 0
-            text.forEachIndexed { i, c ->
-                val tuckedIn = i > 0 && c != ':' && text[i - 1] != ':'
+            shownText.forEachIndexed { i, c ->
+                val tuckedIn = i > 0 && c != ':' && shownText[i - 1] != ':'
                 val startShift = if (tuckedIn) -AuraDockBold.OverlapEm * emPx else 0f
                 if (c == ':') {
                     val w = AuraDockBold.ColonEm * emPx
@@ -154,6 +159,7 @@ fun BoldClock(timeMillis: Long, use24Hour: Boolean, modifier: Modifier = Modifie
                     )
                 }
             }
+        }
         }
         if (stripShown) {
             Column(

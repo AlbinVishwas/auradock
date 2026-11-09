@@ -64,3 +64,13 @@ fun priorityOrder(tasks: List<TaskEntity>, nowMillis: Long): List<TaskEntity> =
 
 /** The one task to show when there is room for just one. */
 fun topTask(tasks: List<TaskEntity>, nowMillis: Long): TaskEntity? = priorityOrder(tasks, nowMillis).firstOrNull()
+
+/**
+ * The order a list shows: tasks still to do first, done ones at the bottom, each group in its own order. A task that has only just been
+ * ticked is in [settling] and keeps its place for a moment (it moves down after the tick has been seen).
+ */
+fun displayOrder(tasks: List<TaskEntity>, settling: Set<Long> = emptySet()): List<TaskEntity> =
+    tasks.sortedBy { it.done && it.id !in settling }
+
+/** The tasks ticked since [before]: the ones that should settle before they sink. */
+fun newlyDone(before: Set<Long>, doneNow: Set<Long>): Set<Long> = doneNow - before
