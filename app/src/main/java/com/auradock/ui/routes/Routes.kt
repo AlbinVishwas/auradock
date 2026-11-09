@@ -81,16 +81,16 @@ fun DashboardRoute(viewModel: StandbyViewModel, navigation: Navigation, modifier
             offerShutdown = shutdownOffer
         ),
         actions = DashboardActions(
-            onEnableWeather = { viewModel.requestLocationPermission() },
-            onAllowExactAlarms = { viewModel.openExactAlarmSettings() },
+            onEnableWeather = { viewModel.askPermission(SetupPermission.LOCATION) },
+            onAllowExactAlarms = { viewModel.askPermission(SetupPermission.EXACT_ALARMS) },
             onSaveTask = { id, title, dueAt -> viewModel.saveTask(id, title, dueAt) },
             onToggleTask = { viewModel.setTaskDone(it, !it.done) },
             onDeleteTask = { viewModel.deleteTask(it) },
             onOpenTemplates = navigation.openTemplates,
             onOpenFocus = navigation.openFocus,
             onOpenSetup = navigation.openSetup,
-            onDockNow = { viewModel.enterDock() },
-            onEnableCalendarAccess = { viewModel.requestCalendarPermission() },
+            onDockNow = { viewModel.dockNow() },
+            onEnableCalendarAccess = { viewModel.askPermission(SetupPermission.CALENDAR) },
             onDismissUndockSummary = { viewModel.dismissUndockSummary() },
             onToggleIntention = { viewModel.setIntentionDone(it) },
             onShutdownShown = { viewModel.shutdownShown(it) },
@@ -134,6 +134,7 @@ private fun rememberGrantedPermissions(viewModel: StandbyViewModel): Set<SetupPe
     val location by viewModel.locationPermissionState.collectAsState()
     val postNotifications by viewModel.postNotificationsGranted.collectAsState()
     val exactAlarms by viewModel.exactAlarmsAllowed.collectAsState()
+    val contacts by viewModel.contactsGranted.collectAsState()
     return buildSet {
         if (calendar == CalendarPermissionUiState.GRANTED) add(SetupPermission.CALENDAR)
         if (notificationAccess) add(SetupPermission.NOTIFICATION_ACCESS)
@@ -141,19 +142,11 @@ private fun rememberGrantedPermissions(viewModel: StandbyViewModel): Set<SetupPe
         if (location == CalendarPermissionUiState.GRANTED) add(SetupPermission.LOCATION)
         if (postNotifications) add(SetupPermission.POST_NOTIFICATIONS)
         if (exactAlarms) add(SetupPermission.EXACT_ALARMS)
+        if (contacts) add(SetupPermission.CONTACTS)
     }
 }
 
-private fun allow(viewModel: StandbyViewModel, permission: SetupPermission) {
-    when (permission) {
-        SetupPermission.CALENDAR -> viewModel.requestCalendarPermission()
-        SetupPermission.NOTIFICATION_ACCESS -> viewModel.openNotificationSettings()
-        SetupPermission.DND_ACCESS -> viewModel.openDndAccessSettings()
-        SetupPermission.LOCATION -> viewModel.requestLocationPermission()
-        SetupPermission.POST_NOTIFICATIONS -> viewModel.requestPostNotifications()
-        SetupPermission.EXACT_ALARMS -> viewModel.openExactAlarmSettings()
-    }
-}
+private fun allow(viewModel: StandbyViewModel, permission: SetupPermission) = viewModel.allow(permission)
 
 @Composable
 fun SetupRoute(viewModel: StandbyViewModel, system: SystemSettings, modifier: Modifier = Modifier) {
@@ -187,6 +180,7 @@ fun OnboardingRoute(viewModel: StandbyViewModel, system: SystemSettings, modifie
             onToggleDockFromAnywhere = { viewModel.setDockFromAnywhere(it) },
             onAllowOverlay = { viewModel.openOverlaySettings() },
             onPickTemplate = { viewModel.setTemplate(it) },
+            onPreviewing = { viewModel.setOnboardingPreviewing(it) },
             onFinish = { viewModel.finishOnboarding() }
         ),
         modifier = modifier
@@ -223,8 +217,8 @@ fun FocusSettingsRoute(viewModel: StandbyViewModel, modifier: Modifier = Modifie
         ),
         actions = FocusSettingsActions(
             onToggleFocus = { viewModel.setFocusWhileDocked(it) },
-            onOpenDndSettings = { viewModel.openDndAccessSettings() },
-            onOpenNotificationAccess = { viewModel.openNotificationSettings() },
+            onOpenDndSettings = { viewModel.askPermission(SetupPermission.DND_ACCESS) },
+            onOpenNotificationAccess = { viewModel.askPermission(SetupPermission.NOTIFICATION_ACCESS) },
             onToggleApp = { viewModel.toggleApp(it) },
             onToggleMessageText = { viewModel.setShowMessageText(it) },
             onToggleDockFromAnywhere = { viewModel.setDockFromAnywhere(it) },

@@ -27,31 +27,35 @@ private val EverythingGranted = NothingGranted.copy(
 @Composable
 private fun OnboardingWelcome() = AuraDockTheme { OnboardingScreen(NothingGranted, OnboardingActions(), initialStep = 0) }
 
+/** The first dock, full screen, for about five seconds. */
 @PreviewPortrait
 @Composable
-private fun OnboardingDockStepNotChosen() = AuraDockTheme { OnboardingScreen(NothingGranted, OnboardingActions(), initialStep = 1) }
+private fun OnboardingDockPreview() = AuraDockTheme { OnboardingScreen(NothingGranted, OnboardingActions(), initialStep = 1) }
 
 @PreviewPortrait
 @Composable
-private fun OnboardingDockStepChosen() = AuraDockTheme { OnboardingScreen(EverythingGranted, OnboardingActions(), initialStep = 1) }
+private fun OnboardingTemplate() = AuraDockTheme { OnboardingScreen(NothingGranted, OnboardingActions(), initialStep = 2) }
 
 @PreviewPortrait
 @Composable
-private fun OnboardingDockFromAnywhere() = AuraDockTheme { OnboardingScreen(NothingGranted, OnboardingActions(), initialStep = 2) }
-
-/** Permission step with nothing allowed yet. */
-@PreviewPortrait
-@Composable
-private fun OnboardingPermissionsMissing() = AuraDockTheme { OnboardingScreen(NothingGranted, OnboardingActions(), initialStep = 3) }
-
-/** Permission step with everything allowed: every card shows its checkmark. */
-@PreviewPortrait
-@Composable
-private fun OnboardingPermissionsGranted() = AuraDockTheme { OnboardingScreen(EverythingGranted, OnboardingActions(), initialStep = 3) }
+private fun OnboardingScreensaverStep() = AuraDockTheme { OnboardingScreen(NothingGranted, OnboardingActions(), initialStep = 3) }
 
 @PreviewPortrait
 @Composable
-private fun OnboardingTemplate() = AuraDockTheme { OnboardingScreen(NothingGranted, OnboardingActions(), initialStep = 4) }
+private fun OnboardingDockFromAnywhereStep() = AuraDockTheme { OnboardingScreen(NothingGranted, OnboardingActions(), initialStep = 4) }
+
+@PreviewPortrait
+@Composable
+private fun OnboardingDockFromAnywhereOn() = AuraDockTheme { OnboardingScreen(EverythingGranted, OnboardingActions(), initialStep = 4) }
+
+/** A permission asked when its feature is first used: the card as a sheet. */
+@PreviewPortrait
+@Composable
+private fun PermissionSheetCalendar() = AuraDockTheme { PermissionSheet(SetupPermission.CALENDAR, onAllow = {}, onSkip = {}) }
+
+@PreviewPortrait
+@Composable
+private fun PermissionSheetContacts() = AuraDockTheme { PermissionSheet(SetupPermission.CONTACTS, onAllow = {}, onSkip = {}) }
 
 @PreviewPortrait
 @Composable

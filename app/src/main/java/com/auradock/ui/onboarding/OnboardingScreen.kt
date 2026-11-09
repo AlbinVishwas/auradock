@@ -2,6 +2,8 @@ package com.auradock.ui.onboarding
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -23,6 +25,12 @@ import androidx.compose.material.icons.outlined.Schedule
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
+import kotlinx.coroutines.delay
+import com.auradock.ui.focus.DockFromAnywhereCard
+import com.auradock.ui.theme.AuraDockMotion
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableIntStateOf
@@ -60,7 +68,11 @@ import com.auradock.ui.theme.AuraDockTypography
 import com.auradock.ui.theme.fromScreenBottom
 import com.auradock.ui.theme.fromScreenTop
 
-private enum class Step { WELCOME, SCREENSAVER, PERMISSIONS, TEMPLATE }
+/**
+ * The first run: Welcome, then the dock itself (a five-second full-screen preview), then the template, then the two optional steps
+ * about opening on its own. No permission is asked here: each is asked when its feature is first used (see PermissionSheet).
+ */
+private enum class Step { WELCOME, PREVIEW, TEMPLATE, SCREENSAVER, ANYWHERE }
 
 /** What the first-launch walkthrough shows. */
 data class OnboardingUiState(
@@ -68,7 +80,7 @@ data class OnboardingUiState(
     val screensaverSelected: Boolean,
     val dockFromAnywhere: Boolean,
     val overlayGranted: Boolean,
-    /** The last step: pick a template. */
+    /** The template step, and the dock the preview shows. */
     val gallery: TemplateGalleryUiState
 )
 
@@ -80,14 +92,15 @@ data class OnboardingActions(
     val onToggleDockFromAnywhere: (Boolean) -> Unit = {},
     val onAllowOverlay: () -> Unit = {},
     val onPickTemplate: (DockTemplate) -> Unit = {},
-    /** Runs after the template is picked; the caller saves that the walkthrough is done and shows the dashboard. */
+    /** The dock preview came on screen (true) or went away (false): the window turns landscape while it shows. */
+    val onPreviewing: (Boolean) -> Unit = {},
+    /** Runs after the last step; the caller saves that the walkthrough is done and shows the dashboard. */
     val onFinish: () -> Unit = {}
 )
 
 /**
- * The first-launch walkthrough, as the handoff draws it: Welcome, Screensaver, Permissions, Pick your dock. Only the current step
- * (and which permissions were skipped) is remembered here, because it is about this screen alone. Progress dots at the bottom,
- * and one primary pill.
+ * The first-launch walkthrough. Only the current step is remembered here, because it is about this screen alone. Progress dots at
+ * the bottom, and one primary pill; the preview fills the screen and moves on by itself.
  */
 @Composable
 fun OnboardingScreen(
@@ -98,9 +111,14 @@ fun OnboardingScreen(
 ) {
     var stepIndex by rememberSaveable { mutableIntStateOf(initialStep) }
     val step = Step.entries[stepIndex]
-    BackHandler(enabled = stepIndex > 0) { stepIndex-- }
+    // Back from the template or the preview goes to Welcome (the preview is not replayed).
+    BackHandler(enabled = stepIndex > 0) { stepIndex = if (step == Step.TEMPLATE || step == Step.PREVIEW) 0 else stepIndex - 1 }
     val dots = @Composable { ProgressDots(count = Step.entries.size, current = stepIndex) }
 
+    if (step == Step.PREVIEW) {
+        DockPreview(state, actions, onDone = { stepIndex++ }, modifier = modifier)
+        return
+    }
     if (step == Step.TEMPLATE) {
         TemplateGalleryScreen(
             state = state.gallery,
@@ -109,13 +127,13 @@ fun OnboardingScreen(
             footer = dots,
             onApply = {
                 actions.onPickTemplate(it)
-                actions.onFinish()
+                stepIndex++
             }
         )
         return
     }
 
-    val horizontal = if (step == Step.PERMISSIONS) AuraDockSpacing.mdl else AuraDockSpacing.xl - AuraDockSpacing.xs
+    val horizontal = AuraDockSpacing.xl - AuraDockSpacing.xs
     val top = when (step) {
         Step.WELCOME -> AuraDockSpacing.huge + AuraDockSpacing.huge + AuraDockSpacing.sm
         Step.SCREENSAVER -> AuraDockSpacing.huge + AuraDockSpacing.sm
@@ -127,8 +145,7 @@ fun OnboardingScreen(
             .background(AuraDockColors.Background)
             .padding(start = horizontal, end = horizontal, top = fromScreenTop(top), bottom = fromScreenBottom(AuraDockSpacing.xxl - AuraDockSpacing.sm))
     ) {
-        // Only the permission list can outgrow a small screen; the other steps sit in the space they are given.
-        Column(modifier = Modifier.weight(1f).then(if (step == Step.PERMISSIONS) Modifier.verticalScroll(rememberScrollState()) else Modifier)) {
+        Column(modifier = Modifier.weight(1f).then(if (step == Step.ANYWHERE) Modifier.verticalScroll(rememberScrollState()) else Modifier)) {
             key(step) { BlurIn { StepContent(step, state, actions) } }
         }
         Column(
@@ -142,8 +159,43 @@ fun OnboardingScreen(
                     PrimaryPill(text = "Open screensaver settings", onClick = { actions.onOpenScreensaverSettings(); stepIndex++ })
                     GreyTextButton(text = "Skip for now", onClick = { stepIndex++ }, modifier = Modifier.fillMaxWidth())
                 }
-                else -> PrimaryPill(text = "Continue", onClick = { stepIndex++ })
+                Step.ANYWHERE -> {
+                    PrimaryPill(text = "Done", onClick = actions.onFinish)
+                }
+                else -> Unit
             }
+        }
+    }
+}
+
+/**
+ * "This is AuraDock": the Bold dock, full screen, for about five seconds (or until it is touched). The window turns landscape while
+ * it shows, as the real dock does.
+ */
+@Composable
+private fun DockPreview(state: OnboardingUiState, actions: OnboardingActions, onDone: () -> Unit, modifier: Modifier) {
+    DisposableEffect(Unit) {
+        actions.onPreviewing(true)
+        onDispose { actions.onPreviewing(false) }
+    }
+    LaunchedEffect(Unit) {
+        delay(AuraDockMotion.OnboardingPreview.toLong())
+        onDone()
+    }
+    Box(
+        modifier = modifier
+            .fillMaxSize()
+            .background(AuraDockColors.Background)
+            .clickable(interactionSource = remember { MutableInteractionSource() }, indication = null, onClick = onDone)
+    ) {
+        DockContent(template = DockTemplate.BOLD, state = state.gallery.dockState)
+        BlurIn {
+            Text(
+                text = "This is AuraDock",
+                color = AuraDockColors.OnSurfaceVariant,
+                style = AuraDockTypography.Secondary,
+                modifier = Modifier.align(Alignment.TopStart).padding(start = AuraDockSpacing.xl, top = AuraDockSpacing.xl)
+            )
         }
     }
 }
@@ -153,8 +205,27 @@ private fun StepContent(step: Step, state: OnboardingUiState, actions: Onboardin
     when (step) {
         Step.WELCOME -> Welcome(state)
         Step.SCREENSAVER -> Screensaver()
-        Step.PERMISSIONS -> Permissions(state, actions)
-        Step.TEMPLATE -> Unit
+        Step.ANYWHERE -> DockFromAnywhereStep(state, actions)
+        Step.PREVIEW, Step.TEMPLATE -> Unit
+    }
+}
+
+/** The optional pill that starts the dock from any app (it was in the first walkthrough and is back after the screensaver step). */
+@Composable
+private fun DockFromAnywhereStep(state: OnboardingUiState, actions: OnboardingActions) {
+    Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(AuraDockSpacing.md)) {
+        Text(text = "Start it from anywhere", color = AuraDockColors.OnBackground, style = AuraDockTypography.StepTitle)
+        Text(
+            text = "Optional. You can turn this on later in Focus settings.",
+            color = AuraDockColors.OnSurfaceVariant,
+            style = AuraDockTypography.StepBody
+        )
+        DockFromAnywhereCard(
+            enabled = state.dockFromAnywhere,
+            overlayGranted = state.overlayGranted,
+            onToggle = actions.onToggleDockFromAnywhere,
+            onAllowOverlay = actions.onAllowOverlay
+        )
     }
 }
 
@@ -249,32 +320,5 @@ private fun ScreensaverIllustration() {
         drawRoundRect(AuraDockColors.SurfaceRaised, Offset(p(72f), p(186f)), Size(p(176f), p(10f)), CornerRadius(p(5f)))
         val cable = Path().apply { moveTo(p(276f), p(84f)); cubicTo(p(302f), p(84f), p(306f), p(150f), p(294f), p(206f)) }
         drawPath(cable, AuraDockColors.Outline, style = line)
-    }
-}
-
-@Composable
-private fun Permissions(state: OnboardingUiState, actions: OnboardingActions) {
-    var skipped by rememberSaveable { mutableStateOf(emptyList<String>()) }
-    Column(modifier = Modifier.fillMaxWidth()) {
-        Column(modifier = Modifier.padding(horizontal = AuraDockSpacing.sm)) {
-            Text(text = "A few permissions", color = AuraDockColors.OnBackground, style = AuraDockTypography.StepTitle)
-            Text(
-                text = "Allow only what you want. You can change these later.",
-                color = AuraDockColors.OnSurfaceVariant,
-                style = AuraDockTypography.Secondary,
-                modifier = Modifier.padding(top = AuraDockSpacing.smd)
-            )
-        }
-        Column(modifier = Modifier.padding(top = AuraDockSpacing.lg), verticalArrangement = Arrangement.spacedBy(AuraDockSpacing.sm)) {
-            SetupPermission.entries.forEach { permission ->
-                PermissionCard(
-                    permission = permission,
-                    granted = permission in state.granted,
-                    onAllow = { actions.onAllowPermission(permission) },
-                    onSkip = { skipped = skipped + permission.name },
-                    skipped = permission.name in skipped
-                )
-            }
-        }
     }
 }

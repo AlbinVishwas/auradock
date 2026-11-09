@@ -18,6 +18,7 @@ import androidx.compose.material.icons.outlined.ChatBubbleOutline
 import androidx.compose.material.icons.outlined.DarkMode
 import androidx.compose.material.icons.outlined.LocationOn
 import androidx.compose.material.icons.outlined.Notifications
+import androidx.compose.material.icons.outlined.People
 import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -37,13 +38,14 @@ import com.auradock.ui.theme.AuraDockSpacing
 import com.auradock.ui.theme.AuraDockTypography
 
 /** Everything AuraDock can ask the user for, each with the one-line reason shown on its card (handoff v1 wording). */
-enum class SetupPermission(val title: String, val why: String, val icon: ImageVector) {
-    CALENDAR("Calendar", "See today's events", Icons.Outlined.CalendarToday),
-    NOTIFICATION_ACCESS("Notification access", "Show messages from apps you choose", Icons.Outlined.ChatBubbleOutline),
-    DND_ACCESS("Do Not Disturb access", "Silence distractions while docked", Icons.Outlined.DarkMode),
-    LOCATION("Location", "Local weather, approximate only", Icons.Outlined.LocationOn),
-    POST_NOTIFICATIONS("Notifications", "Remind you when tasks are due", Icons.Outlined.Notifications),
-    EXACT_ALARMS("Alarms and reminders", "Remind you on time", Icons.Outlined.Alarm)
+enum class SetupPermission(val title: String, val why: String, val icon: ImageVector, val sheetTitle: String) {
+    CALENDAR("Calendar", "See today's events", Icons.Outlined.CalendarToday, "Show today's events?"),
+    NOTIFICATION_ACCESS("Notification access", "Show messages from apps you choose", Icons.Outlined.ChatBubbleOutline, "Show messages on the dock?"),
+    DND_ACCESS("Do Not Disturb access", "Silence distractions while docked", Icons.Outlined.DarkMode, "Silence distractions while docked?"),
+    LOCATION("Location", "Local weather, approximate only", Icons.Outlined.LocationOn, "Show the local weather?"),
+    POST_NOTIFICATIONS("Notifications", "Remind you when tasks are due", Icons.Outlined.Notifications, "Remind you when this is due?"),
+    EXACT_ALARMS("Alarms and reminders", "Remind you on time", Icons.Outlined.Alarm, "Remind you on the minute?"),
+    CONTACTS("Contacts", "Choose people who can always reach you", Icons.Outlined.People, "Choose who can always reach you?")
 }
 
 /**

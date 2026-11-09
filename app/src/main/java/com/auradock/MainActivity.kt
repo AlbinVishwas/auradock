@@ -63,6 +63,7 @@ import com.auradock.ui.routes.TemplateGalleryRoute
 import com.auradock.permissions.openNotificationAccessSettings
 import com.auradock.permissions.openScreensaverSettings
 import com.auradock.ui.onboarding.OnboardingScreen
+import com.auradock.ui.onboarding.PermissionSheet
 import com.auradock.ui.onboarding.SetupPermission
 import com.auradock.ui.onboarding.SetupScreen
 import com.auradock.ui.viewmodel.CalendarPermissionUiState
@@ -200,8 +201,10 @@ class MainActivity : ComponentActivity() {
                     }
                 }
 
-                DockOrientation(dockVisible)
-                DockWindowMode(dockVisible)
+                val previewing by standbyViewModel.onboardingPreviewing.collectAsState()
+                val permissionPrompt by standbyViewModel.permissionPrompt.collectAsState()
+                DockOrientation(dockVisible || previewing)
+                DockWindowMode(dockVisible || previewing)
                 BackHandler(enabled = dockVisible) { standbyViewModel.dismissDock() }
                 BackHandler(enabled = page != "dashboard" && !dockVisible) { page = "dashboard" }
 
@@ -226,6 +229,7 @@ class MainActivity : ComponentActivity() {
                     backToDashboard = { page = "dashboard" }
                 )
 
+                Box(Modifier.fillMaxSize()) {
                 DockMorphHost {
                 AnimatedContent(
                     targetState = targetState,
@@ -264,6 +268,17 @@ class MainActivity : ComponentActivity() {
                         "setup" -> SetupRoute(standbyViewModel, system)
                         "focus" -> FocusSettingsRoute(standbyViewModel, onOpenSetup = navigation.openSetup)
                         else -> DashboardRoute(standbyViewModel, navigation)
+                    }
+                }
+                }
+                // A permission is asked when its feature is first used: its card shows as a sheet over the screen (never over the dock).
+                permissionPrompt?.let { permission ->
+                    if (!dockVisible && !previewing) {
+                        PermissionSheet(
+                            permission = permission,
+                            onAllow = { standbyViewModel.answerPrompt(allow = true) },
+                            onSkip = { standbyViewModel.answerPrompt(allow = false) }
+                        )
                     }
                 }
                 }

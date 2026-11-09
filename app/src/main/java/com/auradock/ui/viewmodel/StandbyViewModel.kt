@@ -9,6 +9,8 @@ import androidx.core.graphics.drawable.toBitmap
 import com.auradock.focus.AppCatalog
 import com.auradock.focus.AppEntry
 import com.auradock.focus.DndController
+import com.auradock.permissions.PermissionPrompts
+import com.auradock.ui.onboarding.SetupPermission
 import com.auradock.focus.DockFocusController
 import com.auradock.focus.vip.Vip
 import com.auradock.focus.vip.VipContacts
@@ -88,7 +90,7 @@ class StandbyViewModel @Inject constructor(
             taskRepository.add(title, dueAt, showFrom = com.auradock.intention.tomorrowStart(now))
             intentions.suggestForTomorrow(title)
         }
-        if (dueAt != null) askForNotificationsOnce()
+        if (dueAt != null) askOnFirstUse(*PermissionPrompts.forTimedTask(grantedPermissions(), askedPermissions()).toTypedArray())
     }
     private fun minuteClockNow() = currentTimeMillis.value
 
@@ -138,7 +140,7 @@ class StandbyViewModel @Inject constructor(
         viewModelScope.launch {
             if (id == null) taskRepository.add(title, dueAt) else taskRepository.edit(id, title, dueAt)
         }
-        if (dueAt != null) askForNotificationsOnce()
+        if (dueAt != null) askOnFirstUse(*PermissionPrompts.forTimedTask(grantedPermissions(), askedPermissions()).toTypedArray())
     }
 
     /** True if AuraDock may set exact alarms (Android 12+ asks the user in settings). */
@@ -151,18 +153,6 @@ class StandbyViewModel @Inject constructor(
 
     fun openExactAlarmSettings() {
         _permissionActions.tryEmit(PermissionAction.OpenExactAlarmSettings)
-    }
-
-    /**
-     * The first time a task gets a time, ask for permission to show notifications (Android 13+ shows the system
-     * dialog). Only once: if the user says no, we do not nag; reminders just will not appear.
-     */
-    private fun askForNotificationsOnce() {
-        val prefs = context.getSharedPreferences("auradock_prefs", Context.MODE_PRIVATE)
-        if (!prefs.getBoolean("asked_post_notifications", false)) {
-            prefs.edit().putBoolean("asked_post_notifications", true).apply()
-            _permissionActions.tryEmit(PermissionAction.RequestNotificationPermission)
-        }
     }
 
     private val _postNotificationsGranted = MutableStateFlow(notificationsAllowed())
@@ -232,6 +222,79 @@ class StandbyViewModel @Inject constructor(
     /** The app is visible: refresh the weather if the cache is 30+ minutes old. */
     fun refreshWeather() = weatherRepository.refreshIfStale()
 
+    // ── Permission sheets: each permission is asked when its feature is first used ──────────────
+
+    private val promptPrefs = context.getSharedPreferences("auradock_prefs", Context.MODE_PRIVATE)
+    private val promptQueue = MutableStateFlow<List<SetupPermission>>(emptyList())
+
+    /** The permission whose card is showing as a sheet right now, or null. */
+    val permissionPrompt: StateFlow<SetupPermission?> = promptQueue.map { it.firstOrNull() }
+        .stateIn(viewModelScope, SharingStarted.Eagerly, null)
+
+    /** The permissions AuraDock has already asked about (the first-use sheet shows only once for each). */
+    private fun askedPermissions(): Set<String> {
+        val asked = promptPrefs.getStringSet("permissions_asked", emptySet()).orEmpty()
+        return if (promptPrefs.getBoolean("asked_post_notifications", false)) asked + SetupPermission.POST_NOTIFICATIONS.name else asked
+    }
+
+    private fun markAsked(permission: SetupPermission) {
+        promptPrefs.edit().putStringSet("permissions_asked", askedPermissions() + permission.name).apply()
+    }
+
+    fun isGranted(permission: SetupPermission): Boolean = when (permission) {
+        SetupPermission.CALENDAR -> _calendarPermissionState.value == CalendarPermissionUiState.GRANTED
+        SetupPermission.NOTIFICATION_ACCESS -> hasNotificationAccess.value
+        SetupPermission.DND_ACCESS -> _dndAccessGranted.value
+        SetupPermission.LOCATION -> _locationPermissionState.value == CalendarPermissionUiState.GRANTED
+        SetupPermission.POST_NOTIFICATIONS -> _postNotificationsGranted.value
+        SetupPermission.EXACT_ALARMS -> _exactAlarmsAllowed.value
+        SetupPermission.CONTACTS -> vipContacts.canRead()
+    }
+
+    private fun grantedPermissions(): Set<SetupPermission> = SetupPermission.entries.filter { isGranted(it) }.toSet()
+
+    private fun enqueue(permission: SetupPermission) {
+        promptQueue.update { if (permission in it) it else it + permission }
+    }
+
+    /** The user tapped an "Allow" for a feature: its permission card shows as a sheet (unless it is already allowed). */
+    fun askPermission(permission: SetupPermission) {
+        if (!isGranted(permission)) enqueue(permission)
+    }
+
+    /** A feature is being used for the first time: show the card once, never again by itself. */
+    private fun askOnFirstUse(vararg permissions: SetupPermission) {
+        permissions.filter { PermissionPrompts.askOnFirstUse(it, isGranted(it), askedPermissions()) }.forEach(::enqueue)
+    }
+
+    /** The sheet was answered: "Allow" goes on to Android, "Skip" just closes it. */
+    fun answerPrompt(allow: Boolean) {
+        val permission = promptQueue.value.firstOrNull() ?: return
+        markAsked(permission)
+        promptQueue.update { it.drop(1) }
+        if (allow) allow(permission, pickAfterGrant = permission == SetupPermission.CONTACTS)
+        if (promptQueue.value.isEmpty() && dockAfterPrompt) {
+            dockAfterPrompt = false
+            enterDock()
+        }
+    }
+
+    /** Goes straight to Android's own prompt or settings page for [permission] (used by the sheet and by the Setup page). */
+    fun allow(permission: SetupPermission, pickAfterGrant: Boolean = false) {
+        when (permission) {
+            SetupPermission.CALENDAR -> requestCalendarPermission()
+            SetupPermission.NOTIFICATION_ACCESS -> openNotificationSettings()
+            SetupPermission.DND_ACCESS -> openDndAccessSettings()
+            SetupPermission.LOCATION -> requestLocationPermission()
+            SetupPermission.POST_NOTIFICATIONS -> requestPostNotifications()
+            SetupPermission.EXACT_ALARMS -> openExactAlarmSettings()
+            SetupPermission.CONTACTS -> {
+                pickAfterContactsGrant = pickAfterGrant
+                _permissionActions.tryEmit(PermissionAction.RequestContactsRead)
+            }
+        }
+    }
+
     // ── Focus (Do Not Disturb while docked) ───────────────────────────────────
 
     val focusWhileDocked: StateFlow<Boolean> = focusSettings.focusWhileDocked
@@ -269,12 +332,16 @@ class StandbyViewModel @Inject constructor(
 
     /** "Add a person": ask for the contacts permission only now, then open the contact picker. */
     fun addVipTapped() {
-        _permissionActions.tryEmit(if (vipContacts.canRead()) PermissionAction.PickContact else PermissionAction.RequestContactsRead)
+        if (vipContacts.canRead()) _permissionActions.tryEmit(PermissionAction.PickContact) else askPermission(SetupPermission.CONTACTS)
     }
 
+    /** After a contacts permission from "Add a person" the picker opens; from Setup it does not. */
+    private var pickAfterContactsGrant = false
+
     fun onContactsReadResult(granted: Boolean, permanentlyDenied: Boolean) {
+        _contactsGranted.value = vipContacts.canRead()
         when {
-            granted -> _permissionActions.tryEmit(PermissionAction.PickContact)
+            granted && pickAfterContactsGrant -> _permissionActions.tryEmit(PermissionAction.PickContact)
             permanentlyDenied -> _permissionActions.tryEmit(PermissionAction.OpenAppSettings)
         }
     }
@@ -327,8 +394,14 @@ class StandbyViewModel @Inject constructor(
         }
     }
 
+    private val _contactsGranted = MutableStateFlow(vipContacts.canRead())
+
+    /** True while the contacts permission is allowed (for the Setup page). */
+    val contactsGranted: StateFlow<Boolean> = _contactsGranted.asStateFlow()
+
     /** The user may have just changed the contacts permissions in system settings. */
     fun refreshContactsAccess() {
+        _contactsGranted.value = vipContacts.canRead()
         _canWriteContacts.value = vipContacts.canWrite()
         dockFocus.refresh()
     }
@@ -379,6 +452,7 @@ class StandbyViewModel @Inject constructor(
 
     fun toggleApp(packageName: String) {
         focusSettings.toggleApp(packageName)
+        if (!hasNotificationAccess.value) askOnFirstUse(SetupPermission.NOTIFICATION_ACCESS) // the dock strip needs it
     }
 
     suspend fun appIcon(packageName: String): androidx.compose.ui.graphics.ImageBitmap? = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
@@ -390,7 +464,32 @@ class StandbyViewModel @Inject constructor(
 
     fun finishOnboarding() = onboardingState.complete()
 
+    private val _onboardingPreviewing = MutableStateFlow(false)
+
+    /** True while the first-run dock preview shows: the window turns landscape and the system bars hide, like a real dock. */
+    val onboardingPreviewing: StateFlow<Boolean> = _onboardingPreviewing.asStateFlow()
+
+    fun setOnboardingPreviewing(previewing: Boolean) {
+        _onboardingPreviewing.value = previewing
+    }
+
     fun enterDock() = dockMode.update { it.enterManual() }
+
+    private var dockAfterPrompt = false
+
+    /**
+     * "Dock now". The first time, with Focus on and no Do Not Disturb access, the permission card comes first as a sheet; the dock
+     * opens as soon as it is answered.
+     */
+    fun dockNow() {
+        val ask = PermissionPrompts.forFirstDock(focusSettings.focusWhileDocked.value, grantedPermissions(), askedPermissions())
+        if (ask.isEmpty()) {
+            enterDock()
+        } else {
+            dockAfterPrompt = true
+            askOnFirstUse(*ask.toTypedArray())
+        }
+    }
     fun dismissDock() = dockMode.update { it.dismiss(standbyState.value) }
 
     private val _hasCalendarPermission = MutableStateFlow(calendarRepository.hasCalendarPermission())
