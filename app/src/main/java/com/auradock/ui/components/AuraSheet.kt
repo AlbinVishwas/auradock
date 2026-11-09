@@ -95,6 +95,7 @@ fun AuraSheet(onDismiss: () -> Unit, content: @Composable () -> Unit) {
                     .clip(RoundedCornerShape(topStart = AuraDockRadii.sheet, topEnd = AuraDockRadii.sheet))
                     .background(AuraDockColors.SurfaceRaised)
                     .navigationBarsPadding()
+                    .imePadding()
                     .padding(start = AuraDockSpacing.lg, end = AuraDockSpacing.lg, top = AuraDockSpacing.smd, bottom = AuraDockSpacing.xl + AuraDockSpacing.sm),
                 verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(AuraDockSpacing.mdl),
                 horizontalAlignment = Alignment.CenterHorizontally

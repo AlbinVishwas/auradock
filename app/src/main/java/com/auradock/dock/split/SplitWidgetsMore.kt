@@ -115,7 +115,7 @@ fun DigitalWidget(env: WidgetEnv, modifier: Modifier = Modifier) {
 @Composable
 fun BigDateWidget(env: WidgetEnv, modifier: Modifier = Modifier) {
     val t = remember(env.state.timeMillis / 60_000L) { Instant.ofEpochMilli(env.state.timeMillis).atZone(ZoneId.systemDefault()) }
-    val locale = Locale.getDefault()
+    val locale = androidx.compose.ui.platform.LocalConfiguration.current.locales[0]
     Column(modifier.fillMaxSize().padding(start = 8.dp), verticalArrangement = Arrangement.Center) {
         Row {
             Text(DateTimeFormatter.ofPattern("EEE", locale).format(t), style = AuraDockTypography.SplitBigDateHead, color = AuraDockColors.Coral.copy(alpha = env.tones.accentAlpha))

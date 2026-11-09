@@ -1,5 +1,6 @@
 package com.auradock.ui.focus
 
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.Image
 import androidx.activity.compose.BackHandler
 import androidx.compose.material.icons.Icons
@@ -136,7 +137,7 @@ private fun FocusPage(state: FocusSettingsUiState, actions: FocusSettingsActions
             .fillMaxSize()
             .background(AuraDockColors.Background)
             .verticalScroll(rememberScrollState())
-            .padding(start = AuraDockSpacing.mdl, end = AuraDockSpacing.mdl, top = fromScreenTop(AuraDockSpacing.xxl), bottom = AuraDockSpacing.xxl - AuraDockSpacing.sm),
+            .padding(start = AuraDockSpacing.mdl, end = AuraDockSpacing.mdl, top = fromScreenTop(AuraDockSpacing.xxl), bottom = fromScreenBottom(AuraDockSpacing.xxl - AuraDockSpacing.sm)),
         verticalArrangement = Arrangement.spacedBy(AuraDockSpacing.smd + AuraDockSpacing.xxs)
     ) {
         BackArrow(Modifier.offset(x = -AuraDockSpacing.sm))
@@ -322,6 +323,7 @@ private fun AppPicker(state: FocusSettingsUiState, actions: FocusSettingsActions
     Column(
         modifier = modifier
             .fillMaxSize()
+            .imePadding()
             .background(AuraDockColors.Background)
             .padding(start = AuraDockSpacing.mdl, end = AuraDockSpacing.mdl, top = fromScreenTop(AuraDockSpacing.xxl), bottom = fromScreenBottom(AuraDockSpacing.xxl - AuraDockSpacing.sm)),
         verticalArrangement = Arrangement.spacedBy(AuraDockSpacing.smd)

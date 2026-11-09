@@ -60,6 +60,8 @@ object AuraDockRadii {
 
 /** Fixed sizes of things: icons, touch targets, line widths. */
 object AuraDockSizes {
+    /** App screens (not the dock) never grow wider than this, so they stay phone-shaped on tablets. */
+    val pageMaxWidth: Dp = 600.dp
     val none: Dp = 0.dp
     val line: Dp = 1.dp
     val strikeLine: Dp = 1.5.dp

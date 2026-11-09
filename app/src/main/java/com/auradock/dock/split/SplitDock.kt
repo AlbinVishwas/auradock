@@ -102,6 +102,9 @@ fun SplitDock(
     var draft by remember { mutableStateOf<List<WidgetKind>>(emptyList()) }
     var adding by remember { mutableStateOf(false) }
     LaunchedEffect(editing != null) { onEditing(editing != null) }
+    // Back closes the Add widget sheet first, then edit mode (without saving; "Done" saves).
+    androidx.activity.compose.BackHandler(enabled = adding) { adding = false }
+    androidx.activity.compose.BackHandler(enabled = editing != null && !adding) { editing = null }
 
     // Keep the shown index inside the stack when widgets are removed.
     if (left.index >= leftKinds.size) left.index = 0

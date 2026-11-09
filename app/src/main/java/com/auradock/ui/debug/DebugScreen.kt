@@ -1,5 +1,6 @@
 package com.auradock.ui.debug
 
+import com.auradock.ui.theme.fromScreenBottom
 import android.text.format.DateFormat
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -41,7 +42,7 @@ fun DebugScreen(summary: ActivationSummary?, version: String, modifier: Modifier
             .fillMaxSize()
             .background(AuraDockColors.Background)
             .verticalScroll(rememberScrollState())
-            .padding(start = AuraDockSpacing.mdl, end = AuraDockSpacing.mdl, top = fromScreenTop(AuraDockSpacing.xxl), bottom = AuraDockSpacing.xxl),
+            .padding(start = AuraDockSpacing.mdl, end = AuraDockSpacing.mdl, top = fromScreenTop(AuraDockSpacing.xxl), bottom = fromScreenBottom(AuraDockSpacing.xxl)),
         verticalArrangement = Arrangement.spacedBy(AuraDockSpacing.sm)
     ) {
         BackArrow(Modifier.offset(x = -AuraDockSpacing.sm))

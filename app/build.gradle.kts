@@ -2,7 +2,7 @@ import java.util.Properties
 
 plugins {
     alias(libs.plugins.android.application)
-    alias(libs.plugins.kotlin.android)
+    alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.ksp)
     alias(libs.plugins.hilt)
 }
@@ -16,12 +16,12 @@ val keystoreProperties = Properties().apply {
 
 android {
     namespace  = "com.auradock"
-    compileSdk = 34
+    compileSdk = 36
 
     defaultConfig {
         applicationId          = "com.auradock"
         minSdk                 = 26
-        targetSdk              = 34
+        targetSdk              = 36
         versionCode            = 10
         versionName            = "0.3.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -59,14 +59,9 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
 
-    kotlinOptions { jvmTarget = "17" }
 
     buildFeatures {
         compose = true
-    }
-
-    composeOptions {
-        kotlinCompilerExtensionVersion = libs.versions.composeCompiler.get()
     }
 
     packaging {

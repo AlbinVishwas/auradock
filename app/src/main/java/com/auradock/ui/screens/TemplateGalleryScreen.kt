@@ -103,7 +103,7 @@ fun TemplateGalleryScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(AuraDockColors.Background)
-            .padding(top = if (walkthrough) fromScreenTop(AuraDockSpacing.huge) else AuraDockSpacing.sm, bottom = fromScreenBottom(AuraDockSpacing.xxl - AuraDockSpacing.sm))
+            .padding(top = if (walkthrough) fromScreenTop(AuraDockSpacing.huge) else fromScreenTop(AuraDockSpacing.sm), bottom = fromScreenBottom(AuraDockSpacing.xxl - AuraDockSpacing.sm))
     ) {
         if (!walkthrough) {
             Box(

@@ -1,20 +1,19 @@
 [versions]
-agp             = "8.3.0"
-kotlin          = "1.9.22"
-ksp             = "1.9.22-1.0.17"
-hilt            = "2.50"
-coroutines      = "1.7.3"
-lifecycle       = "2.7.0"
-coreKtx         = "1.12.0"
-appcompat       = "1.6.1"
+agp             = "9.5.1"
+kotlin          = "2.4.21"
+ksp             = "2.3.13"
+hilt            = "2.60.1"
+coroutines      = "1.11.0"
+lifecycle       = "2.10.0"
+coreKtx         = "1.18.0"
+appcompat       = "1.8.0"
 junit           = "4.13.2"
-mockitoKotlin   = "5.2.1"
-coroutinesTest  = "1.7.3"
-composeBom      = "2024.02.01"
-composeCompiler = "1.5.10"
-activityCompose = "1.8.2"
-gson            = "2.11.0"
-room            = "2.6.1"
+mockitoKotlin   = "6.4.0"
+coroutinesTest  = "1.11.0"
+composeBom      = "2026.06.01"
+activityCompose = "1.13.0"
+gson            = "2.15.0"
+room            = "2.8.5"
 
 [libraries]
 core-ktx                = { group = "androidx.core",                 name = "core-ktx",                      version.ref = "coreKtx" }
@@ -42,7 +41,7 @@ room-ktx                = { group = "androidx.room",                 name = "roo
 room-compiler           = { group = "androidx.room",                 name = "room-compiler",                 version.ref = "room" }
 
 [plugins]
+kotlin-compose     = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 android-application = { id = "com.android.application",          version.ref = "agp" }
-kotlin-android      = { id = "org.jetbrains.kotlin.android",     version.ref = "kotlin" }
 ksp                 = { id = "com.google.devtools.ksp",           version.ref = "ksp" }
 hilt                = { id = "com.google.dagger.hilt.android",   version.ref = "hilt" }

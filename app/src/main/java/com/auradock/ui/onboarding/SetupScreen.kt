@@ -1,5 +1,6 @@
 package com.auradock.ui.onboarding
 
+import com.auradock.ui.theme.fromScreenBottom
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -64,7 +65,7 @@ fun SetupScreen(
             .fillMaxSize()
             .background(AuraDockColors.Background)
             .verticalScroll(rememberScrollState())
-            .padding(start = AuraDockSpacing.mdl, end = AuraDockSpacing.mdl, top = fromScreenTop(AuraDockSpacing.xxl), bottom = AuraDockSpacing.xxl - AuraDockSpacing.sm),
+            .padding(start = AuraDockSpacing.mdl, end = AuraDockSpacing.mdl, top = fromScreenTop(AuraDockSpacing.xxl), bottom = fromScreenBottom(AuraDockSpacing.xxl - AuraDockSpacing.sm)),
         verticalArrangement = Arrangement.spacedBy(AuraDockSpacing.sm)
     ) {
         BackArrow(Modifier.offset(x = -AuraDockSpacing.sm))

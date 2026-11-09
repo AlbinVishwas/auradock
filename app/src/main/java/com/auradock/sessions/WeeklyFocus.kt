@@ -23,14 +23,14 @@ data class WeeklyFocus(val perDayMillis: List<Long>) {
 
 /** The start of the day six days before [now]: sessions that ended before it are not part of the week. */
 fun weekWindowStart(now: Long, zone: ZoneId): Long =
-    LocalDate.ofInstant(Instant.ofEpochMilli(now), zone).minusDays(6).atStartOfDay(zone).toInstant().toEpochMilli()
+    Instant.ofEpochMilli(now).atZone(zone).toLocalDate().minusDays(6).atStartOfDay(zone).toInstant().toEpochMilli()
 
 /**
  * Adds up [sessions] into the seven days ending today. A session that runs past midnight is split between the two days, so
  * each day's bar is what really happened on it. Anything outside the window is left out.
  */
 fun weeklyFocus(sessions: List<FocusSessionEntity>, now: Long, zone: ZoneId): WeeklyFocus {
-    val today = LocalDate.ofInstant(Instant.ofEpochMilli(now), zone)
+    val today = Instant.ofEpochMilli(now).atZone(zone).toLocalDate()
     val days = (6 downTo 0).map { today.minusDays(it.toLong()) }
     val perDay = days.map { day ->
         val from = day.atStartOfDay(zone).toInstant().toEpochMilli()

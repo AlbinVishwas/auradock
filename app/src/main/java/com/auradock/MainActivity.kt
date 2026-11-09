@@ -1,5 +1,8 @@
 package com.auradock
 
+import com.auradock.ui.theme.AuraDockSizes
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.fillMaxHeight
 import android.Manifest
 import android.content.pm.ActivityInfo
 import android.os.Build
@@ -7,7 +10,9 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.WindowManager
 import androidx.activity.ComponentActivity
+import androidx.activity.SystemBarStyle
 import androidx.activity.compose.BackHandler
+import androidx.activity.enableEdgeToEdge
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
@@ -97,6 +102,12 @@ class MainActivity : ComponentActivity() {
     @Inject lateinit var sessions: com.auradock.sessions.SessionTracker
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        // Edge to edge on every Android version (Android 15+ forces it): the window reaches under transparent bars and each screen pads itself
+        // with the insets (see ui/theme/Insets.kt). The dock hides the bars altogether.
+        enableEdgeToEdge(
+            statusBarStyle = SystemBarStyle.dark(android.graphics.Color.TRANSPARENT),
+            navigationBarStyle = SystemBarStyle.dark(android.graphics.Color.TRANSPARENT)
+        )
         super.onCreate(savedInstanceState)
         if (savedInstanceState == null) openDockIfAsked(intent)
 
@@ -262,6 +273,8 @@ class MainActivity : ComponentActivity() {
                     },
                     label = "rootModeTransition"
                 ) { mode ->
+                    // On a tablet (Android 16 ignores the portrait lock there) the app screens keep a phone-sized column in the middle; the dock fills the screen.
+                    PageWidth(limit = mode != "dock") {
                     when (mode) {
                         // One tap shows "Undo focus" (Focus on), two taps leave; swipes and a long press belong to the Split template.
                         "dock" -> Box(Modifier.fillMaxSize()) {
@@ -284,6 +297,7 @@ class MainActivity : ComponentActivity() {
                         "screensaver" -> ScreensaverTestRoute(standbyViewModel, system)
                         "focus" -> FocusSettingsRoute(standbyViewModel, onOpenSetup = navigation.openSetup)
                         else -> DashboardRoute(standbyViewModel, navigation)
+                    }
                     }
                 }
                 }
@@ -327,11 +341,14 @@ class MainActivity : ComponentActivity() {
             val controller = WindowCompat.getInsetsController(window, window.decorView)
             if (dockVisible) {
                 window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+                // Draw into the camera cutout on the short edge, so the landscape dock is truly full screen.
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) window.attributes = window.attributes.also { it.layoutInDisplayCutoutMode = WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES }
                 controller.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
                 controller.hide(WindowInsetsCompat.Type.systemBars())
             }
             onDispose {
                 window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) window.attributes = window.attributes.also { it.layoutInDisplayCutoutMode = WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_DEFAULT }
                 controller.show(WindowInsetsCompat.Type.systemBars())
             }
         }
@@ -380,5 +397,17 @@ class MainActivity : ComponentActivity() {
     companion object {
         /** Set by the dock watcher when it opens AuraDock to show the dock. */
         const val EXTRA_DOCK_NOW = "com.auradock.extra.DOCK_NOW"
+    }
+}
+
+/** Limits an app screen to a phone-sized column, centred, on wide windows (tablets, unfolded foldables); [limit] false leaves it full width. */
+@androidx.compose.runtime.Composable
+private fun PageWidth(limit: Boolean, content: @androidx.compose.runtime.Composable () -> Unit) {
+    if (!limit) {
+        content()
+        return
+    }
+    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.TopCenter) {
+        Box(Modifier.fillMaxHeight().widthIn(max = AuraDockSizes.pageMaxWidth)) { content() }
     }
 }

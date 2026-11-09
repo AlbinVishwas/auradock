@@ -147,7 +147,7 @@ fun DashboardScreen(
             .fillMaxSize()
             .background(AuraDockColors.Background)
             .verticalScroll(rememberScrollState())
-            .padding(start = AuraDockSpacing.mdl, end = AuraDockSpacing.mdl, top = fromScreenTop(AuraDockSpacing.huge) - (if (emptyDay) AuraDockEmptyDay.TopTrim else 0.dp), bottom = AuraDockSpacing.xxl),
+            .padding(start = AuraDockSpacing.mdl, end = AuraDockSpacing.mdl, top = fromScreenTop(AuraDockSpacing.huge) - (if (emptyDay) AuraDockEmptyDay.TopTrim else 0.dp), bottom = fromScreenBottom(AuraDockSpacing.xxl)),
         verticalArrangement = Arrangement.spacedBy(AuraDockSpacing.md)
     ) {
         // Everything settles in with blur to focus, one row after the other (40 ms apart).
