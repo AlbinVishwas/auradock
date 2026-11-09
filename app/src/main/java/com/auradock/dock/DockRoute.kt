@@ -22,7 +22,11 @@ import com.auradock.dock.lines.DockLineActions
 import com.auradock.dock.lines.DockLines
 import com.auradock.data.meetingCountdown
 import com.auradock.intention.intentionLine
+import com.auradock.intention.RESUME_SHOWN_MS
 import com.auradock.intention.needsOffer
+import com.auradock.intention.resumeTitle
+import androidx.compose.runtime.produceState
+import kotlinx.coroutines.delay
 import com.auradock.weather.usableAt
 
 /** Screen brightness (0..1) for the dimmed Minimal template. */
@@ -48,6 +52,7 @@ fun DockScreen(dockData: DockData, window: Window?, modifier: Modifier = Modifie
     val session by dockData.session.collectAsState()
     val intention by dockData.intention.collectAsState(initial = null)
     val intentionEntry = intention?.entry
+    val intentionNow = intentionLine(intentionEntry)
 
     // The first dock of the day asks its question (only where touches work). Once asked it is not asked again today.
     var prompt by remember { mutableStateOf<String?>(null) }
@@ -62,6 +67,18 @@ fun DockScreen(dockData: DockData, window: Window?, modifier: Modifier = Modifie
     // The dock just appeared: refresh the weather if it is 30+ minutes old (does nothing otherwise).
     LaunchedEffect(Unit) { dockData.refreshWeather() }
 
+    // "Pick up: <task>" for the first 30 seconds of a dock (not on the dock that asks the morning question). It follows the
+    // session's start, so a screensaver handing over to the app does not start another half minute.
+    val sessionStart = session?.startedAt
+    var askedThisDock by remember { mutableStateOf(false) }
+    LaunchedEffect(prompt) { if (prompt != null) askedThisDock = true }
+    val resumeActive by produceState(false, sessionStart) {
+        val left = if (sessionStart == null) 0L else sessionStart + RESUME_SHOWN_MS - System.currentTimeMillis()
+        value = left > 0
+        if (left > 0) { delay(left); value = false }
+    }
+    val resume = if (resumeActive && !askedThisDock) resumeTitle(intentionNow, tasks, time) else null
+
     DockBrightness(window, template)
 
     var visible by remember { mutableStateOf(false) }
@@ -74,7 +91,7 @@ fun DockScreen(dockData: DockData, window: Window?, modifier: Modifier = Modifie
                 state = DockUiState(timeMillis = time, weather = weather.usableAt(time), events = events, tasks = tasks,
                     notifications = notifications, showMessageText = showText,
                     session = session?.let { SessionSnapshot(it.startedAt, it.counts.held, it.counts.through) },
-                    lines = DockLines(meeting = meetingCountdown(events, time), intention = intentionLine(intentionEntry)),
+                    lines = DockLines(resume = resume, meeting = meetingCountdown(events, time), intention = intentionNow),
                     intentionPrompt = prompt),
                 actions = DockActions(
                     lines = DockLineActions(onToggleIntention = dockData::setIntentionDone),

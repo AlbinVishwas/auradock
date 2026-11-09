@@ -12,7 +12,7 @@ import com.auradock.sessions.SessionCheckpointEntity
 import com.auradock.tasks.TaskDao
 import com.auradock.tasks.TaskEntity
 
-@Database(entities = [TaskEntity::class, FocusSessionEntity::class, SessionCheckpointEntity::class, IntentionEntity::class], version = 5, exportSchema = false)
+@Database(entities = [TaskEntity::class, FocusSessionEntity::class, SessionCheckpointEntity::class, IntentionEntity::class], version = 6, exportSchema = false)
 abstract class AuraDockDatabase : RoomDatabase() {
     abstract fun taskDao(): TaskDao
     abstract fun focusSessionDao(): FocusSessionDao
@@ -54,5 +54,13 @@ val MIGRATION_3_4 = object : Migration(3, 4) {
 val MIGRATION_4_5 = object : Migration(4, 5) {
     override fun migrate(db: SupportSQLiteDatabase) {
         db.execSQL("ALTER TABLE `tasks` ADD COLUMN `showFrom` INTEGER NOT NULL DEFAULT 0")
+    }
+}
+
+/** 0.2.1: when a task was last touched, for the resume prompt. Existing tasks count as touched when they were made. */
+val MIGRATION_5_6 = object : Migration(5, 6) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL("ALTER TABLE `tasks` ADD COLUMN `touchedAt` INTEGER NOT NULL DEFAULT 0")
+        db.execSQL("UPDATE `tasks` SET `touchedAt` = `createdAt`")
     }
 }

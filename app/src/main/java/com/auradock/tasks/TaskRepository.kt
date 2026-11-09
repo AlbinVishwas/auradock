@@ -36,7 +36,7 @@ class TaskRepository @Inject constructor(
     /** Returns the new task's id, or null if [title] is blank. */
     suspend fun add(title: String, dueAt: Long?, showFrom: Long = 0): Long? {
         val clean = cleanTitle(title) ?: return null
-        val task = TaskEntity(title = clean, dueAt = dueAt, createdAt = clock.currentMillis(), showFrom = showFrom)
+        val task = TaskEntity(title = clean, dueAt = dueAt, createdAt = clock.currentMillis(), showFrom = showFrom, touchedAt = clock.currentMillis())
         val id = dao.insert(task)
         alarms.schedule(task.copy(id = id))
         return id
@@ -44,7 +44,7 @@ class TaskRepository @Inject constructor(
 
     suspend fun setDone(id: Long, done: Boolean) {
         val task = dao.get(id) ?: return
-        val updated = task.copy(done = done, completedAt = if (done) clock.currentMillis() else null)
+        val updated = task.copy(done = done, completedAt = if (done) clock.currentMillis() else null, touchedAt = clock.currentMillis())
         dao.update(updated)
         alarms.schedule(updated) // done -> cancels; un-done with a future time -> sets it again
     }
@@ -53,7 +53,7 @@ class TaskRepository @Inject constructor(
     suspend fun edit(id: Long, title: String, dueAt: Long?): Boolean {
         val clean = cleanTitle(title) ?: return false
         val task = dao.get(id) ?: return false
-        val updated = task.copy(title = clean, dueAt = dueAt)
+        val updated = task.copy(title = clean, dueAt = dueAt, touchedAt = clock.currentMillis())
         dao.update(updated)
         alarms.schedule(updated) // a new time replaces the old alarm; no time cancels it
         return true

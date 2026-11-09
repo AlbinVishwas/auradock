@@ -82,3 +82,20 @@ private fun withMeeting(minutes: Int, intention: Boolean = true) = PreviewData.d
 @PreviewLandscape @Composable private fun FocusMeeting() = AuraDockTheme { DockContent(DockTemplate.FOCUS, withMeeting(8)) }
 @PreviewLandscape @Composable private fun ProductivityMeeting() = AuraDockTheme { DockContent(DockTemplate.PRODUCTIVITY, withMeeting(8)) }
 @PreviewLandscape @Composable private fun MinimalMeeting() = AuraDockTheme { DockContent(DockTemplate.MINIMAL, withMeeting(8, intention = false)) }
+
+// "Pick up: <task>" as the first line, with a meeting and the intention below it (the busiest the stack gets).
+@PreviewLandscape @Composable private fun BoldPickUp() = AuraDockTheme {
+    DockContent(DockTemplate.BOLD, PreviewData.dockFull.copy(lines = com.auradock.dock.lines.DockLines(resume = "Ship the invoice to Meera")))
+}
+@PreviewLandscape @Composable private fun ClassicPickUpStacked() = AuraDockTheme {
+    DockContent(
+        DockTemplate.CLASSIC,
+        PreviewData.dockFull.copy(
+            lines = com.auradock.dock.lines.DockLines(
+                resume = "Ship the invoice to Meera",
+                meeting = com.auradock.data.MeetingCountdown("Design review", 6),
+                intention = com.auradock.intention.IntentionLine("Ship the invoice to Meera", false)
+            )
+        )
+    )
+}

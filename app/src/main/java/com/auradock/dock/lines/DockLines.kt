@@ -46,12 +46,14 @@ import com.auradock.ui.theme.AuraDockTypography
  * (its state in, its taps out), so the Split dock can place them as widgets of their own.
  */
 data class DockLines(
+    /** "Pick up: <task>" for the first 30 seconds of a re-dock. Always the first line. */
+    val resume: String? = null,
     /** The next meeting, from ten minutes before it starts. Always on top. */
     val meeting: MeetingCountdown? = null,
     val intention: IntentionLine? = null
 ) {
     /** How many rows the stack takes: the dock leaves room for exactly this many. */
-    val count: Int get() = listOfNotNull(meeting, intention).size
+    val count: Int get() = listOfNotNull(resume, meeting, intention).size
 }
 
 /** What the lines can do when touched. Only the in-app dock acts on touches; the screensaver ignores them. */
@@ -64,6 +66,7 @@ data class DockLineActions(
 fun DockLineStack(lines: DockLines, dimmed: Boolean, actions: DockLineActions, modifier: Modifier = Modifier) {
     if (lines.count == 0) return
     Column(modifier = modifier.widthIn(max = AuraDockDockLayout.lineMaxWidth), horizontalAlignment = Alignment.CenterHorizontally) {
+        lines.resume?.let { ResumeDockLine(it, dimmed) }
         lines.meeting?.let { MeetingDockLine(it, dimmed) }
         lines.intention?.let { IntentionDockLine(it, dimmed, actions.onToggleIntention) }
     }
@@ -146,5 +149,25 @@ fun MeetingDockLine(meeting: MeetingCountdown, dimmed: Boolean, modifier: Modifi
             modifier = Modifier.weight(1f, fill = false)
         )
         Text(text = "in ${meeting.minutes} min", style = AuraDockTypography.DockLine, color = AuraDockColors.DockOverdue, maxLines = 1)
+    }
+}
+
+/** "Pick up: <task>": where you left off, for the first half minute of a dock. Quiet grey, no circle, no touch. */
+@Composable
+fun ResumeDockLine(title: String, dimmed: Boolean, modifier: Modifier = Modifier) {
+    Row(
+        modifier = modifier.heightIn(min = AuraDockDockLayout.lineRow),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(AuraDockDockLayout.lineGap / 2)
+    ) {
+        Text(text = "Pick up:", style = AuraDockTypography.DockLine, color = if (dimmed) AuraDockColors.DockLineDoneDim else AuraDockColors.DockLineDone, maxLines = 1)
+        Text(
+            text = title,
+            style = AuraDockTypography.DockLine,
+            color = if (dimmed) AuraDockColors.DockLineDim else AuraDockColors.DockLine,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.weight(1f, fill = false)
+        )
     }
 }

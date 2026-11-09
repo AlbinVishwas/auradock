@@ -20,5 +20,7 @@ data class TaskEntity(
     val createdAt: Long,
     val completedAt: Long? = null,
     /** Not shown before this moment (epoch millis; 0 = always). Tomorrow's top task from the evening shutdown waits for midnight. */
-    @ColumnInfo(defaultValue = "0") val showFrom: Long = 0
+    @ColumnInfo(defaultValue = "0") val showFrom: Long = 0,
+    /** When the user last made, edited or un-ticked it (epoch millis): "the last task touched" for the resume prompt. */
+    @ColumnInfo(defaultValue = "0") val touchedAt: Long = 0
 )
