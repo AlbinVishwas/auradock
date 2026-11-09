@@ -24,8 +24,11 @@ private val Weights = listOf(
     FontWeight.ExtraBold, FontWeight.Black
 )
 
-/** Display face: the clock, big numbers and screen titles. Rounded, friendly. */
+/** Nunito: used only for the Bold clock's digits (and its illustration). Everything else big uses [DisplayGrotesk]. */
 val NunitoFamily = FontFamily(Weights.map { weightOf(R.font.nunito_variable, it) })
+
+/** Display face for big numbers off the Bold clock: temperatures, the Classic day number, the Minimal and Productivity clocks (Host Grotesk, SIL OFL). Its heaviest weight is ExtraBold. */
+val DisplayGrotesk = FontFamily(Weights.map { weightOf(R.font.host_grotesk_variable, it) })
 
 /** The Focus template's giant, tall digits: a condensed display face (Oswald, SIL OFL). */
 val CondensedFamily = FontFamily(Weights.map { weightOf(R.font.oswald_variable, it) })
@@ -38,7 +41,7 @@ val InterFamily = FontFamily(Weights.map { weightOf(R.font.inter_variable, it) }
 
 /**
  * The type scale. Screens pick a style from here and never set a font, size or weight themselves (see docs/DESIGN.md).
- * Display styles use Nunito; UI styles use Inter.
+ * Display styles use Host Grotesk (Nunito only on the Bold clock); UI styles use Inter.
  */
 object AuraDockTypography {
     // ---- The app (style guide): Mona Sans for titles, headings, buttons and numbers; Inter for reading ----
@@ -144,9 +147,9 @@ object AuraDockTypography {
     val CalendarCell = Caption
 
     /** 96 sp, extra light: the clock on the dashboard's preview (the dock has its own, see below). */
-    val ClockDisplay = TextStyle(fontFamily = NunitoFamily, fontWeight = FontWeight.ExtraLight, fontSize = 96.sp, letterSpacing = (-4).sp)
+    val ClockDisplay = TextStyle(fontFamily = DisplayGrotesk, fontWeight = FontWeight.ExtraLight, fontSize = 96.sp, letterSpacing = (-4).sp)
 
-    // ---- The dock (landscape, read from a distance). Nunito for the big shapes, Inter for the reading. ----
+    // ---- The dock (landscape, read from a distance). Host Grotesk for the big shapes, Inter for the reading. ----
     /** Focus: giant condensed digits, Oswald Bold. The size is worked out from the screen; this sets the face. */
     val DockCondensed = TextStyle(
         fontFamily = CondensedFamily,
@@ -156,20 +159,20 @@ object AuraDockTypography {
         lineHeightStyle = LineHeightStyle(LineHeightStyle.Alignment.Center, LineHeightStyle.Trim.Both)
     )
 
-    /** The Classic template's weekday, coral: Nunito ExtraBold 34. */
-    val DockWeekday = TextStyle(fontFamily = NunitoFamily, fontWeight = FontWeight.ExtraBold, fontSize = 34.sp)
+    /** The Classic template's weekday, coral: Host Grotesk ExtraBold 34. */
+    val DockWeekday = TextStyle(fontFamily = DisplayGrotesk, fontWeight = FontWeight.ExtraBold, fontSize = 34.sp)
 
-    /** The Classic template's month, grey: Nunito Bold 34. */
-    val DockMonth = TextStyle(fontFamily = NunitoFamily, fontWeight = FontWeight.Bold, fontSize = 34.sp)
+    /** The Classic template's month, grey: Host Grotesk Bold 34. */
+    val DockMonth = TextStyle(fontFamily = DisplayGrotesk, fontWeight = FontWeight.Bold, fontSize = 34.sp)
 
-    /** The Classic template's huge day number: Nunito Black 250. */
-    val DockDayNumber = TextStyle(fontFamily = NunitoFamily, fontWeight = FontWeight.Black, fontSize = 250.sp, letterSpacing = (-6).sp)
+    /** The Classic template's huge day number: Host Grotesk ExtraBold 250. */
+    val DockDayNumber = TextStyle(fontFamily = DisplayGrotesk, fontWeight = FontWeight.ExtraBold, fontSize = 250.sp, letterSpacing = (-6).sp)
 
-    /** A big temperature: Nunito Black 88. */
-    val DockTemperatureLarge = TextStyle(fontFamily = NunitoFamily, fontWeight = FontWeight.Black, fontSize = 88.sp, letterSpacing = (-2).sp)
+    /** A big temperature: Host Grotesk ExtraBold 88. */
+    val DockTemperatureLarge = TextStyle(fontFamily = DisplayGrotesk, fontWeight = FontWeight.ExtraBold, fontSize = 88.sp, letterSpacing = (-2).sp)
 
-    /** A medium temperature (Focus, Productivity): Nunito Black 44. */
-    val DockTemperature = TextStyle(fontFamily = NunitoFamily, fontWeight = FontWeight.Black, fontSize = 44.sp)
+    /** A medium temperature (Focus, Productivity): Host Grotesk ExtraBold 44. */
+    val DockTemperature = TextStyle(fontFamily = DisplayGrotesk, fontWeight = FontWeight.ExtraBold, fontSize = 44.sp)
 
     /** The city and other short headings on the dock: Mona Sans Bold 20. */
     val DockHeading = TextStyle(fontFamily = MonaSansFamily, fontWeight = FontWeight.Bold, fontSize = 20.sp)
@@ -211,5 +214,5 @@ object AuraDockTypography {
     val IllustrationBoldClock = TextStyle(fontFamily = NunitoFamily, fontWeight = FontWeight.Black)
 
     /** 28 sp, light: the clock in the onboarding illustration. */
-    val IllustrationClock = TextStyle(fontFamily = NunitoFamily, fontWeight = FontWeight.Light, fontSize = 28.sp)
+    val IllustrationClock = TextStyle(fontFamily = DisplayGrotesk, fontWeight = FontWeight.Light, fontSize = 28.sp)
 }
