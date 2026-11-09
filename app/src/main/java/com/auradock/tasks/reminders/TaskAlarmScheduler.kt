@@ -1,5 +1,6 @@
 package com.auradock.tasks.reminders
 
+import com.auradock.monitoring.Monitoring
 import android.app.AlarmManager
 import android.app.PendingIntent
 import android.content.Context
@@ -30,14 +31,19 @@ class TaskAlarmScheduler @Inject constructor(
             is AlarmPlan.Exact -> {
                 try {
                     alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, plan.at, pendingIntent(task.id))
+                    Monitoring.breadcrumb("alarm", "scheduled", "kind" to "exact")
                 } catch (e: SecurityException) {
+                    Monitoring.nonFatal("alarm.exact_refused", "fallback" to "inexact")
+                    Monitoring.breadcrumb("alarm", "scheduled", "kind" to "inexact")
                     // The permission was withdrawn between the check and the call: fall back.
                     Log.w(TAG, "exact alarm refused, using an inexact one", e)
                     alarmManager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, plan.at, pendingIntent(task.id))
                 }
             }
-            is AlarmPlan.Inexact ->
+            is AlarmPlan.Inexact -> {
                 alarmManager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, plan.at, pendingIntent(task.id))
+                Monitoring.breadcrumb("alarm", "scheduled", "kind" to "inexact")
+            }
         }
         Log.d(TAG, "task ${task.id}: ${alarmPlan(task, nowMillis, canScheduleExactAlarms(context))}")
     }

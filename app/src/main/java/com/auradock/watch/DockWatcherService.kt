@@ -1,5 +1,6 @@
 package com.auradock.watch
 
+import com.auradock.monitoring.Monitoring
 import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
@@ -167,6 +168,7 @@ class DockWatcherService : Service(), LifecycleOwner, SavedStateRegistryOwner {
         if (output.pill != lastPill) {
             lastPill = output.pill
             Log.d(TAG, "pill: ${output.pill ?: "hidden"}")
+            Monitoring.breadcrumb("watcher", if (output.pill == null) "suppressed" else "pill", "reason" to (output.pill?.javaClass?.simpleName ?: "hidden"))
             showPill(output.pill)
         }
         if (output.dockNow) launchDock()
@@ -179,6 +181,7 @@ class DockWatcherService : Service(), LifecycleOwner, SavedStateRegistryOwner {
 
     private fun launchDock() {
         Log.d(TAG, "opening the dock")
+        Monitoring.breadcrumb("watcher", "trigger")
         startActivity(
             Intent(this, MainActivity::class.java)
                 .putExtra(MainActivity.EXTRA_DOCK_NOW, true)

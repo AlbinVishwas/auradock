@@ -127,6 +127,9 @@ class GateTrace(private val startMillis: Long) {
     private val samples = mutableListOf<String>()
     private var count = 0
 
+    /** How many sensor samples have arrived (a count only, for monitoring). */
+    val sampleCount: Int get() = count
+
     fun onSample(nowMillis: Long, x: Float, y: Float, z: Float, read: PhysicalOrientation) {
         count++
         if (samples.size < MAX_KEPT) {

@@ -1,5 +1,6 @@
 package com.auradock.focus.vip
 
+import com.auradock.monitoring.Monitoring
 import android.Manifest
 import android.content.ContentValues
 import android.content.Context
@@ -74,6 +75,7 @@ class VipContacts @Inject constructor(
         val plan = planLend(vips, alreadyMarked = marked)
         for (key in plan.toMark) {
             val contact = find(key) ?: continue // deleted since it was picked
+            Monitoring.breadcrumb("vip", "lent", "count" to 1)
             setJournal(journal() + key) // written down first...
             if (!setStarred(contact.id, true)) setJournal(journal() - key) // ...and forgotten again if it did not take
         }
@@ -86,6 +88,8 @@ class VipContacts @Inject constructor(
         // Whoever is not marked any more (the user changed it, or the contact is gone) has nothing to give back and leaves the journal.
         val stuck = planReturn(journal, markedNow).filterNot { key -> find(key)?.let { setStarred(it.id, false) } == true }.toSet()
         setJournal(stuck)
+        Monitoring.breadcrumb("vip", "restored", "count" to (journal.size - stuck.size))
+        if (stuck.isNotEmpty()) Monitoring.nonFatal("vip.still_on_loan", "count" to stuck.size)
         Log.d(TAG, "gave back ${journal.size - stuck.size} of ${journal.size}")
     }
 

@@ -1,5 +1,6 @@
 package com.auradock.weather
 
+import com.auradock.monitoring.Monitoring
 import android.content.Context
 import android.location.Address
 import android.location.Geocoder
@@ -36,7 +37,7 @@ class CityLookup @Inject constructor(
                 @Suppress("DEPRECATION")
                 withContext(Dispatchers.IO) { geocoder.getFromLocation(latitude, longitude, 1)?.firstOrNull() }
             }
-        }.getOrNull()
+        }.onFailure { Monitoring.nonFatal("geocoder.failed", sample = 0.1) }.getOrNull()
         return address?.let { it.locality ?: it.subAdminArea ?: it.adminArea }
     }
 }

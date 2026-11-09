@@ -1,5 +1,6 @@
 package com.auradock.sessions
 
+import com.auradock.monitoring.Monitoring
 import android.content.Context
 import android.os.Handler
 import android.os.Looper
@@ -61,6 +62,8 @@ class SessionTracker @Inject constructor(
         scope.launch {
             val checkpoint = sessions.checkpoint() ?: return@launch
             val done = recoveredSession(checkpoint)
+            Monitoring.breadcrumb("focus_session", "checkpoint_recovered", "kept" to done.worthKeeping)
+            Monitoring.nonFatal("session.closed_from_checkpoint", "kept" to done.worthKeeping)
             if (done.worthKeeping) {
                 val tasksDone = tasks.countCompletedBetween(done.startedAt, done.endedAt)
                 sessions.insert(
@@ -77,6 +80,7 @@ class SessionTracker @Inject constructor(
 
     /** Writes the open session down (start time and latest counts). [at] is the last moment it was known to be open. */
     private fun writeCheckpoint(session: LiveSession, at: Long) {
+        Monitoring.breadcrumb("focus_session", "checkpoint")
         scope.launch {
             sessions.saveCheckpoint(
                 SessionCheckpointEntity(
@@ -118,6 +122,7 @@ class SessionTracker @Inject constructor(
         val starting = machine.live == null && active.isNotEmpty()
         if (starting) {
             seenKeys.clear()
+            Monitoring.breadcrumb("focus_session", "start", "source" to source.name)
             events.log(com.auradock.analytics.AnalyticsEvents.SESSION_START, source.name)
             events.logOnce(com.auradock.analytics.AnalyticsEvents.FIRST_DOCK, source.name)
         }
@@ -179,6 +184,7 @@ class SessionTracker @Inject constructor(
     @Synchronized
     private fun finishNow() {
         val done = machine.finishIfDue(System.currentTimeMillis()) ?: return
+        Monitoring.breadcrumb("focus_session", "end", "kept" to done.worthKeeping)
         events.log(com.auradock.analytics.AnalyticsEvents.SESSION_END, (done.durationMs / 1000).toString())
         _live.value = machine.live
         handler.removeCallbacks(tick)

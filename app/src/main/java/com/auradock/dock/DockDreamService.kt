@@ -1,5 +1,6 @@
 package com.auradock.dock
 
+import com.auradock.monitoring.Monitoring
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -91,6 +92,7 @@ class DockDreamService : DreamService(), LifecycleOwner, SavedStateRegistryOwner
 
     private val firstReadingTimeout = Runnable {
         Log.d(TAG, trace.describe(SystemClock.elapsedRealtime(), "timeout", lastStable))
+        if (trace.sampleCount == 0) Monitoring.nonFatal("dream.no_sensor_reading")
         apply(gate.onTimeout())
     }
 
@@ -203,6 +205,7 @@ class DockDreamService : DreamService(), LifecycleOwner, SavedStateRegistryOwner
             GateDecision.Finish -> {
                 if (finishing) return
                 finishing = true
+                Monitoring.breadcrumb("gate", "finish", "samples" to trace.sampleCount, "orientation" to (lastStable?.name ?: "none"))
                 Log.d(TAG, trace.describe(SystemClock.elapsedRealtime(), "finish (not landscape)", lastStable))
                 finish()
             }
@@ -218,6 +221,7 @@ class DockDreamService : DreamService(), LifecycleOwner, SavedStateRegistryOwner
                             "content turned ${contentRotationDegrees(decision.orientation, displayRotationDegrees)}"
                     )
                 }
+                if (shownOrientation != decision.orientation) Monitoring.breadcrumb("gate", "show", "samples" to trace.sampleCount, "orientation" to decision.orientation.name)
                 shownOrientation = decision.orientation
                 dockFocus.setActive(DockSource.DREAM, true) // the dock is really showing: Do Not Disturb on
                 screensaverTest.onDreamShown() // the guided test: "AuraDock appeared on its own"

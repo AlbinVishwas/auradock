@@ -1,5 +1,6 @@
 package com.auradock.focus
 
+import com.auradock.monitoring.Monitoring
 import android.content.Context
 import android.os.Handler
 import android.os.Looper
@@ -109,16 +110,21 @@ class DockFocusController @Inject constructor(
         when (val action = planDnd(want, state, dnd.snapshot())) {
             DndAction.None -> Unit
             is DndAction.Apply -> {
+                Monitoring.breadcrumb("dnd", "saved")
                 save(DockDndState(changed = true, saved = action.save, applied = null)) // remember first...
                 if (dnd.applyFocus()) {
                     save(DockDndState(changed = true, saved = action.save, applied = dnd.snapshot())) // ...then note what we set
+                    Monitoring.breadcrumb("dnd", "applied")
                     Log.d(TAG, "Focus on (saved ${action.save})")
                 } else {
                     clear()
                 }
             }
             is DndAction.Restore -> {
-                dnd.restore(action.snapshot)
+                val ok = dnd.restore(action.snapshot)
+                Monitoring.breadcrumb("dnd", "restored", "ok" to ok)
+                if (!ok) Monitoring.nonFatal("dnd.restore_failed")
+                else if (dnd.snapshot() != action.snapshot) Monitoring.nonFatal("dnd.restore_mismatch")
                 clear()
                 Log.d(TAG, "Focus off, restored ${action.snapshot}")
             }

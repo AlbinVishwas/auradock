@@ -1,5 +1,6 @@
 package com.auradock.dock.split
 
+import com.auradock.monitoring.Monitoring
 import android.content.ComponentName
 import android.content.Context
 import android.graphics.Bitmap
@@ -67,6 +68,7 @@ class NowPlayingRepository @Inject constructor(@ApplicationContext private val c
         runCatching {
             manager.addOnActiveSessionsChangedListener(sessionsListener, component, main)
             started = true
+            Monitoring.breadcrumb("media_session", "connected")
             onSessions(manager.getActiveSessions(component))
         }
     }

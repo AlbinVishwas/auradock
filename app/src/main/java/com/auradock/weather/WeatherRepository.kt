@@ -1,5 +1,6 @@
 package com.auradock.weather
 
+import com.auradock.monitoring.Monitoring
 import android.content.Context
 import android.util.Log
 import com.auradock.time.MinuteClock
@@ -74,6 +75,7 @@ class WeatherRepository @Inject constructor(
         val reading = client.fetchCurrent(place.latitude, place.longitude)
         if (reading == null) {
             Log.d(TAG, "weather request failed")
+            Monitoring.nonFatal("weather.fetch_failed", sample = 0.1)
             lastFailureAt = clock.currentMillis()
             return
         }

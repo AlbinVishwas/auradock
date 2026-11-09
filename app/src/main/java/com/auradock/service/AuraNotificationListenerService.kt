@@ -1,5 +1,6 @@
 package com.auradock.service
 
+import com.auradock.monitoring.Monitoring
 import android.content.ComponentName
 import android.content.pm.PackageManager
 import android.service.notification.NotificationListenerService
@@ -19,6 +20,7 @@ class AuraNotificationListenerService : NotificationListenerService() {
     override fun onListenerConnected() {
         super.onListenerConnected()
         Log.d(TAG, "listener connected")
+        Monitoring.breadcrumb("listener", "connected")
         // Load what is already in the shade, so the dock is not empty until the next notification arrives.
         repository.attach { (activeNotifications ?: emptyArray()).map(::toRaw) }
     }
@@ -30,8 +32,10 @@ class AuraNotificationListenerService : NotificationListenerService() {
     override fun onListenerDisconnected() {
         super.onListenerDisconnected()
         Log.d(TAG, "listener disconnected, asking to be rebound")
+        Monitoring.breadcrumb("listener", "disconnected")
         repository.detach()
         runCatching { requestRebind(ComponentName(this, AuraNotificationListenerService::class.java)) }
+        Monitoring.breadcrumb("listener", "rebind_requested")
     }
 
     override fun onNotificationPosted(sbn: StatusBarNotification?, rankingMap: RankingMap?) {
