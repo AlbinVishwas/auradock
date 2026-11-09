@@ -24,7 +24,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.CompositingStrategy
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.graphicsLayer
@@ -124,10 +123,14 @@ private fun BoldDigits(text: String, typeface: Typeface, inks: Map<Char, Ink>, m
                 canvas.nativeCanvas.drawText(d.char.toString(), originX + d.penX * em, originY, paint)
             }
         }
+        // The colon is drawn last, above the digits, with the same screen blend.
         plan.colonX?.let { x ->
             val r = AuraDockBold.ColonDiameterEm * em / 2f
-            drawCircle(AuraDockColors.BoldColon, r, Offset(originX + x * em, originY + plan.colonUpperY * em))
-            drawCircle(AuraDockColors.BoldColon, r, Offset(originX + x * em, originY + plan.colonLowerY * em))
+            paint.color = AuraDockColors.BoldColon.toArgb()
+            drawIntoCanvas { canvas ->
+                canvas.nativeCanvas.drawCircle(originX + x * em, originY + plan.colonUpperY * em, r, paint)
+                canvas.nativeCanvas.drawCircle(originX + x * em, originY + plan.colonLowerY * em, r, paint)
+            }
         }
     }
 }

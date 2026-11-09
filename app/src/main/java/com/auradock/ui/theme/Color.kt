@@ -138,7 +138,7 @@ object AuraDockColors {
     val CoralTint = AuraDockPalette.Salmon
 
     /** The two big dots of the Bold clock's colon: translucent grey. */
-    val BoldColon = Color(0xFFC8C8C8).copy(alpha = 0.8f)
+    val BoldColon = Color(0xFFEBEBEB).copy(alpha = 0.75f)
 
     // The dock templates: pure black, white and the greys, with coral the one loud colour.
     val DockText = AuraDockPalette.White
