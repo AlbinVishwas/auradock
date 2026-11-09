@@ -79,6 +79,7 @@ fun DockContent(template: DockTemplate, state: DockUiState, modifier: Modifier =
             .then(if (template == DockTemplate.SPLIT) Modifier else Modifier.dockTouch(actions.touch)),
         contentAlignment = Alignment.Center
     ) {
+        var splitEditing by remember { mutableStateOf(false) }
         val lines = stripLines(state.notifications, state.showMessageText)
         val caption = state.session?.let { heldCaption(it.held, it.through) }
         val rows = maxOf(lines.size, if (caption != null) 1 else 0)
@@ -118,7 +119,8 @@ fun DockContent(template: DockTemplate, state: DockUiState, modifier: Modifier =
                 use24Hour = DateFormat.is24HourFormat(LocalContext.current),
                 strip = lines,
                 caption = caption,
-                actions = actions
+                actions = actions,
+                onEditing = { splitEditing = it }
             )
             DockTemplate.MINIMAL -> ClockWidget(timeMillis = state.timeMillis, dimmed = true, showDate = false)
             DockTemplate.FOCUS -> SafeZone { FocusLayout(state) }
@@ -126,7 +128,7 @@ fun DockContent(template: DockTemplate, state: DockUiState, modifier: Modifier =
             DockTemplate.CLASSIC -> SafeZone { ClassicLayout(state) }
         }
         }
-        if (state.intentionPrompt == null) {
+        if (state.intentionPrompt == null && !splitEditing) {
             DockLineStack(
                 lines = state.lines,
                 dimmed = template == DockTemplate.MINIMAL,

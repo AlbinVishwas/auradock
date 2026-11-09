@@ -53,20 +53,11 @@ import com.auradock.data.nextEvent
 import com.auradock.data.upcomingEvents
 import com.auradock.dock.boldTimeString
 import com.auradock.dock.BoldClock
-import com.auradock.dock.world.GeoPoint
-import com.auradock.dock.world.Solar
-import com.auradock.dock.world.WorldCities
-import com.auradock.dock.world.WorldHalfView
-import com.auradock.dock.world.drawHalfDot
-import com.auradock.dock.world.drawLandHalf
-import com.auradock.dock.world.drawTerminatorHalf
-import com.auradock.dock.world.WorldProjection
 import com.auradock.tasks.isOverdue
 import com.auradock.tasks.priorityOrder
 import com.auradock.ui.theme.AuraDockColors
 import com.auradock.ui.theme.AuraDockSplit
 import com.auradock.ui.theme.AuraDockTypography
-import com.auradock.ui.theme.AuraDockWorld
 import com.auradock.ui.weather.WeatherIcon
 import com.auradock.weather.temperatureLabel
 import kotlinx.coroutines.delay
@@ -116,39 +107,6 @@ fun DigitalWidget(env: WidgetEnv, modifier: Modifier = Modifier) {
         Column(Modifier.fillMaxSize().padding(start = 8.dp), verticalArrangement = Arrangement.Center) {
             Text(time, style = fitted, color = env.tones.primary, maxLines = 1, softWrap = false, modifier = Modifier.dockLine(fitted.fontSize))
             Text(date, style = AuraDockTypography.SplitDigitalDate, color = env.tones.secondary, modifier = Modifier.padding(top = 22.dp))
-        }
-    }
-}
-
-/** World: the half-size map with the day and night line, home in coral, and the home city's name and time. */
-@Composable
-fun WorldWidget(env: WidgetEnv, modifier: Modifier = Modifier) {
-    val state = env.state
-    val zone = remember { ZoneId.systemDefault() }
-    val fallback = remember(zone, state.timeMillis / 3_600_000L) { WorldCities.forZone(zone, state.timeMillis) }
-    val home: GeoPoint = state.world.home ?: fallback.point
-    val sun = remember(state.timeMillis / AuraDockWorld.RefreshMillis) { Solar.at(state.timeMillis / AuraDockWorld.RefreshMillis * AuraDockWorld.RefreshMillis) }
-    val label = state.weather?.city?.takeIf { it.isNotBlank() } ?: fallback.name
-    val dayColor = AuraDockColors.WorldDay
-    val nightColor = AuraDockColors.WorldNight
-    val lineColor = AuraDockColors.WorldLine
-    val stage = AuraDockColors.Background
-    val shift = WorldHalfView.shiftX(home.lon)
-    Box(modifier.fillMaxSize()) {
-        Canvas(Modifier.size(WorldHalfView.WIDTH.dp, WorldHalfView.HEIGHT.dp)) {
-            val u = 1.dp.toPx()
-            drawLandHalf(u, shift, sun, dayColor, nightColor)
-            drawTerminatorHalf(u, shift, sun, lineColor)
-            state.world.extras.forEach { c ->
-                drawHalfDot((WorldProjection.x(c.lon) + shift) * u, (WorldProjection.y(c.lat) + WorldHalfView.SHIFT_Y) * u, AuraDockWorld.CityDotRadius * u, androidx.compose.ui.graphics.Color.White, stage, u)
-            }
-            if (state.world.home != null) {
-                drawHalfDot((WorldProjection.x(home.lon) + shift) * u, (WorldProjection.y(home.lat) + WorldHalfView.SHIFT_Y) * u, 7f * u, AuraDockColors.Coral, stage, u, ring = AuraDockColors.Coral.copy(alpha = 0.4f))
-            }
-        }
-        Column(Modifier.align(Alignment.BottomStart), verticalArrangement = Arrangement.spacedBy(14.dp)) {
-            Text(label, style = AuraDockTypography.SplitWorldCity, color = AuraDockColors.Coral, maxLines = 1)
-            Text(boldTimeString(state.timeMillis, env.use24Hour), style = AuraDockTypography.SplitWorldTime, color = env.tones.primary, maxLines = 1, modifier = Modifier.dockLine(AuraDockTypography.SplitWorldTime.fontSize))
         }
     }
 }

@@ -289,14 +289,6 @@ object AuraDockTypography {
         lineHeightStyle = LineHeightStyle(LineHeightStyle.Alignment.Center, LineHeightStyle.Trim.Both)
     )
 
-    /** The World widget's home label and time (half-size version of the World dock). */
-    val SplitWorldCity = TextStyle(fontFamily = MonaSansFamily, fontWeight = FontWeight.Bold, fontSize = 24.sp, lineHeight = 26.4.sp, letterSpacing = (-0.72).sp)
-    val SplitWorldTime = TextStyle(
-        fontFamily = DisplayGrotesk, fontWeight = FontWeight.ExtraBold, fontSize = 92.sp, lineHeight = 73.6.sp, fontFeatureSettings = "tnum",
-        platformStyle = PlatformTextStyle(includeFontPadding = false),
-        lineHeightStyle = LineHeightStyle(LineHeightStyle.Alignment.Center, LineHeightStyle.Trim.Both)
-    )
-
     /** Edit mode and the Add widget sheet. */
     val SplitEditTitle = TextStyle(fontFamily = MonaSansFamily, fontWeight = FontWeight.Bold, fontSize = 18.sp)
     val SplitEditDone = TextStyle(fontFamily = MonaSansFamily, fontWeight = FontWeight.Bold, fontSize = 15.sp)

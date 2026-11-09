@@ -29,7 +29,7 @@ class SplitModelTest {
 
     @Test fun `the corner time shows only when neither half shows a time widget`() {
         assertFalse(needsCornerTime(WidgetKind.DIAL, WidgetKind.MONTH))
-        assertFalse(needsCornerTime(WidgetKind.MONTH, WidgetKind.WORLD))
+        assertFalse(needsCornerTime(WidgetKind.MONTH, WidgetKind.DIGITAL))
         assertTrue(needsCornerTime(WidgetKind.MONTH, WidgetKind.TASKS))
         assertTrue(needsCornerTime(null, null))
     }
@@ -39,6 +39,26 @@ class SplitModelTest {
         assertEquals(listOf(WidgetKind.DIAL, WidgetKind.MONTH), visibleStack(stack, nowPlaying = false))
         assertEquals(stack, visibleStack(stack, nowPlaying = true))
         assertEquals(listOf(WidgetKind.NOW_PLAYING), visibleStack(listOf(WidgetKind.NOW_PLAYING), nowPlaying = false))
+    }
+
+    @Test fun `a widget on one side is not offered on the other`() {
+        val stacks = SplitStacks(listOf(WidgetKind.DIAL), listOf(WidgetKind.MONTH))
+        val forRight = availableToAdd(stacks, SplitSide.RIGHT)
+        assertFalse(WidgetKind.DIAL in forRight) // on the left
+        assertFalse(WidgetKind.MONTH in forRight) // already here
+        assertTrue(WidgetKind.WEATHER in forRight)
+        assertFalse(WidgetKind.MONTH in availableToAdd(stacks, SplitSide.LEFT)) // the Month is on the right
+    }
+
+    @Test fun `there is no World widget in the catalog (World is its own full-screen template)`() {
+        assertTrue(WidgetKind.entries.none { it.name == "WORLD" })
+        assertEquals(listOf(WidgetKind.DIAL), decodeStacks("L:DIAL,WORLD|R:MONTH").left) // an old saved value drops it
+    }
+
+    @Test fun `saved stacks never hold a widget on both sides`() {
+        val s = decodeStacks("L:DIAL,MONTH|R:MONTH,WEATHER")
+        assertEquals(listOf(WidgetKind.WEATHER), s.right)
+        assertEquals(listOf(WidgetKind.DIAL, WidgetKind.MONTH), s.left)
     }
 
     @Test fun `adding removing and moving widgets`() {

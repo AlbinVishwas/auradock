@@ -16,7 +16,11 @@ class SplitRepository @Inject constructor(@ApplicationContext context: Context) 
     val stacks: StateFlow<SplitStacks> = _stacks.asStateFlow()
 
     fun setStack(side: SplitSide, stack: List<WidgetKind>) {
-        val next = _stacks.value.with(side, stack)
+        // A widget lives on one side only: what this stack now holds is taken out of the other one (which keeps at least its first widget).
+        val otherSide = if (side == SplitSide.LEFT) SplitSide.RIGHT else SplitSide.LEFT
+        val other = _stacks.value.of(otherSide)
+        val trimmed = other.filter { it !in stack }.ifEmpty { other.take(1).filter { it !in stack } }.ifEmpty { other.take(1) }
+        val next = _stacks.value.with(side, stack).with(otherSide, trimmed)
         _stacks.value = next
         prefs.edit().putString(KEY, encodeStacks(next)).apply()
     }

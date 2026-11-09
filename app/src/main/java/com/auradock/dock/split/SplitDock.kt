@@ -79,7 +79,9 @@ fun SplitDock(
     strip: List<String>,
     caption: String?,
     actions: DockActions,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    /** Tells the dock when edit mode is open, so it can clear its other lines away. */
+    onEditing: (Boolean) -> Unit = {}
 ) {
     val stacks = state.split.stacks
     val zone = remember { ZoneId.systemDefault() }
@@ -95,6 +97,11 @@ fun SplitDock(
     val pitchPx = with(density) { AuraDockSplit.Pitch.toPx() }
     val stripShown = strip.isNotEmpty() || caption != null
 
+    // Edit mode: the half being edited, its working copy (saved by "Done"), and whether the Add widget sheet is up.
+    var editing by remember { mutableStateOf<SplitSide?>(null) }
+    var draft by remember { mutableStateOf<List<WidgetKind>>(emptyList()) }
+    var adding by remember { mutableStateOf(false) }
+    LaunchedEffect(editing != null) { onEditing(editing != null) }
 
     // Keep the shown index inside the stack when widgets are removed.
     if (left.index >= leftKinds.size) left.index = 0
@@ -124,8 +131,11 @@ fun SplitDock(
 
         var dragging: StackState? = null
         var draggingSize = 0
-        val gestures = Modifier
-            .dockTouch(actions.touch)
+        val gestures = if (editing != null) Modifier else Modifier
+            .dockTouch(actions.touch) { pos ->
+                editing = if (pos.x < with(density) { screenW.toPx() } / 2f) SplitSide.LEFT else SplitSide.RIGHT
+                draft = stacks.of(editing!!)
+            }
             .pointerInput(leftKinds.size, rightKinds.size) {
                 detectVerticalDragGestures(
                     onDragStart = { offset ->
@@ -157,8 +167,8 @@ fun SplitDock(
                     }
                 }
             ) {
-                StackHalf(leftKinds, left, env, halfW, halfH, fit, alignEnd = false, screenW = screenW, pitch = AuraDockSplit.Pitch)
-                StackHalf(rightKinds, right, env, halfW, halfH, fit, alignEnd = true, screenW = screenW, pitch = AuraDockSplit.Pitch)
+                StackHalf(leftKinds, left, env, halfW, halfH, fit, alignEnd = false, screenW = screenW, pitch = AuraDockSplit.Pitch, dimmed = editing == SplitSide.RIGHT)
+                StackHalf(rightKinds, right, env, halfW, halfH, fit, alignEnd = true, screenW = screenW, pitch = AuraDockSplit.Pitch, dimmed = editing == SplitSide.LEFT)
             }
 
             StackDots(leftKinds.size, left, Alignment.CenterStart, env)
@@ -172,6 +182,27 @@ fun SplitDock(
                     boldTimeString(state.timeMillis, use24Hour), style = AuraDockTypography.SplitCornerTime, color = env.tones.tertiary,
                     modifier = Modifier.align(Alignment.TopCenter).padding(top = AuraDockSplit.CornerTimeTop)
                 )
+            }
+
+            editing?.let { side ->
+                val panelX = if (side == SplitSide.LEFT) 28.dp else screenW - 28.dp - AuraDockSplit.EditPanelWidth
+                SplitEditPanel(
+                    side = side, draft = draft, showingNow = (if (side == SplitSide.LEFT) leftKinds.getOrNull(left.index) else rightKinds.getOrNull(right.index)),
+                    env = env, onChange = { draft = it }, onAdd = { adding = true },
+                    onDone = {
+                        actions.onStackChange(side, draft)
+                        if (side == SplitSide.LEFT) left.index = 0 else right.index = 0
+                        editing = null
+                    },
+                    modifier = Modifier.offset(x = panelX, y = 20.dp)
+                )
+                if (adding) {
+                    SplitAddSheet(
+                        sideName = if (side == SplitSide.LEFT) "left" else "right", inStack = draft,
+                        offered = availableToAdd(stacks.with(side, draft), side), env = env,
+                        onPick = { draft = addWidget(draft, it); adding = false }, onDismiss = { adding = false }
+                    )
+                }
             }
 
             if (stripShown) {
@@ -199,7 +230,8 @@ private fun StackHalf(
     fit: Float,
     alignEnd: Boolean,
     screenW: Dp,
-    pitch: Dp
+    pitch: Dp,
+    dimmed: Boolean = false
 ) {
     val p = stack.progress.value
     val n = kinds.size
@@ -216,6 +248,7 @@ private fun StackHalf(
             .offset(x = if (alignEnd) screenW / 2 else 0.dp)
             .width(screenW / 2)
             .fillMaxHeight()
+            .alpha(if (dimmed) AuraDockSplit.EditOtherAlpha else 1f)
             .clipToBounds()
     ) {
         Slot(shown, env, slotX, AuraDockSplit.TopInset - pitch * p, look.outgoingAlpha, 0.dp, halfW, halfH, fit)

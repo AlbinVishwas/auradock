@@ -8,7 +8,6 @@ enum class WidgetKind(val label: String, val group: WidgetGroup, val blurb: Stri
     DIAL("Dial", WidgetGroup.TIME, "Analog clock"),
     BOLD_TIME("Bold time", WidgetGroup.TIME, "Giant two-tone digits"),
     DIGITAL("Digital", WidgetGroup.TIME, "Time and date"),
-    WORLD("World", WidgetGroup.TIME, "Map with day and night"),
     MONTH("Month", WidgetGroup.DATE, "This month at a glance"),
     BIG_DATE("Big date", WidgetGroup.DATE, "Today's date, large"),
     UP_NEXT("Up next", WidgetGroup.DATE, "Calendar"),
@@ -48,7 +47,10 @@ fun decodeStacks(stored: String?): SplitStacks {
         val kinds = part.removePrefix("$tag:").split(",").mapNotNull { WidgetKind.parse(it.trim()) }.distinct()
         return kinds.ifEmpty { fallback }
     }
-    return SplitStacks(side("L", default.left), side("R", default.right))
+    val left = side("L", default.left)
+    // A widget lives on one side only: anything saved on both sides stays on the left.
+    val right = side("R", default.right).filter { it !in left }.ifEmpty { default.right.filter { it !in left }.ifEmpty { listOf(side("R", default.right).first()) } }
+    return SplitStacks(left, right)
 }
 
 /** The widgets a stack really shows: Now playing is left out while nothing plays. Never empty. */
@@ -63,6 +65,15 @@ fun cycleIndex(current: Int, size: Int, forward: Boolean): Int =
 
 /** True when neither half shows a time widget: the small corner time appears so the time is never missing. */
 fun needsCornerTime(left: WidgetKind?, right: WidgetKind?): Boolean = left?.showsTime != true && right?.showsTime != true
+
+/**
+ * The widgets that can still be added to [side]: not already in its stack, and not in the other stack either (a widget lives on one side only, so
+ * a Month on the left is not offered on the right).
+ */
+fun availableToAdd(stacks: SplitStacks, side: SplitSide): List<WidgetKind> {
+    val other = stacks.of(if (side == SplitSide.LEFT) SplitSide.RIGHT else SplitSide.LEFT)
+    return WidgetKind.entries.filter { it !in stacks.of(side) && it !in other }
+}
 
 /** Adds a widget to the end of a stack (not twice). */
 fun addWidget(stack: List<WidgetKind>, kind: WidgetKind): List<WidgetKind> = if (kind in stack) stack else stack + kind
