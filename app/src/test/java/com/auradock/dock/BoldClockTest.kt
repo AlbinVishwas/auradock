@@ -75,4 +75,12 @@ class BoldClockTest {
         val short = boldFontSizePx(p, 2000f, 200f)
         assertEquals(0.8f * 200f, short * p.height, 0.01f)
     }
+
+    @Test fun `tilts follow the style guide and stay within 3 to 5 degrees`() {
+        assertEquals(-3f, AuraDockBold.tiltDegrees('1'))
+        assertEquals(5f, AuraDockBold.tiltDegrees('2'))
+        assertEquals(-4f, AuraDockBold.tiltDegrees('3'))
+        assertEquals(5f, AuraDockBold.tiltDegrees('0'))
+        "0123456789".forEach { assertTrue(Math.abs(AuraDockBold.tiltDegrees(it)) in 3f..5f) }
+    }
 }

@@ -6,7 +6,21 @@ import com.auradock.ui.theme.AuraDockBold
  * The drawn shape of a glyph, in em (1.0 = the font size), measured from the pen position on the baseline. [top] is
  * negative (above the baseline). This is the ink, not the advance width, so side bearings never leak into the layout.
  */
-data class Ink(val left: Float, val top: Float, val right: Float, val bottom: Float) {
+data class Ink(
+    val left: Float,
+    val top: Float,
+    val right: Float,
+    val bottom: Float,
+    /** The digit leans by this many degrees (clockwise) about ([pivotX], [pivotY]); the bounds above are those of the leaning glyph. */
+    val degrees: Float = 0f,
+    val pivotX: Float = 0f,
+    val pivotY: Float = 0f,
+    /** The glyph's own (upright) top and bottom, for the frosted wash drawn before the lean. */
+    val flatTop: Float = top,
+    val flatBottom: Float = bottom,
+    val flatLeft: Float = left,
+    val flatRight: Float = right
+) {
     val width: Float get() = right - left
     val height: Float get() = bottom - top
 }

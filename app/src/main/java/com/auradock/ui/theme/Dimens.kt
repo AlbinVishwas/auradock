@@ -266,13 +266,28 @@ object AuraDockBold {
     const val WidthShare = 0.9f
     const val HeightShare = 0.8f
 
-    /** Colon: two dots this wide (about the digits' stroke), centred at these shares of the digit height. */
-    const val ColonDiameterEm = 0.24f
+    /** Colon: two dots this wide (about a quarter of the digit height, as in the reference photos), centred at these shares of the digit height. */
+    const val ColonDiameterEm = 0.165f
     const val ColonUpper = 0.33f
     const val ColonLower = 0.67f
 
     /** The colon's dots reach into the digit on each side by this share of a dot's diameter. */
     const val ColonOverlap = 0.3f
+
+    /** Each digit leans a little, so the time looks set by hand (clockwise degrees): 1 -3, 2 +5, 3 -4, 0 +5; the others stay in the same 3 to 5 range. */
+    fun tiltDegrees(digit: Char): Float = when (digit) {
+        '0' -> 5f
+        '1' -> -3f
+        '2' -> 5f
+        '3' -> -4f
+        '4' -> 4f
+        '5' -> -5f
+        '6' -> 3f
+        '7' -> -4f
+        '8' -> -3f
+        '9' -> 5f
+        else -> 0f
+    }
 
     /** The safe area: the same 40 dp at the sides and 24 dp above and below that the other templates keep. */
     val SafeSide = AuraDockDockLayout.screenPadding

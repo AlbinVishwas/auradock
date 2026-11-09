@@ -2,10 +2,12 @@ package com.auradock.dock
 
 import android.graphics.Paint as NativePaint
 import android.graphics.LinearGradient
+import android.graphics.Matrix
 import android.graphics.Path as NativePath
 import android.graphics.PorterDuff
 import android.graphics.PorterDuffXfermode
 import android.graphics.Rect as NativeRect
+import android.graphics.Region
 import android.graphics.Shader
 import android.graphics.Typeface
 import androidx.compose.animation.Crossfade
@@ -58,18 +60,43 @@ fun boldTimeString(timeMillis: Long, use24Hour: Boolean, zone: ZoneId = ZoneId.s
 /** Digits are measured at this size (px) to read their ink; the numbers are then divided back to em. */
 private const val MEASURE_PX = 1000f
 
-/** The ink of each digit in [typeface], in em. */
+/** The tight pixel bounds of [path] (exact, unlike the control-point bounds a curve's path reports). */
+private fun inkBounds(path: NativePath, region: Region, clip: Region): NativeRect {
+    region.setPath(path, clip)
+    return region.bounds
+}
+
+/**
+ * The ink of each digit in [typeface], in em, as it is drawn: leaning by its tilt about its own centre, so the layout and the
+ * centring see the real shape.
+ */
 private fun measureInks(typeface: Typeface): Map<Char, Ink> {
     val paint = NativePaint().apply { this.typeface = typeface; textSize = MEASURE_PX }
-    val r = NativeRect()
+    val clip = Region(-MEASURE_PX.toInt() * 2, -MEASURE_PX.toInt() * 2, MEASURE_PX.toInt() * 2, MEASURE_PX.toInt() * 2)
+    val region = Region()
+    val path = NativePath()
+    val matrix = Matrix()
     return ('0'..'9').associateWith { c ->
-        paint.getTextBounds(c.toString(), 0, 1, r)
-        Ink(r.left / MEASURE_PX, r.top / MEASURE_PX, r.right / MEASURE_PX, r.bottom / MEASURE_PX)
+        path.rewind()
+        paint.getTextPath(c.toString(), 0, 1, 0f, 0f, path)
+        val flat = inkBounds(path, region, clip)
+        val degrees = AuraDockBold.tiltDegrees(c)
+        val cx = flat.exactCenterX()
+        val cy = flat.exactCenterY()
+        matrix.setRotate(degrees, cx, cy)
+        path.transform(matrix)
+        val tilted = inkBounds(path, region, clip)
+        Ink(
+            tilted.left / MEASURE_PX, tilted.top / MEASURE_PX, tilted.right / MEASURE_PX, tilted.bottom / MEASURE_PX,
+            degrees = degrees, pivotX = cx / MEASURE_PX, pivotY = cy / MEASURE_PX,
+            flatTop = flat.top / MEASURE_PX, flatBottom = flat.bottom / MEASURE_PX,
+            flatLeft = flat.left / MEASURE_PX, flatRight = flat.right / MEASURE_PX
+        )
     }
 }
 
 /**
- * Bold: nothing but the time, as big as the safe area allows. Nunito Black digits, upright, alternating coral and light coral,
+ * Bold: nothing but the time, as big as the safe area allows. Nunito Black digits, each leaning a little, alternating coral and light coral,
  * each placed by its ink so every pair overlaps by the same amount; the colon is two dots in the gap. The whole time is laid out
  * in landscape coordinates (the dock turns the finished layer when the window is portrait), its combined ink box centred in the
  * safe area, or in the area above the notification strip when there is one. Pure black behind.
@@ -133,16 +160,20 @@ private fun BoldDigits(text: String, typeface: Typeface, inks: Map<Char, Ink>, p
                 val c = canvas.nativeCanvas
                 path.rewind()
                 paint.getTextPath(d.char.toString(), 0, 1, x, originY, path)
+                // Each digit leans about its own centre.
+                c.save()
+                c.rotate(d.ink.degrees, x + d.ink.pivotX * em, originY + d.ink.pivotY * em)
                 c.drawPath(path, paint)
                 // Frosted: a very soft lighter wash from the glyph's top edge, inside the glyph only. No blur, glow or shadow.
-                val top = originY + d.ink.top * em
+                val top = originY + d.ink.flatTop * em
                 frost.shader = LinearGradient(
-                    0f, top, 0f, top + AuraDockBold.FrostReach * d.ink.height * em,
+                    0f, top, 0f, top + AuraDockBold.FrostReach * (d.ink.flatBottom - d.ink.flatTop) * em,
                     AuraDockColors.BoldFrost.toArgb(), AuraDockColors.BoldFrost.copy(alpha = 0f).toArgb(), Shader.TileMode.CLAMP
                 )
                 c.save()
                 c.clipPath(path)
-                c.drawRect(x + d.ink.left * em, top, x + d.ink.right * em, originY + d.ink.bottom * em, frost)
+                c.drawRect(x + d.ink.flatLeft * em, top, x + d.ink.flatRight * em, originY + d.ink.flatBottom * em, frost)
+                c.restore()
                 c.restore()
             }
         }
