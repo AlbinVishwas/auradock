@@ -36,6 +36,9 @@ object AuraDockMotion {
     /** Blur to focus in a list: the delay between one row and the next. */
     const val Stagger = 40
 
+    /** How long "Undo focus" stays on the dock after a touch: four seconds. */
+    const val UndoFocus = 4000
+
     /** How long the first-run dock preview shows before it moves on: about five seconds. */
     const val OnboardingPreview = 5000
 

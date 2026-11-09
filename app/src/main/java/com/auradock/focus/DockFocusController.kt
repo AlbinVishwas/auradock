@@ -38,8 +38,25 @@ class DockFocusController @Inject constructor(
     val showing: StateFlow<Boolean> = _showing.asStateFlow()
     private val handler = Handler(Looper.getMainLooper())
     private var restorePending = false
+    private var undone = false // "Undo focus" was used: no Focus for the rest of this dock session
+    private val _focusOn = MutableStateFlow(false)
+
+    /** True while we have Focus (Do Not Disturb) switched on for the dock. The dock offers "Undo focus" only then. */
+    val focusOn: StateFlow<Boolean> = _focusOn.asStateFlow()
+
     private val delayedRefresh = Runnable {
         restorePending = false
+        undone = false // the dock session is over for good (past the handover grace)
+        refresh()
+    }
+
+    /**
+     * "Undo focus": puts Do Not Disturb (and any loaned Favourite marks) back to the user's own state now, without ending the dock. Focus
+     * stays off until the dock session ends.
+     */
+    @Synchronized
+    fun undoFocus() {
+        undone = true
         refresh()
     }
 
@@ -82,7 +99,7 @@ class DockFocusController @Inject constructor(
     fun refresh() {
         val access = dnd.hasAccess()
         val state = load()
-        val want = settings.focusWhileDocked.value && access && active.isNotEmpty()
+        val want = settings.focusWhileDocked.value && access && active.isNotEmpty() && !undone
         // Without DND access we cannot change anything, so a pending restore would fail too: keep waiting for access.
         if (!access && state.changed) {
             vipContacts.giveBack()
@@ -111,7 +128,9 @@ class DockFocusController @Inject constructor(
             }
         }
         // People who can always reach the user ring through only while our focus is on; the moment it is not, they are put back.
-        if (want && load().changed) vipContacts.lend() else vipContacts.giveBack()
+        val ours = load().changed
+        _focusOn.value = want && ours
+        if (want && ours) vipContacts.lend() else vipContacts.giveBack()
     }
 
     private fun load(): DockDndState {

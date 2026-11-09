@@ -82,6 +82,7 @@ fun PermissionCard(
         Column(modifier = Modifier.weight(1f)) {
             Text(text = permission.title, style = AuraDockTypography.RowTitle, color = AuraDockColors.OnBackground)
             Text(text = permission.why, style = AuraDockTypography.RowCaption, color = AuraDockColors.OnSurfaceVariant, modifier = Modifier.padding(top = AuraDockSpacing.xxs))
+            Text(text = "Nothing leaves this phone.", style = AuraDockTypography.RowCaption, color = AuraDockColors.Tertiary, modifier = Modifier.padding(top = AuraDockSpacing.xxs))
             if (showStatus) {
                 Row(modifier = Modifier.padding(top = AuraDockSpacing.sm - AuraDockSpacing.xxs), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(AuraDockSpacing.xs)) {
                     if (granted) Icon(Icons.Rounded.Check, contentDescription = null, tint = AuraDockColors.OnBackground, modifier = Modifier.size(AuraDockSizes.statusIcon))

@@ -65,6 +65,10 @@ import com.auradock.permissions.openNotificationAccessSettings
 import com.auradock.permissions.openScreensaverSettings
 import com.auradock.ui.onboarding.OnboardingScreen
 import com.auradock.ui.onboarding.PermissionSheet
+import androidx.compose.foundation.layout.padding
+import androidx.compose.ui.Alignment
+import com.auradock.ui.theme.AuraDockSpacing
+import com.auradock.dock.UndoFocusPill
 import com.auradock.ui.onboarding.SetupPermission
 import com.auradock.ui.onboarding.SetupScreen
 import com.auradock.ui.viewmodel.CalendarPermissionUiState
@@ -262,9 +266,15 @@ class MainActivity : ComponentActivity() {
                                 .clickable(
                                     interactionSource = remember { MutableInteractionSource() },
                                     indication = null
-                                ) { standbyViewModel.dismissDock() }
+                                ) { standbyViewModel.onDockTapped() }
                         ) {
                             DockScreen(dockData = dockData, window = this@MainActivity.window, interactive = true)
+                            val undoShowing by standbyViewModel.undoFocusShowing.collectAsState()
+                            UndoFocusPill(
+                                visible = undoShowing,
+                                onUndo = { standbyViewModel.undoFocus() },
+                                modifier = Modifier.align(Alignment.TopCenter).padding(top = AuraDockSpacing.xl)
+                            )
                         }
 
                         "onboarding" -> OnboardingRoute(standbyViewModel, system)

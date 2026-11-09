@@ -1,6 +1,8 @@
 package com.auradock.dock
 
 import androidx.compose.runtime.Composable
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import com.auradock.ui.preview.PreviewData
 import com.auradock.ui.preview.PreviewLandscape
 import com.auradock.ui.preview.PreviewPortrait
@@ -98,4 +100,14 @@ private fun withMeeting(minutes: Int, intention: Boolean = true) = PreviewData.d
             )
         )
     )
+}
+
+/** The dock after a touch, with Focus on: the "Undo focus" control shows for four seconds. */
+@PreviewLandscape
+@androidx.compose.runtime.Composable
+private fun DockUndoFocus() = com.auradock.ui.theme.AuraDockTheme {
+    androidx.compose.foundation.layout.Box(androidx.compose.ui.Modifier.fillMaxSize()) {
+        DockContent(template = DockTemplate.BOLD, state = PreviewData.dockFull)
+        UndoFocusPill(visible = true, onUndo = {}, modifier = androidx.compose.ui.Modifier.align(androidx.compose.ui.Alignment.TopCenter).padding(top = com.auradock.ui.theme.AuraDockSpacing.xl))
+    }
 }

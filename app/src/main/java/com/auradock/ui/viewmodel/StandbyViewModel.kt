@@ -9,6 +9,9 @@ import androidx.core.graphics.drawable.toBitmap
 import com.auradock.focus.AppCatalog
 import com.auradock.focus.AppEntry
 import com.auradock.focus.DndController
+import com.auradock.dock.DockTap
+import com.auradock.dock.tapOnDock
+import com.auradock.ui.theme.AuraDockMotion
 import com.auradock.permissions.PermissionPrompts
 import com.auradock.ui.onboarding.SetupPermission
 import com.auradock.focus.DockFocusController
@@ -481,6 +484,38 @@ class StandbyViewModel @Inject constructor(
     }
 
     fun enterDock() = dockMode.update { it.enterManual() }
+
+    private val _undoFocusShowing = MutableStateFlow(false)
+
+    /** True for a few seconds after a touch on the dock while Focus is on: the "Undo focus" control shows. */
+    val undoFocusShowing: StateFlow<Boolean> = _undoFocusShowing.asStateFlow()
+    private var undoHideJob: kotlinx.coroutines.Job? = null
+
+    /** A touch on the in-app dock: the first shows "Undo focus" (if there is Focus to undo), the next closes the dock. */
+    fun onDockTapped() {
+        when (tapOnDock(dockFocus.focusOn.value, _undoFocusShowing.value)) {
+            DockTap.SHOW_UNDO -> {
+                _undoFocusShowing.value = true
+                undoHideJob?.cancel()
+                undoHideJob = viewModelScope.launch {
+                    kotlinx.coroutines.delay(AuraDockMotion.UndoFocus.toLong())
+                    _undoFocusShowing.value = false
+                }
+            }
+            DockTap.CLOSE -> {
+                undoHideJob?.cancel()
+                _undoFocusShowing.value = false
+                dismissDock()
+            }
+        }
+    }
+
+    /** "Undo focus": Do Not Disturb goes back to how it was, for this dock session; the dock stays open. */
+    fun undoFocus() {
+        undoHideJob?.cancel()
+        _undoFocusShowing.value = false
+        dockFocus.undoFocus()
+    }
 
     private var dockAfterPrompt = false
 
