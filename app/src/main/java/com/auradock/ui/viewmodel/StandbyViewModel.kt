@@ -9,6 +9,7 @@ import androidx.core.graphics.drawable.toBitmap
 import com.auradock.focus.AppCatalog
 import com.auradock.focus.AppEntry
 import com.auradock.focus.DndController
+import com.auradock.analytics.AnalyticsEvents
 import com.auradock.dock.DockTap
 import com.auradock.dock.tapOnDock
 import com.auradock.ui.theme.AuraDockMotion
@@ -68,6 +69,7 @@ class StandbyViewModel @Inject constructor(
     private val dockFocus: DockFocusController,
     private val vipContacts: VipContacts,
     private val screensaverTest: com.auradock.screensaver.ScreensaverTest,
+    private val events: com.auradock.analytics.EventLog,
     private val dockWatcher: DockWatcherController,
     private val onboardingState: OnboardingState,
     private val sessions: SessionTracker,
@@ -93,6 +95,7 @@ class StandbyViewModel @Inject constructor(
             val now = minuteClockNow()
             taskRepository.add(title, dueAt, showFrom = com.auradock.intention.tomorrowStart(now))
             intentions.suggestForTomorrow(title)
+            events.log(AnalyticsEvents.SHUTDOWN_USED)
         }
         if (dueAt != null) askOnFirstUse(*PermissionPrompts.forTimedTask(grantedPermissions(), askedPermissions()).toTypedArray())
     }
@@ -261,6 +264,15 @@ class StandbyViewModel @Inject constructor(
         SetupPermission.CONTACTS -> vipContacts.canRead()
     }
 
+    /** Records each permission the first time it is seen allowed (from the sheet, from Setup or from Android's own settings). */
+    fun noteGrantedPermissions() {
+        val logged = promptPrefs.getStringSet("permissions_logged", emptySet()).orEmpty()
+        val fresh = grantedPermissions().map { it.name }.toSet() - logged
+        if (fresh.isEmpty()) return
+        fresh.forEach { events.log(AnalyticsEvents.PERMISSION_GRANTED, it) }
+        promptPrefs.edit().putStringSet("permissions_logged", logged + fresh).apply()
+    }
+
     private fun grantedPermissions(): Set<SetupPermission> = SetupPermission.entries.filter { isGranted(it) }.toSet()
 
     private fun enqueue(permission: SetupPermission) {
@@ -281,6 +293,7 @@ class StandbyViewModel @Inject constructor(
     fun answerPrompt(allow: Boolean) {
         val permission = promptQueue.value.firstOrNull() ?: return
         markAsked(permission)
+        if (!allow) events.log(AnalyticsEvents.PERMISSION_SKIPPED, permission.name)
         promptQueue.update { it.drop(1) }
         if (allow) allow(permission, pickAfterGrant = permission == SetupPermission.CONTACTS)
         if (promptQueue.value.isEmpty() && dockAfterPrompt) {
@@ -472,7 +485,13 @@ class StandbyViewModel @Inject constructor(
     /** False until the first-launch walkthrough has been finished. */
     val onboardingDone: StateFlow<Boolean> = onboardingState.done
 
-    fun finishOnboarding() = onboardingState.complete()
+    fun finishOnboarding() {
+        events.log(AnalyticsEvents.ONBOARDING_STEP, "done")
+        onboardingState.complete()
+    }
+
+    /** The walkthrough moved to [step] (welcome, preview, template, screensaver, anywhere). */
+    fun onboardingStep(step: String) = events.log(AnalyticsEvents.ONBOARDING_STEP, step)
 
     private val _onboardingPreviewing = MutableStateFlow(false)
 
@@ -514,6 +533,7 @@ class StandbyViewModel @Inject constructor(
     fun undoFocus() {
         undoHideJob?.cancel()
         _undoFocusShowing.value = false
+        events.log(AnalyticsEvents.FOCUS_UNDONE)
         dockFocus.undoFocus()
     }
 
@@ -550,6 +570,19 @@ class StandbyViewModel @Inject constructor(
 
     fun setTemplate(template: DockTemplate) {
         templateRepository.select(template)
+        events.log(AnalyticsEvents.TEMPLATE_CHANGED, template.name)
+    }
+
+    /** The version shown at the bottom of Setup, e.g. "0.2.2 (8)". */
+    val versionLabel: String = runCatching {
+        val info = context.packageManager.getPackageInfo(context.packageName, 0)
+        @Suppress("DEPRECATION") "${info.versionName} (${info.versionCode})"
+    }.getOrDefault("")
+
+    /** The numbers for the hidden debug page, worked out from the local event log. */
+    suspend fun debugSummary(): com.auradock.analytics.ActivationSummary {
+        val installedAt = runCatching { context.packageManager.getPackageInfo(context.packageName, 0).firstInstallTime }.getOrDefault(0L)
+        return com.auradock.analytics.activationSummary(events.events(), installedAt, System.currentTimeMillis())
     }
 
     override fun onCleared() {

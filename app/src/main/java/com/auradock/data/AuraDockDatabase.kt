@@ -4,6 +4,8 @@ import androidx.room.Database
 import androidx.room.RoomDatabase
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
+import com.auradock.analytics.AppEventDao
+import com.auradock.analytics.AppEventEntity
 import com.auradock.intention.IntentionDao
 import com.auradock.intention.IntentionEntity
 import com.auradock.sessions.FocusSessionDao
@@ -12,11 +14,12 @@ import com.auradock.sessions.SessionCheckpointEntity
 import com.auradock.tasks.TaskDao
 import com.auradock.tasks.TaskEntity
 
-@Database(entities = [TaskEntity::class, FocusSessionEntity::class, SessionCheckpointEntity::class, IntentionEntity::class], version = 6, exportSchema = false)
+@Database(entities = [TaskEntity::class, FocusSessionEntity::class, SessionCheckpointEntity::class, IntentionEntity::class, AppEventEntity::class], version = 7, exportSchema = false)
 abstract class AuraDockDatabase : RoomDatabase() {
     abstract fun taskDao(): TaskDao
     abstract fun focusSessionDao(): FocusSessionDao
     abstract fun intentionDao(): IntentionDao
+    abstract fun appEventDao(): AppEventDao
 }
 
 /** 0.2.0: adds the focus sessions table. Tasks are untouched. */
@@ -62,5 +65,15 @@ val MIGRATION_5_6 = object : Migration(5, 6) {
     override fun migrate(db: SupportSQLiteDatabase) {
         db.execSQL("ALTER TABLE `tasks` ADD COLUMN `touchedAt` INTEGER NOT NULL DEFAULT 0")
         db.execSQL("UPDATE `tasks` SET `touchedAt` = `createdAt`")
+    }
+}
+
+/** 0.2.2: the local event log (what happened and when, no content). */
+val MIGRATION_6_7 = object : Migration(6, 7) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL(
+            "CREATE TABLE IF NOT EXISTS `app_event` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `name` TEXT NOT NULL, " +
+                "`at` INTEGER NOT NULL, `detail` TEXT)"
+        )
     }
 }

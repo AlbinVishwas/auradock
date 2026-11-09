@@ -18,7 +18,8 @@ import javax.inject.Singleton
 class TaskRepository @Inject constructor(
     private val dao: TaskDao,
     private val clock: MinuteClock,
-    private val alarms: TaskAlarmScheduler
+    private val alarms: TaskAlarmScheduler,
+    private val events: com.auradock.analytics.EventLog
 ) {
     /**
      * Today's list. It is a Flow: it emits the current list straight away and again after every change to
@@ -39,6 +40,7 @@ class TaskRepository @Inject constructor(
         val task = TaskEntity(title = clean, dueAt = dueAt, createdAt = clock.currentMillis(), showFrom = showFrom, touchedAt = clock.currentMillis())
         val id = dao.insert(task)
         alarms.schedule(task.copy(id = id))
+        events.log(com.auradock.analytics.AnalyticsEvents.TASK_ADDED)
         return id
     }
 
@@ -47,6 +49,7 @@ class TaskRepository @Inject constructor(
         val updated = task.copy(done = done, completedAt = if (done) clock.currentMillis() else null, touchedAt = clock.currentMillis())
         dao.update(updated)
         alarms.schedule(updated) // done -> cancels; un-done with a future time -> sets it again
+        if (done) events.log(com.auradock.analytics.AnalyticsEvents.TASK_DONE)
     }
 
     /** Changes the title and due time. Returns false if the task is gone or [title] is blank. */

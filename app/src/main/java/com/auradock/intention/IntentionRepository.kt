@@ -23,7 +23,8 @@ data class IntentionToday(val entry: IntentionEntity?)
 class IntentionRepository @Inject constructor(
     @ApplicationContext context: Context,
     private val dao: IntentionDao,
-    private val clock: MinuteClock
+    private val clock: MinuteClock,
+    private val events: com.auradock.analytics.EventLog
 ) {
     private val prefs = context.getSharedPreferences("auradock_prefs", Context.MODE_PRIVATE)
 
@@ -48,6 +49,7 @@ class IntentionRepository @Inject constructor(
     fun save(raw: String) = scope.launch {
         val text = cleanIntention(raw) ?: return@launch skipNow()
         dao.upsert(IntentionEntity(today(), text, status = IntentionStatus.SET.name))
+        events.log(com.auradock.analytics.AnalyticsEvents.INTENTION_SET)
     }
 
     fun skip() = scope.launch { skipNow() }
@@ -63,6 +65,7 @@ class IntentionRepository @Inject constructor(
         val current = dao.get(today()) ?: return@launch
         if (current.status != IntentionStatus.SET.name) return@launch
         dao.upsert(current.copy(done = done, doneAt = if (done) clock.currentMillis() else null))
+        if (done) events.log(com.auradock.analytics.AnalyticsEvents.INTENTION_DONE)
     }
 
     /** True if the undock card of a session that ended at [endedAt] should ask "Tomorrow's top task?" (once per evening). */

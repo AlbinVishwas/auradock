@@ -57,6 +57,7 @@ import com.auradock.ui.routes.DashboardRoute
 import com.auradock.ui.routes.FocusSettingsRoute
 import com.auradock.ui.routes.Navigation
 import com.auradock.ui.routes.OnboardingRoute
+import com.auradock.ui.routes.DebugRoute
 import com.auradock.ui.routes.ScreensaverTestRoute
 import com.auradock.ui.routes.SetupRoute
 import com.auradock.ui.routes.SystemSettings
@@ -221,6 +222,7 @@ class MainActivity : ComponentActivity() {
                     page == "focus" -> "focus"
                     page == "setup" -> "setup"
                     page == "screensaver" -> "screensaver"
+                    page == "debug" -> "debug"
                     else -> "dashboard"
                 }
 
@@ -234,6 +236,7 @@ class MainActivity : ComponentActivity() {
                     openFocus = { page = "focus" },
                     openSetup = { page = "setup" },
                     openScreensaverTest = { page = "screensaver" },
+                    openDebug = { page = "debug" },
                     backToDashboard = { page = "dashboard" }
                 )
 
@@ -279,7 +282,8 @@ class MainActivity : ComponentActivity() {
 
                         "onboarding" -> OnboardingRoute(standbyViewModel, system)
                         "gallery" -> TemplateGalleryRoute(standbyViewModel, navigation)
-                        "setup" -> SetupRoute(standbyViewModel, system, onOpenScreensaverTest = navigation.openScreensaverTest)
+                        "setup" -> SetupRoute(standbyViewModel, system, onOpenScreensaverTest = navigation.openScreensaverTest, onOpenDebug = navigation.openDebug)
+                        "debug" -> DebugRoute(standbyViewModel)
                         "screensaver" -> ScreensaverTestRoute(standbyViewModel, system)
                         "focus" -> FocusSettingsRoute(standbyViewModel, onOpenSetup = navigation.openSetup)
                         else -> DashboardRoute(standbyViewModel, navigation)
@@ -367,11 +371,13 @@ class MainActivity : ComponentActivity() {
         screensaverTest.refresh()
         standbyViewModel.refreshExactAlarmAccess() // the user may have just allowed it in settings
         standbyViewModel.refreshContactsAccess()
-        standbyViewModel.refreshDndAccess()        // ...or just allowed Do Not Disturb access
+        standbyViewModel.refreshDndAccess()
+        // ...or just allowed Do Not Disturb access
         standbyViewModel.refreshPostNotifications()
         standbyViewModel.refreshLocationPermission()
         standbyViewModel.refreshCalendarPermission()
         standbyViewModel.updateNotificationAccess(isNotificationAccessEnabled(this))
+        standbyViewModel.noteGrantedPermissions() // for the local event log: permissions seen allowed
     }
 
     companion object {

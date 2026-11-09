@@ -98,6 +98,8 @@ data class OnboardingActions(
     val onPickTemplate: (DockTemplate) -> Unit = {},
     /** The dock preview came on screen (true) or went away (false): the window turns landscape while it shows. */
     val onPreviewing: (Boolean) -> Unit = {},
+    /** A step came on screen (welcome, preview, template, screensaver, anywhere): for the local event log. */
+    val onStep: (String) -> Unit = {},
     /** Runs after the last step; the caller saves that the walkthrough is done and shows the dashboard. */
     val onFinish: () -> Unit = {}
 )
@@ -115,6 +117,7 @@ fun OnboardingScreen(
 ) {
     var stepIndex by rememberSaveable { mutableIntStateOf(initialStep) }
     val step = Step.entries[stepIndex]
+    LaunchedEffect(step) { actions.onStep(step.name.lowercase()) }
     // Back from the template or the preview goes to Welcome (the preview is not replayed).
     BackHandler(enabled = stepIndex > 0) { stepIndex = if (step == Step.TEMPLATE || step == Step.PREVIEW) 0 else stepIndex - 1 }
     val dots = @Composable { ProgressDots(count = Step.entries.size, current = stepIndex) }

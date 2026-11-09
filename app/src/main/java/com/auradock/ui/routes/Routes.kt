@@ -6,6 +6,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import com.auradock.dock.DockUiState
+import com.auradock.ui.debug.DebugScreen
 import com.auradock.ui.focus.FocusSettingsActions
 import com.auradock.ui.focus.FocusSettingsScreen
 import com.auradock.ui.focus.FocusSettingsUiState
@@ -50,6 +51,7 @@ data class Navigation(
     val openFocus: () -> Unit = {},
     val openSetup: () -> Unit = {},
     val openScreensaverTest: () -> Unit = {},
+    val openDebug: () -> Unit = {},
     val backToDashboard: () -> Unit = {}
 )
 
@@ -159,15 +161,16 @@ private fun rememberGrantedPermissions(viewModel: StandbyViewModel): Set<SetupPe
 private fun allow(viewModel: StandbyViewModel, permission: SetupPermission) = viewModel.allow(permission)
 
 @Composable
-fun SetupRoute(viewModel: StandbyViewModel, system: SystemSettings, onOpenScreensaverTest: () -> Unit, modifier: Modifier = Modifier) {
+fun SetupRoute(viewModel: StandbyViewModel, system: SystemSettings, onOpenScreensaverTest: () -> Unit, onOpenDebug: () -> Unit, modifier: Modifier = Modifier) {
     val test by viewModel.screensaverSteps.collectAsState()
     SetupScreen(
-        state = SetupUiState(granted = rememberGrantedPermissions(viewModel), screensaverSelected = system.screensaverSelected, screensaverTest = test),
+        state = SetupUiState(granted = rememberGrantedPermissions(viewModel), screensaverSelected = system.screensaverSelected, screensaverTest = test, version = viewModel.versionLabel),
         actions = SetupActions(
             onAllowPermission = { allow(viewModel, it) },
             onOpenScreensaverSettings = system.openScreensaverSettings,
             onOpenDisplaySettings = system.openDisplaySettings,
-            onOpenScreensaverTest = onOpenScreensaverTest
+            onOpenScreensaverTest = onOpenScreensaverTest,
+            onOpenDebug = onOpenDebug
         ),
         modifier = modifier
     )
@@ -207,6 +210,7 @@ fun OnboardingRoute(viewModel: StandbyViewModel, system: SystemSettings, modifie
             onAllowOverlay = { viewModel.openOverlaySettings() },
             onPickTemplate = { viewModel.setTemplate(it) },
             onPreviewing = { viewModel.setOnboardingPreviewing(it) },
+            onStep = { viewModel.onboardingStep(it) },
             onFinish = { viewModel.finishOnboarding() }
         ),
         modifier = modifier
@@ -262,4 +266,11 @@ fun FocusSettingsRoute(viewModel: StandbyViewModel, modifier: Modifier = Modifie
         onOpenSetup = onOpenSetup,
         modifier = modifier
     )
+}
+
+/** The hidden debug page: activation numbers from the local event log. */
+@Composable
+fun DebugRoute(viewModel: StandbyViewModel, modifier: Modifier = Modifier) {
+    val summary by androidx.compose.runtime.produceState<com.auradock.analytics.ActivationSummary?>(initialValue = null) { value = viewModel.debugSummary() }
+    DebugScreen(summary = summary, version = viewModel.versionLabel, modifier = modifier)
 }

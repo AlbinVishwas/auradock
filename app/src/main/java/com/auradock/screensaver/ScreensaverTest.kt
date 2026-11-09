@@ -27,7 +27,8 @@ data class ScreensaverTestUiState(
  */
 @Singleton
 class ScreensaverTest @Inject constructor(
-    @ApplicationContext private val context: Context
+    @ApplicationContext private val context: Context,
+    private val events: com.auradock.analytics.EventLog
 ) {
     private val prefs = context.getSharedPreferences("auradock_prefs", Context.MODE_PRIVATE)
 
@@ -64,8 +65,10 @@ class ScreensaverTest @Inject constructor(
     /** Re-reads the phone's settings and our own record. Call when the app comes back to the front. */
     fun refresh() {
         val timeout = runCatching { Settings.System.getInt(context.contentResolver, Settings.System.SCREEN_OFF_TIMEOUT, 0).toLong() }.getOrDefault(0L)
+        val selected = isAuraDockScreensaver(context)
+        if (selected) events.logOnce(com.auradock.analytics.AnalyticsEvents.SCREENSAVER_SET)
         _steps.value = ScreensaverTestUiState(
-            selected = isAuraDockScreensaver(context),
+            selected = selected,
             timeoutOk = timeoutOk(timeout),
             appeared = prefs.getLong(KEY_VERIFIED_AT, 0L) > 0 || prefs.getLong(KEY_DREAM_AT, 0L) > 0
         )

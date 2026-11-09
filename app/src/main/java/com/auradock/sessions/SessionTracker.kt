@@ -33,7 +33,8 @@ data class SessionSummary(val endedAt: Long, val durationMs: Long, val tasksComp
 class SessionTracker @Inject constructor(
     @ApplicationContext private val context: Context,
     private val sessions: FocusSessionDao,
-    private val tasks: TaskDao
+    private val tasks: TaskDao,
+    private val events: com.auradock.analytics.EventLog
 ) {
     private val machine = SessionMachine()
     private val handler = Handler(Looper.getMainLooper())
@@ -115,7 +116,11 @@ class SessionTracker @Inject constructor(
             else -> SessionSource.DOCK_NOW
         }
         val starting = machine.live == null && active.isNotEmpty()
-        if (starting) seenKeys.clear()
+        if (starting) {
+            seenKeys.clear()
+            events.log(com.auradock.analytics.AnalyticsEvents.SESSION_START, source.name)
+            events.logOnce(com.auradock.analytics.AnalyticsEvents.FIRST_DOCK, source.name)
+        }
         machine.onShowing(active.isNotEmpty(), source, now)
         _live.value = machine.live
         if (starting) {
@@ -174,6 +179,7 @@ class SessionTracker @Inject constructor(
     @Synchronized
     private fun finishNow() {
         val done = machine.finishIfDue(System.currentTimeMillis()) ?: return
+        events.log(com.auradock.analytics.AnalyticsEvents.SESSION_END, (done.durationMs / 1000).toString())
         _live.value = machine.live
         handler.removeCallbacks(tick)
         if (!done.worthKeeping) {
