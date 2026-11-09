@@ -34,6 +34,8 @@ object AuraDockPalette {
     val Inactive = Color(0xFF3A3A3A)
     /** The World dock's lit land dots (a new value from the World frames: #D9D9D9). */
     val WorldDay = Color(0xFFD9D9D9)
+    /** The Split dock's card (Now playing, the edit panel and Add widget sheet): #1C1C1E, new in the Split frames. */
+    val SplitCard = Color(0xFF1C1C1E)
     val Outline = Color(0xFF5C5C5C)
     val Tertiary = Color(0xFF8A8A8A)
     val Secondary = Color(0xFFA3A3A3)
@@ -191,4 +193,27 @@ object AuraDockColors {
     val IllustrationAppLine = AuraDockPalette.White40
     val IllustrationDimScreen = AuraDockPalette.NightBlue
     val IllustrationRingTrack = AuraDockPalette.White20
+}
+
+/** The tones a Split dock widget draws with, by day and by night (the Night frame steps every grey down one). */
+class SplitTones(
+    val primary: androidx.compose.ui.graphics.Color,
+    val secondary: androidx.compose.ui.graphics.Color,
+    val tertiary: androidx.compose.ui.graphics.Color,
+    val ring: androidx.compose.ui.graphics.Color,
+    /** Alpha of the coral accents (today, the dial's hub): 70% at night. */
+    val accentAlpha: Float,
+    val night: Boolean
+) {
+    val accent: androidx.compose.ui.graphics.Color get() = AuraDockColors.Coral.copy(alpha = accentAlpha)
+}
+
+object AuraDockSplitTones {
+    /** Day: white and its greys; the dial's ring dots #3A3A3A. */
+    val Day = SplitTones(AuraDockColors.DockText, AuraDockColors.DockSecondary, AuraDockColors.Tertiary, AuraDockColors.Inactive, 1f, false)
+
+    /** Night: white -> #8A8A8A, #A3A3A3 and #8A8A8A -> #5C5C5C, ring dots #262626, coral at 70%. */
+    val Night = SplitTones(AuraDockColors.Tertiary, AuraDockColors.Outline, AuraDockColors.Outline, AuraDockColors.Field, 0.7f, true)
+
+    fun of(night: Boolean) = if (night) Night else Day
 }

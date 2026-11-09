@@ -70,6 +70,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.ui.Alignment
 import com.auradock.ui.theme.AuraDockSpacing
 import com.auradock.dock.UndoFocusPill
+import com.auradock.dock.DockTouch
 import com.auradock.ui.onboarding.SetupPermission
 import com.auradock.ui.onboarding.SetupScreen
 import com.auradock.ui.viewmodel.CalendarPermissionUiState
@@ -262,16 +263,12 @@ class MainActivity : ComponentActivity() {
                     label = "rootModeTransition"
                 ) { mode ->
                     when (mode) {
-                        // A touch anywhere closes the dock, like it does in the screensaver.
-                        "dock" -> Box(
-                            Modifier
-                                .fillMaxSize()
-                                .clickable(
-                                    interactionSource = remember { MutableInteractionSource() },
-                                    indication = null
-                                ) { standbyViewModel.onDockTapped() }
-                        ) {
-                            DockScreen(dockData = dockData, window = this@MainActivity.window, interactive = true)
+                        // One tap shows "Undo focus" (Focus on), two taps leave; swipes and a long press belong to the Split template.
+                        "dock" -> Box(Modifier.fillMaxSize()) {
+                            DockScreen(
+                                dockData = dockData, window = this@MainActivity.window, interactive = true,
+                                touch = DockTouch(onSingleTap = { standbyViewModel.onDockTapped() }, onDoubleTap = { standbyViewModel.onDockDoubleTapped() })
+                            )
                             val undoShowing by standbyViewModel.undoFocusShowing.collectAsState()
                             UndoFocusPill(
                                 visible = undoShowing,

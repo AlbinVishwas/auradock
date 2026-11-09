@@ -4,6 +4,7 @@ import com.auradock.data.CalendarEvent
 import com.auradock.dock.lines.DockLines
 import com.auradock.data.NotificationItem
 import com.auradock.tasks.TaskEntity
+import com.auradock.dock.split.SplitStacks
 import com.auradock.dock.world.WorldUiState
 import com.auradock.ui.theme.BoldPalette
 import com.auradock.weather.Weather
@@ -33,7 +34,15 @@ data class DockUiState(
     /** The Bold clock's colourway. */
     val boldPalette: BoldPalette = BoldPalette.default,
     /** The World dock: where home is (null: no location) and the extra cities. */
-    val world: WorldUiState = WorldUiState()
+    val world: WorldUiState = WorldUiState(),
+    /** The Split dock: its two stacks and the days of this month with events. */
+    val split: SplitUiState = SplitUiState()
+)
+
+/** What the Split dock needs besides the time. */
+data class SplitUiState(
+    val stacks: SplitStacks = SplitStacks(),
+    val monthEventDays: Set<Int> = emptySet()
 )
 
 /** What the dock draws about the session: when it began, and how many notifications were held and let through. */

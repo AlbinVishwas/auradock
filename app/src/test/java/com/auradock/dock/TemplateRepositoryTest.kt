@@ -50,9 +50,9 @@ class TemplateRepositoryTest {
     }
 
     @Test
-    fun `the gallery offers all four templates`() =
+    fun `the gallery offers all seven templates`() =
         assertEquals(
-            listOf(DockTemplate.BOLD, DockTemplate.CLASSIC, DockTemplate.FOCUS, DockTemplate.MINIMAL, DockTemplate.PRODUCTIVITY),
+            listOf(DockTemplate.BOLD, DockTemplate.CLASSIC, DockTemplate.FOCUS, DockTemplate.MINIMAL, DockTemplate.PRODUCTIVITY, DockTemplate.WORLD, DockTemplate.SPLIT),
             DockTemplate.available
         )
 

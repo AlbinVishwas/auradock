@@ -227,6 +227,87 @@ object AuraDockTypography {
     /** A city's time on the map: Mona Sans Bold 13, tabular figures. */
     val DockWorldPillTime = TextStyle(fontFamily = MonaSansFamily, fontWeight = FontWeight.Bold, fontSize = 13.sp, lineHeight = 16.sp, fontFeatureSettings = "tnum")
 
+    // ---- The Split dock (frames SplitDock-*): sizes in the frames' px, which are dp here ----
+    val SplitNumeral = TextStyle(fontFamily = MonaSansFamily, fontWeight = FontWeight.Bold, fontSize = 26.sp)
+    val SplitMonthTitle = TextStyle(fontFamily = MonaSansFamily, fontWeight = FontWeight.Bold, fontSize = 20.sp, letterSpacing = 1.6.sp)
+    val SplitWeekday = TextStyle(fontFamily = InterFamily, fontWeight = FontWeight.SemiBold, fontSize = 13.sp)
+    /** The frames ask for Mona Sans SemiBold 18 here; the bundled Mona Sans file draws weights under Bold at its lightest, so Bold is used. */
+    val SplitDay = TextStyle(fontFamily = MonaSansFamily, fontWeight = FontWeight.Bold, fontSize = 18.sp)
+    val SplitToday = TextStyle(fontFamily = MonaSansFamily, fontWeight = FontWeight.Bold, fontSize = 18.sp)
+    val SplitCornerTime = TextStyle(fontFamily = MonaSansFamily, fontWeight = FontWeight.Bold, fontSize = 16.sp)
+
+    /** The Digital widget: Host Grotesk ExtraBold 150, line 0.8, and its date line. */
+    val SplitDigital = TextStyle(
+        fontFamily = DisplayGrotesk, fontWeight = FontWeight.ExtraBold, fontSize = 150.sp, lineHeight = 120.sp, letterSpacing = (-1.5).sp,
+        fontFeatureSettings = "tnum", platformStyle = PlatformTextStyle(includeFontPadding = false),
+        lineHeightStyle = LineHeightStyle(LineHeightStyle.Alignment.Center, LineHeightStyle.Trim.Both)
+    )
+    val SplitDigitalDate = TextStyle(fontFamily = InterFamily, fontWeight = FontWeight.Medium, fontSize = 20.sp)
+
+    /** Big date: "Fri Nov" in Mona Sans Bold 40, the day in Mona Sans Light 230 (line 0.8, tight). */
+    val SplitBigDateHead = TextStyle(fontFamily = MonaSansFamily, fontWeight = FontWeight.Bold, fontSize = 40.sp, lineHeight = 40.sp)
+    val SplitBigDateNumber = TextStyle(
+        fontFamily = MonaSansFamily, fontWeight = FontWeight.Light, fontSize = 230.sp, lineHeight = 184.sp, letterSpacing = (-6.9).sp,
+        platformStyle = PlatformTextStyle(includeFontPadding = false),
+        lineHeightStyle = LineHeightStyle(LineHeightStyle.Alignment.Center, LineHeightStyle.Trim.Both)
+    )
+
+    /** Up next. */
+    val SplitUpNextLabel = TextStyle(fontFamily = InterFamily, fontWeight = FontWeight.Medium, fontSize = 15.sp)
+    val SplitUpNextTime = TextStyle(fontFamily = MonaSansFamily, fontWeight = FontWeight.Bold, fontSize = 30.sp)
+    val SplitUpNextTitle = TextStyle(fontFamily = MonaSansFamily, fontWeight = FontWeight.Bold, fontSize = 38.sp, lineHeight = 41.8.sp)
+    val SplitUpNextSub = TextStyle(fontFamily = InterFamily, fontWeight = FontWeight.Medium, fontSize = 17.sp)
+    val SplitUpNextThen = TextStyle(fontFamily = MonaSansFamily, fontWeight = FontWeight.Bold, fontSize = 16.sp)
+    val SplitUpNextThenTitle = TextStyle(fontFamily = InterFamily, fontWeight = FontWeight.Medium, fontSize = 16.sp)
+
+    /** Weather: the temperature is Host Grotesk ExtraBold 160 (the frame says Nunito). */
+    val SplitWeatherCity = TextStyle(fontFamily = InterFamily, fontWeight = FontWeight.Medium, fontSize = 17.sp)
+    val SplitWeatherTemp = TextStyle(
+        fontFamily = DisplayGrotesk, fontWeight = FontWeight.ExtraBold, fontSize = 160.sp, lineHeight = 128.sp, letterSpacing = (-3.2).sp,
+        platformStyle = PlatformTextStyle(includeFontPadding = false),
+        lineHeightStyle = LineHeightStyle(LineHeightStyle.Alignment.Center, LineHeightStyle.Trim.Both)
+    )
+    val SplitWeatherCondition = TextStyle(fontFamily = MonaSansFamily, fontWeight = FontWeight.Bold, fontSize = 24.sp)
+    val SplitWeatherRange = TextStyle(fontFamily = InterFamily, fontWeight = FontWeight.Medium, fontSize = 16.sp)
+
+    /** Now playing. */
+    val SplitTrack = TextStyle(fontFamily = MonaSansFamily, fontWeight = FontWeight.ExtraBold, fontSize = 31.sp, lineHeight = 34.1.sp)
+    val SplitArtist = TextStyle(fontFamily = MonaSansFamily, fontWeight = FontWeight.Bold, fontSize = 22.sp, lineHeight = 26.4.sp)
+
+    /** Tasks. */
+    val SplitTasksTitle = TextStyle(fontFamily = MonaSansFamily, fontWeight = FontWeight.Bold, fontSize = 26.sp)
+    val SplitTasksCount = TextStyle(fontFamily = InterFamily, fontWeight = FontWeight.Medium, fontSize = 15.sp)
+    val SplitTask = TextStyle(fontFamily = InterFamily, fontWeight = FontWeight.Medium, fontSize = 20.sp)
+    val SplitTaskSub = TextStyle(fontFamily = InterFamily, fontWeight = FontWeight.Normal, fontSize = 14.sp)
+    val SplitTaskTime = TextStyle(fontFamily = MonaSansFamily, fontWeight = FontWeight.Bold, fontSize = 16.sp)
+
+    /** Focus ring: the time is Host Grotesk ExtraBold 68. */
+    val SplitFocusLabel = TextStyle(fontFamily = InterFamily, fontWeight = FontWeight.Medium, fontSize = 15.sp)
+    val SplitFocusTime = TextStyle(
+        fontFamily = DisplayGrotesk, fontWeight = FontWeight.ExtraBold, fontSize = 68.sp, lineHeight = 61.2.sp, fontFeatureSettings = "tnum",
+        platformStyle = PlatformTextStyle(includeFontPadding = false),
+        lineHeightStyle = LineHeightStyle(LineHeightStyle.Alignment.Center, LineHeightStyle.Trim.Both)
+    )
+
+    /** The World widget's home label and time (half-size version of the World dock). */
+    val SplitWorldCity = TextStyle(fontFamily = MonaSansFamily, fontWeight = FontWeight.Bold, fontSize = 24.sp, lineHeight = 26.4.sp, letterSpacing = (-0.72).sp)
+    val SplitWorldTime = TextStyle(
+        fontFamily = DisplayGrotesk, fontWeight = FontWeight.ExtraBold, fontSize = 92.sp, lineHeight = 73.6.sp, fontFeatureSettings = "tnum",
+        platformStyle = PlatformTextStyle(includeFontPadding = false),
+        lineHeightStyle = LineHeightStyle(LineHeightStyle.Alignment.Center, LineHeightStyle.Trim.Both)
+    )
+
+    /** Edit mode and the Add widget sheet. */
+    val SplitEditTitle = TextStyle(fontFamily = MonaSansFamily, fontWeight = FontWeight.Bold, fontSize = 18.sp)
+    val SplitEditDone = TextStyle(fontFamily = MonaSansFamily, fontWeight = FontWeight.Bold, fontSize = 15.sp)
+    val SplitEditRow = TextStyle(fontFamily = InterFamily, fontWeight = FontWeight.Medium, fontSize = 15.sp)
+    val SplitEditRowSub = TextStyle(fontFamily = InterFamily, fontWeight = FontWeight.Normal, fontSize = 13.sp)
+    val SplitEditAdd = TextStyle(fontFamily = InterFamily, fontWeight = FontWeight.SemiBold, fontSize = 15.sp)
+    val SplitSheetTitle = TextStyle(fontFamily = MonaSansFamily, fontWeight = FontWeight.Bold, fontSize = 22.sp)
+    val SplitSheetGroup = TextStyle(fontFamily = InterFamily, fontWeight = FontWeight.SemiBold, fontSize = 13.sp)
+    val SplitSheetTile = TextStyle(fontFamily = InterFamily, fontWeight = FontWeight.Medium, fontSize = 12.sp)
+    val SplitBadge = TextStyle(fontFamily = InterFamily, fontWeight = FontWeight.SemiBold, fontSize = 12.sp)
+
     /** The AM/PM marker beside a clock: Inter Medium 18. */
     val ClockMeridiem = TextStyle(fontFamily = InterFamily, fontWeight = FontWeight.Medium, fontSize = 18.sp)
 

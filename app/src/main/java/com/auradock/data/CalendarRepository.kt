@@ -92,6 +92,32 @@ class CalendarRepository @Inject constructor(
      * which is what "what is on today" needs. It also returns events that began earlier and are
      * still running, and all-day events that cover today.
      */
+    /** The days of the current month that have at least one event (for the Split dock's Month widget). Empty without calendar access. */
+    suspend fun fetchMonthEventDays(): Set<Int> {
+        if (!hasCalendarPermission()) return emptySet()
+        return runCatching {
+            val zone = java.time.ZoneId.systemDefault()
+            val month = java.time.YearMonth.now(zone)
+            val start = month.atDay(1).atStartOfDay(zone).toInstant().toEpochMilli()
+            val end = month.plusMonths(1).atDay(1).atStartOfDay(zone).toInstant().toEpochMilli()
+            val uri = CalendarContract.Instances.CONTENT_URI.buildUpon().also {
+                ContentUris.appendId(it, start)
+                ContentUris.appendId(it, end - 1)
+            }.build()
+            val days = mutableSetOf<Int>()
+            context.contentResolver.query(uri, arrayOf(CalendarContract.Instances.BEGIN, CalendarContract.Instances.ALL_DAY, CalendarContract.Instances.STATUS), null, null, null)?.use { c ->
+                while (c.moveToNext()) {
+                    if (c.getInt(2) == CalendarContract.Events.STATUS_CANCELED) continue
+                    val begin = c.getLong(0)
+                    // All-day events are stored at UTC midnight: read their day in UTC, not the phone's zone.
+                    val day = java.time.Instant.ofEpochMilli(begin).atZone(if (c.getInt(1) == 1) java.time.ZoneOffset.UTC else zone).toLocalDate()
+                    if (day.month == month.month) days += day.dayOfMonth
+                }
+            }
+            days
+        }.getOrDefault(emptySet())
+    }
+
     suspend fun fetchTodayEvents(): List<CalendarEvent> {
         if (!hasCalendarPermission()) return emptyList()
 

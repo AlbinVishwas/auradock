@@ -1,5 +1,14 @@
 package com.auradock.dock
 
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
+import androidx.compose.foundation.layout.padding
+import com.auradock.ui.theme.AuraDockMotion
+import com.auradock.ui.theme.AuraDockSpacing
+import kotlinx.coroutines.delay
 import com.auradock.ui.theme.AuraDockColors
 import android.content.res.Configuration
 import android.graphics.Color as AndroidColor
@@ -115,7 +124,7 @@ class DockDreamService : DreamService(), LifecycleOwner, SavedStateRegistryOwner
 
     override fun onAttachedToWindow() {
         super.onAttachedToWindow()
-        isInteractive = false // a touch ends the dream
+        isInteractive = true  // touches reach the dock: one tap shows "Undo focus", two leave, swipes and a long press work on the Split dock
         isFullscreen = true   // hide the status bar
         window.setBackgroundDrawable(ColorDrawable(AndroidColor.BLACK))
         displayRotationDegrees = currentDisplayRotationDegrees()
@@ -130,7 +139,28 @@ class DockDreamService : DreamService(), LifecycleOwner, SavedStateRegistryOwner
                         Box(Modifier.fillMaxSize().background(AuraDockColors.Background)) // waiting for the sensor
                     } else {
                         RotatedContent(contentRotationDegrees(shown, displayRotationDegrees)) {
-                            DockScreen(dockData = dockData, window = window)
+                            var undoShowing by remember { mutableStateOf(false) }
+                            LaunchedEffect(undoShowing) {
+                                if (undoShowing) {
+                                    delay(AuraDockMotion.UndoFocus.toLong())
+                                    undoShowing = false
+                                }
+                            }
+                            val focusOn by dockFocus.focusOn.collectAsState()
+                            Box(Modifier.fillMaxSize()) {
+                                DockScreen(
+                                    dockData = dockData, window = window,
+                                    touch = DockTouch(
+                                        onSingleTap = { if (tapOnDock(focusOn, undoShowing) == DockTap.SHOW_UNDO) undoShowing = true },
+                                        onDoubleTap = { finish() }
+                                    )
+                                )
+                                UndoFocusPill(
+                                    visible = undoShowing,
+                                    onUndo = { dockFocus.undoFocus(); undoShowing = false },
+                                    modifier = Modifier.align(Alignment.TopCenter).padding(top = AuraDockSpacing.xl)
+                                )
+                            }
                         }
                     }
                 }

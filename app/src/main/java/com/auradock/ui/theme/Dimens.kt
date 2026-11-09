@@ -306,6 +306,83 @@ object AuraDockBold {
     val StripLineGap = 6.dp
 }
 
+/** The Split dock (frames SplitDock-*): each half is 405 x 364, laid out in the frames' 915 x 412. */
+object AuraDockSplit {
+    val HalfWidth = 405.dp
+    val HalfHeight = 364.dp
+    val SideInset = 40.dp
+    val TopInset = 24.dp
+    val Gap = 25.dp
+
+    /** The distance one swipe moves a widget: the frame's mid-swipe has the old one 78 up and the new one 118 down at 40%, so 196. */
+    val Pitch = 196.dp
+    const val OutgoingSlope = 1.8f
+    const val IncomingSlope = 1.5f
+    val BlurMax = 10.dp
+    /** A release past this share of the pitch (or a quick flick) completes the swipe. */
+    const val CommitShare = 0.3f
+    const val FlickVelocity = 900f
+
+    /** The dots that show where you are in a stack: 6 dp, 8 apart, 16 from the screen edge. */
+    val IndicatorDot = 6.dp
+    val IndicatorGap = 8.dp
+    val IndicatorInset = 16.dp
+    const val IndicatorHoldMillis = 1400
+
+    /** With a notification the halves scale to 85% and rise 14 dp. */
+    const val NotificationScale = 0.85f
+    val NotificationRise = 14.dp
+
+    /** The small corner time (when neither half shows the time) sits in the top margin. */
+    val CornerTimeTop = 2.dp
+
+    // The Dial (330 dp square): all in dp, from its centre.
+    val DialSize = 330.dp
+    const val DialRingRadius = 151.2f
+    const val DialDotRadius = 1.8f
+    const val DialTickInner = 140f
+    const val DialTickOuter = 156f
+    const val DialTickStroke = 4f
+    const val DialNumeralRadius = 112f
+    const val DialHourLength = 82f
+    const val DialHourStroke = 11f
+    const val DialMinuteLength = 128f
+    const val DialMinuteStroke = 6f
+    const val DialSecondLength = 140f
+    const val DialSecondTail = 24f
+    const val DialSecondStroke = 2.5f
+    const val DialHubRadius = 7f
+    const val DialHubHole = 2.5f
+
+    // Month.
+    val MonthRow = 44.dp
+    val MonthTodayDisc = 38.dp
+    val MonthEventDot = 4.dp
+    val MonthSidePad = 6.dp
+    val MonthTitleInset = 14.dp
+
+    // Edit mode: the panel covers the half being edited; the other half drops to 25%.
+    val EditPanelWidth = 425.dp
+    val EditPanelHeight = 372.dp
+    val EditPanelRadius = 28.dp
+    const val EditOtherAlpha = 0.25f
+    val EditRow = 56.dp
+    val EditThumbWidth = 57.dp
+    val EditThumbHeight = 51.dp
+    const val EditThumbScale = 0.14f
+    val EditBadge = 24.dp
+    val EditButton = 44.dp
+
+    // Add widget sheet.
+    val SheetWidth = 776.dp
+    val SheetHeight = 348.dp
+    const val SheetScrim = 0.6f
+    val SheetTileWidth = 81.dp
+    val SheetTileHeight = 73.dp
+    const val SheetTileScale = 0.2f
+    const val DimAddOpacity = 0.35f
+}
+
 /** The World dock (frames Dock-World*): sizes in the design frame's units, drawn at the frame's scale (see WorldProjection). */
 object AuraDockWorld {
     /** Land dots 3, the home dot 8, a city dot 4, all with a 2 stroke in the stage's black; the day and night line 2. */

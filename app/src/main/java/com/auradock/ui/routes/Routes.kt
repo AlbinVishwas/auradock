@@ -21,6 +21,7 @@ import com.auradock.ui.onboarding.SetupActions
 import com.auradock.ui.onboarding.SetupPermission
 import com.auradock.ui.onboarding.SetupScreen
 import com.auradock.ui.onboarding.SetupUiState
+import com.auradock.dock.SplitUiState
 import com.auradock.dock.world.WorldUiState
 import com.auradock.ui.screens.TemplateGalleryScreen
 import com.auradock.ui.screens.TemplateGalleryUiState
@@ -75,12 +76,14 @@ fun DashboardRoute(viewModel: StandbyViewModel, navigation: Navigation, modifier
     val boldPalette by viewModel.boldPalette.collectAsState()
     val dashWorldHome by viewModel.worldHome.collectAsState()
     val dashWorldCities by viewModel.worldCities.collectAsState()
+    val dashSplitStacks by viewModel.splitStacks.collectAsState()
 
     DashboardScreen(
         state = DashboardUiState(
             template = template,
             boldPalette = boldPalette,
             world = WorldUiState(dashWorldHome, dashWorldCities),
+            split = SplitUiState(dashSplitStacks),
             timeMillis = time,
             weather = weather.usableAt(time),
             locationPermission = locationPermission,
@@ -130,9 +133,10 @@ private fun rememberGalleryState(viewModel: StandbyViewModel): TemplateGalleryUi
     val palette by viewModel.boldPalette.collectAsState()
     val worldHome by viewModel.worldHome.collectAsState()
     val worldCities by viewModel.worldCities.collectAsState()
+    val splitStacks by viewModel.splitStacks.collectAsState()
     return TemplateGalleryUiState(
         selected = template,
-        dockState = DockUiState(time, weather.usableAt(time), events.orEmpty(), tasks.orEmpty(), boldPalette = palette, world = WorldUiState(worldHome, worldCities))
+        dockState = DockUiState(time, weather.usableAt(time), events.orEmpty(), tasks.orEmpty(), boldPalette = palette, world = WorldUiState(worldHome, worldCities), split = SplitUiState(splitStacks))
     )
 }
 

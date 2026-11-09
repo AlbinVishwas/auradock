@@ -7,6 +7,9 @@ import com.auradock.dock.lines.IntentionPrompt
 import androidx.compose.ui.layout.FirstBaseline
 import androidx.compose.ui.layout.layout
 import com.auradock.ui.theme.AuraDockTypography
+import com.auradock.dock.split.SplitDock
+import com.auradock.dock.split.SplitSide
+import com.auradock.dock.split.WidgetKind
 import com.auradock.dock.world.WorldClock
 import com.auradock.ui.theme.AuraDockBold
 import com.auradock.ui.theme.AuraDockSpacing
@@ -68,14 +71,15 @@ fun DockContent(template: DockTemplate, state: DockUiState, modifier: Modifier =
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(AuraDockColors.Background),
+            .background(AuraDockColors.Background)
+            .then(if (template == DockTemplate.SPLIT) Modifier else Modifier.dockTouch(actions.touch)),
         contentAlignment = Alignment.Center
     ) {
         val lines = stripLines(state.notifications, state.showMessageText)
         val caption = state.session?.let { heldCaption(it.held, it.through) }
         val rows = maxOf(lines.size, if (caption != null) 1 else 0)
         // The strip's own room under the template (Bold draws its strip inside the clock, so it needs none here).
-        val stripRoom = if (rows == 0 || template == DockTemplate.BOLD || template == DockTemplate.WORLD) AuraDockSizes.none else AuraDockDockLayout.stripBase + AuraDockDockLayout.stripLine * rows
+        val stripRoom = if (rows == 0 || template == DockTemplate.BOLD || template == DockTemplate.WORLD || template == DockTemplate.SPLIT) AuraDockSizes.none else AuraDockDockLayout.stripBase + AuraDockDockLayout.stripLine * rows
         // The quiet lines (intention, ...) sit just above the strip and the session line; the template leaves room for them too.
         val lineRoom = if (state.lines.count == 0) AuraDockSizes.none else AuraDockDockLayout.lineRow * state.lines.count
         val linesBottom = if (stripRoom > AuraDockSizes.none) stripRoom else AuraDockDockLayout.stripBase
@@ -105,6 +109,13 @@ fun DockContent(template: DockTemplate, state: DockUiState, modifier: Modifier =
                 strip = lines,
                 caption = caption
             )
+            DockTemplate.SPLIT -> SplitDock(
+                state = state,
+                use24Hour = DateFormat.is24HourFormat(LocalContext.current),
+                strip = lines,
+                caption = caption,
+                actions = actions
+            )
             DockTemplate.MINIMAL -> ClockWidget(timeMillis = state.timeMillis, dimmed = true, showDate = false)
             DockTemplate.FOCUS -> SafeZone { FocusLayout(state) }
             DockTemplate.PRODUCTIVITY -> SafeZone { ProductivityLayout(state) }
@@ -127,8 +138,8 @@ fun DockContent(template: DockTemplate, state: DockUiState, modifier: Modifier =
             )
         }
         NotificationStrip(
-            lines = if (template == DockTemplate.BOLD || template == DockTemplate.WORLD) emptyList() else lines,
-            caption = if (template == DockTemplate.BOLD || template == DockTemplate.WORLD) null else caption,
+            lines = if (template == DockTemplate.BOLD || template == DockTemplate.WORLD || template == DockTemplate.SPLIT) emptyList() else lines,
+            caption = if (template == DockTemplate.BOLD || template == DockTemplate.WORLD || template == DockTemplate.SPLIT) null else caption,
             dimmed = template == DockTemplate.MINIMAL,
             modifier = Modifier.align(Alignment.BottomCenter)
         )
@@ -137,6 +148,8 @@ fun DockContent(template: DockTemplate, state: DockUiState, modifier: Modifier =
 
 /** What touching the live dock can do: tick a line, answer the morning question. The screensaver passes none. */
 data class DockActions(
+    val touch: DockTouch? = null,
+    val onStackChange: (SplitSide, List<WidgetKind>) -> Unit = { _, _ -> },
     val lines: DockLineActions = DockLineActions(),
     val onSaveIntention: (String) -> Unit = {},
     val onSkipIntention: () -> Unit = {}

@@ -38,6 +38,12 @@ import kotlin.math.roundToInt
 /** What the World dock needs besides the time: where home is (null: no location) and the extra cities picked. */
 data class WorldUiState(val home: GeoPoint? = null, val extras: List<WorldCity> = emptyList())
 
+/** Whether it is night at home: the sun below the horizon at the weather location (or, with none, the time zone's city). Used by the World and Split docks. */
+fun dockIsNight(timeMillis: Long, home: GeoPoint?, zone: ZoneId): Boolean {
+    val point = home ?: WorldCities.forZone(zone, timeMillis).point
+    return !Solar.isDay(Solar.at(timeMillis / AuraDockWorld.RefreshMillis * AuraDockWorld.RefreshMillis), point.lat, point.lon)
+}
+
 /** A city's local time as the map writes it: "12:43 am" on a 12-hour clock, "00:43" on a 24-hour one. */
 fun worldCityTime(millis: Long, zoneId: String, use24Hour: Boolean): String {
     val t = Instant.ofEpochMilli(millis).atZone(ZoneId.of(zoneId))

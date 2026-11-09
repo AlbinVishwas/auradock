@@ -8,11 +8,11 @@ class UndoFocusRulesTest {
         assertEquals(DockTap.SHOW_UNDO, tapOnDock(focusOn = true, undoShowing = false))
     }
 
-    @Test fun `a second touch while it shows closes the dock`() {
-        assertEquals(DockTap.CLOSE, tapOnDock(focusOn = true, undoShowing = true))
+    @Test fun `a second touch while it shows does nothing the dock`() {
+        assertEquals(DockTap.NONE, tapOnDock(focusOn = true, undoShowing = true))
     }
 
-    @Test fun `with no Focus to undo a touch closes the dock`() {
-        assertEquals(DockTap.CLOSE, tapOnDock(focusOn = false, undoShowing = false))
+    @Test fun `with no Focus to undo a touch does nothing the dock`() {
+        assertEquals(DockTap.NONE, tapOnDock(focusOn = false, undoShowing = false))
     }
 }

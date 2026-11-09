@@ -63,6 +63,7 @@ class StandbyViewModel @Inject constructor(
     private val calendarRepository: CalendarRepository,
     private val appCatalog: AppCatalog,
     private val templateRepository: TemplateRepository,
+    private val splitRepository: com.auradock.dock.split.SplitRepository,
     private val taskRepository: TaskRepository,
     private val weatherRepository: WeatherRepository,
     private val focusSettings: FocusSettings,
@@ -124,6 +125,9 @@ class StandbyViewModel @Inject constructor(
 
     /** The saved template choice (shared with the screensaver). */
     val currentTemplate: StateFlow<DockTemplate> = templateRepository.selected
+
+    /** The Split dock's stacks (the gallery and the dashboard draw its card with them). */
+    val splitStacks: StateFlow<com.auradock.dock.split.SplitStacks> = splitRepository.stacks
 
     /** The World dock: where the weather was read (home) and the extra cities picked in the gallery. */
     val worldHome: StateFlow<com.auradock.dock.world.GeoPoint?> = weatherRepository.place
@@ -521,6 +525,13 @@ class StandbyViewModel @Inject constructor(
     private var undoHideJob: kotlinx.coroutines.Job? = null
 
     /** A touch on the in-app dock: the first shows "Undo focus" (if there is Focus to undo), the next closes the dock. */
+    /** A double tap leaves the dock (a single tap never does). */
+    fun onDockDoubleTapped() {
+        undoHideJob?.cancel()
+        _undoFocusShowing.value = false
+        dismissDock()
+    }
+
     fun onDockTapped() {
         when (tapOnDock(dockFocus.focusOn.value, _undoFocusShowing.value)) {
             DockTap.SHOW_UNDO -> {
@@ -531,11 +542,7 @@ class StandbyViewModel @Inject constructor(
                     _undoFocusShowing.value = false
                 }
             }
-            DockTap.CLOSE -> {
-                undoHideJob?.cancel()
-                _undoFocusShowing.value = false
-                dismissDock()
-            }
+            DockTap.NONE -> Unit
         }
     }
 

@@ -79,6 +79,7 @@ data class DashboardUiState(
     val timeMillis: Long,
     val boldPalette: BoldPalette = BoldPalette.default,
     val world: com.auradock.dock.world.WorldUiState = com.auradock.dock.world.WorldUiState(),
+    val split: com.auradock.dock.SplitUiState = com.auradock.dock.SplitUiState(),
     val weather: Weather? = null,
     val locationPermission: CalendarPermissionUiState = CalendarPermissionUiState.GRANTED,
     /** Null until the first load finishes. */
@@ -187,7 +188,7 @@ fun DashboardScreen(
         BlurIn(index = 3) {
             DockCard(
                 template = state.template,
-                dockState = DockUiState(timeMillis, state.weather, state.events.orEmpty(), tasks.orEmpty(), boldPalette = state.boldPalette, world = state.world),
+                dockState = DockUiState(timeMillis, state.weather, state.events.orEmpty(), tasks.orEmpty(), boldPalette = state.boldPalette, world = state.world, split = state.split),
                 onChange = actions.onOpenTemplates,
                 onDockNow = actions.onDockNow,
                 showLabel = !emptyDay

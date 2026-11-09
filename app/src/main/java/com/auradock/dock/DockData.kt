@@ -1,5 +1,6 @@
 package com.auradock.dock
 
+import kotlinx.coroutines.flow.flow
 import com.auradock.ui.theme.BoldPalette
 import android.content.Context
 import com.auradock.data.CalendarEvent
@@ -44,7 +45,8 @@ class DockData @Inject constructor(
     private val weatherRepository: WeatherRepository,
     taskRepository: TaskRepository,
     sessionTracker: SessionTracker,
-    private val intentions: IntentionRepository
+    private val intentions: IntentionRepository,
+    private val splitRepository: com.auradock.dock.split.SplitRepository
 ) {
     /** The focus session going on now, for the dock's ring and its "held for you" line. */
     val session: StateFlow<LiveSession?> = sessionTracker.live
@@ -57,6 +59,16 @@ class DockData @Inject constructor(
     fun setIntentionDone(done: Boolean) { intentions.setDone(done) }
 
     val selectedTemplate: StateFlow<DockTemplate> = templateRepository.selected
+
+    /** The Split dock's two stacks, and the days of this month with events (read every 15 minutes). */
+    val splitStacks = splitRepository.stacks
+    val monthEventDays: Flow<Set<Int>> = flow {
+        while (true) {
+            emit(calendarRepository.fetchMonthEventDays())
+            kotlinx.coroutines.delay(15 * 60_000L)
+        }
+    }
+    fun setSplitStack(side: com.auradock.dock.split.SplitSide, stack: List<com.auradock.dock.split.WidgetKind>) = splitRepository.setStack(side, stack)
 
     /** Home for the World dock, and the extra cities picked. */
     val worldHome = weatherRepository.place

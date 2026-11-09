@@ -18,6 +18,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import com.auradock.dock.world.WorldUiState
+import androidx.compose.runtime.collectAsState
 import com.auradock.ui.components.BurnInProtection
 import com.auradock.dock.lines.DockLineActions
 import com.auradock.dock.lines.DockLines
@@ -42,11 +43,13 @@ private const val MINIMAL_BRIGHTNESS = 0.05f
  * composable, they look identical by construction.
  */
 @Composable
-fun DockScreen(dockData: DockData, window: Window?, modifier: Modifier = Modifier, interactive: Boolean = false) {
+fun DockScreen(dockData: DockData, window: Window?, modifier: Modifier = Modifier, interactive: Boolean = false, touch: DockTouch? = null) {
     val template by dockData.selectedTemplate.collectAsState()
     val boldPalette by dockData.boldPalette.collectAsState()
     val worldHome by dockData.worldHome.collectAsState()
     val worldCities by dockData.worldCities.collectAsState()
+    val splitStacks by dockData.splitStacks.collectAsState()
+    val monthEventDays by dockData.monthEventDays.collectAsState(initial = emptySet())
     val time by dockData.timeMillis.collectAsState(initial = dockData.currentTimeMillis())
     val weather by dockData.weather.collectAsState()
     val events by dockData.todayEvents.collectAsState(initial = emptyList())
@@ -96,8 +99,10 @@ fun DockScreen(dockData: DockData, window: Window?, modifier: Modifier = Modifie
                     notifications = notifications, showMessageText = showText,
                     session = session?.let { SessionSnapshot(it.startedAt, it.counts.held, it.counts.through) },
                     lines = DockLines(resume = resume, meeting = meetingCountdown(events, time), intention = intentionNow),
-                    intentionPrompt = prompt, boldPalette = boldPalette, world = WorldUiState(worldHome, worldCities)),
+                    intentionPrompt = prompt, boldPalette = boldPalette, world = WorldUiState(worldHome, worldCities), split = SplitUiState(splitStacks, monthEventDays)),
                 actions = DockActions(
+                    touch = touch,
+                    onStackChange = dockData::setSplitStack,
                     lines = DockLineActions(onToggleIntention = dockData::setIntentionDone),
                     onSaveIntention = { prompt = null; dockData.saveIntention(it) },
                     onSkipIntention = { prompt = null; dockData.skipIntention() }
