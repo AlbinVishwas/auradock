@@ -383,3 +383,31 @@ in Focus settings. Watch the saved sessions with `adb logcat -s SessionTracker` 
 - [ ] **Midnight.** Dock across midnight: the time is split between the two bars.
 - [ ] **Battery.** One night docked with 0.2.0 (the line updates once a minute): note the battery use from Settings > Battery > AuraDock;
   it should match 0.1.4.
+
+## Founder focus, batch B (0.2.1)
+Setup: install 0.2.1 over 0.2.0 (see "Upgrade" below the 0.2.0 list). Allow calendar access. The checks that need a time of day (after 4 am,
+after 6 pm) can be done on the day, or by changing the phone's clock.
+- [ ] **Upgrade keeps data.** Install 0.2.1 over 0.2.0 with sessions and tasks in place. Pass: dashboard opens (not onboarding), the weekly
+  line and the tasks are as before, nothing crashes.
+- [ ] **A killed app keeps its session.** Dock for three minutes, then force-stop AuraDock (Settings > Apps > Force stop) while docked, and open
+  the app. Pass: the weekly line gains about three minutes (at most a minute short). A force-stop inside the first two minutes saves nothing.
+- [ ] **Morning question.** First dock after 4 am: "What's the one thing today?" with the field, Save and Skip, on the black screen. Pass: the
+  keyboard does not hide Save; Save shows the clock with the thing as a quiet line with a circle under it; Skip shows the plain clock and it is not
+  asked again that day; docking again the same morning does not ask again. The screensaver never asks (it cannot take touch), and the next in-app
+  dock does.
+- [ ] **Intention line on every template.** Bold, Classic, Focus, Productivity, Minimal. Pass: one quiet line under the clock, never touching the
+  digits, the date or the notification strip (try with a notification showing), readable at about 1 m, dimmer on Minimal.
+- [ ] **Ticking it.** Tap the circle on the dock: the line strikes through from left to right, goes grey and stays. Tap again to undo. The same
+  intention is the first row of the dashboard's Today card and ticking either one updates both. It is never sent anywhere.
+- [ ] **Next meeting.** Make a calendar event ten minutes ahead. Pass: from ten minutes before, the dock shows its title and "in N min" in coral,
+  above the intention; from "in 2 min" the whole line slowly fades in and out (no movement, no sound); it disappears at the start time. An
+  all-day event, a declined event and a cancelled event never show.
+- [ ] **Evening shutdown.** Dock for at least two minutes after 6 pm and touch the screen to close it. Pass: the usual card for three seconds,
+  then "Tomorrow's top task?" (tap the card to move on sooner). Save with a time and without: the task is not in today's list, it is in
+  tomorrow's at that time (a reminder fires then), and tomorrow morning's question starts with that text. Skip leaves nothing. A second evening
+  session the same evening shows only the normal card. A session before 6 pm gets no second step.
+- [ ] **Pick up.** With an unfinished intention (or a task you made or edited today), dock again after an earlier dock. Pass: "Pick up: <task>" is the
+  first line for 30 seconds and then goes by itself; a screensaver handing over to the app does not bring it back; it never shows for a finished
+  task, nor on the dock that asks the morning question.
+- [ ] **Stacking.** Meeting soon, intention open and a re-dock all at once: Pick up, then the meeting, then the intention, with the clock still
+  readable on Bold.
