@@ -15,6 +15,7 @@ class AuraDockApplication : Application() {
     @Inject lateinit var sessionTracker: SessionTracker
 
     override fun onCreate() {
+        com.auradock.data.RestoreCleanup.run(this) // before anything opens the database
         super.onCreate() // Hilt injects taskNotifier here
         com.auradock.monitoring.Monitoring.init(this) // crash and performance reporting, no personal content; off in debug builds
         taskNotifier.ensureChannel()

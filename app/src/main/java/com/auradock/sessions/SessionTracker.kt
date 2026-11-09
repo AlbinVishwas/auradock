@@ -72,7 +72,7 @@ class SessionTracker @Inject constructor(
                         notificationsHeld = done.counts.held, vipThrough = done.counts.through, tasksCompleted = tasksDone
                     )
                 )
-                Log.d(TAG, "recovered an open session: ${done.durationMs / 1000} s, ${done.counts}")
+                Log.i(TAG, "recovered an open session: ${done.durationMs / 1000} s, ${done.counts}")
             }
             sessions.clearCheckpoint()
         }
@@ -189,7 +189,7 @@ class SessionTracker @Inject constructor(
         _live.value = machine.live
         handler.removeCallbacks(tick)
         if (!done.worthKeeping) {
-            Log.d(TAG, "session of ${done.durationMs / 1000} s ignored (under two minutes)")
+            Log.i(TAG, "session of ${done.durationMs / 1000} s ignored (under two minutes)")
             scope.launch { sessions.clearCheckpoint() }
             return
         }
@@ -207,7 +207,7 @@ class SessionTracker @Inject constructor(
             )
             sessions.clearCheckpoint()
             // The card was announced when the dock closed ([announce]); setting it again here would show it twice.
-            Log.d(TAG, "session saved: ${done.durationMs / 1000} s, $tasksDone tasks, ${done.counts}")
+            Log.i(TAG, "session saved: ${done.durationMs / 1000} s, $tasksDone tasks, ${done.counts}")
         }
     }
 

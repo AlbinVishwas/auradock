@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Android 11 and older (fullBackupContent). Same list as data_extraction_rules.xml. -->
+<full-backup-content>
+    <include domain="database" path="auradock.db" />
+    <include domain="database" path="auradock.db-wal" />
+    <include domain="database" path="auradock.db-shm" />
+    <include domain="sharedpref" path="auradock_prefs.xml" />
+    <include domain="sharedpref" path="auradock_split.xml" />
+    <include domain="sharedpref" path="auradock_focus_settings.xml" />
+</full-backup-content>

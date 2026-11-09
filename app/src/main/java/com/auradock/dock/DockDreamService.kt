@@ -91,7 +91,7 @@ class DockDreamService : DreamService(), LifecycleOwner, SavedStateRegistryOwner
     private var finishing = false
 
     private val firstReadingTimeout = Runnable {
-        Log.d(TAG, trace.describe(SystemClock.elapsedRealtime(), "timeout", lastStable))
+        Log.i(TAG, trace.describe(SystemClock.elapsedRealtime(), "timeout", lastStable))
         if (trace.sampleCount == 0) Monitoring.nonFatal("dream.no_sensor_reading")
         apply(gate.onTimeout())
     }
@@ -188,14 +188,14 @@ class DockDreamService : DreamService(), LifecycleOwner, SavedStateRegistryOwner
         val sensorManager = getSystemService(SensorManager::class.java)
         val accelerometer = sensorManager?.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
         if (accelerometer == null) {
-            Log.d(TAG, "no accelerometer, finishing")
+            Log.i(TAG, "no accelerometer, finishing")
             finish()
             return
         }
         trace = GateTrace(SystemClock.elapsedRealtime())
         finishing = false
         val registered = sensorManager.registerListener(sensorListener, accelerometer, SensorManager.SENSOR_DELAY_GAME)
-        Log.d(TAG, "gate started: accelerometer registered=$registered")
+        Log.i(TAG, "gate started: accelerometer registered=$registered")
         handler.postDelayed(firstReadingTimeout, FIRST_READING_TIMEOUT_MS)
     }
 
@@ -206,7 +206,7 @@ class DockDreamService : DreamService(), LifecycleOwner, SavedStateRegistryOwner
                 if (finishing) return
                 finishing = true
                 Monitoring.breadcrumb("gate", "finish", "samples" to trace.sampleCount, "orientation" to (lastStable?.name ?: "none"))
-                Log.d(TAG, trace.describe(SystemClock.elapsedRealtime(), "finish (not landscape)", lastStable))
+                Log.i(TAG, trace.describe(SystemClock.elapsedRealtime(), "finish (not landscape)", lastStable))
                 finish()
             }
             is GateDecision.Show -> {

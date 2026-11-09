@@ -26,3 +26,10 @@
 -keep @dagger.hilt.android.AndroidEntryPoint class * { *; }
 -keep @dagger.hilt.android.HiltAndroidApp class * { *; }
 -keep @dagger.hilt.android.lifecycle.HiltViewModel class * { *; }
+
+# Release logging: debug and verbose calls are removed. Info, warning and error stay; DockDream and DockWatcher log at info,
+# because the A55 checklist reads them with `adb logcat -s DockDream DockWatcher`. None of the messages carry personal content.
+-assumenosideeffects class android.util.Log {
+    public static int v(...) return 0;
+    public static int d(...) return 0;
+}

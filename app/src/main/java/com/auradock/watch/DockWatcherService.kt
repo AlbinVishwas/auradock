@@ -144,7 +144,7 @@ class DockWatcherService : Service(), LifecycleOwner, SavedStateRegistryOwner {
         logic.reset()
         sensorManager.registerListener(sensorListener, accelerometer, SensorManager.SENSOR_DELAY_NORMAL)
         handler.post(tick)
-        Log.d(TAG, "watching (screen on, charging=$charging)")
+        Log.i(TAG, "watching (screen on, charging=$charging)")
     }
 
     private fun stopSampling() {
@@ -153,7 +153,7 @@ class DockWatcherService : Service(), LifecycleOwner, SavedStateRegistryOwner {
         getSystemService(SensorManager::class.java)?.unregisterListener(sensorListener)
         handler.removeCallbacks(tick)
         apply(WatchOutput(null))
-        Log.d(TAG, "not watching (screen off)")
+        Log.i(TAG, "not watching (screen off)")
     }
 
     private fun currentContext(): WatchContext {
@@ -167,7 +167,7 @@ class DockWatcherService : Service(), LifecycleOwner, SavedStateRegistryOwner {
     private fun apply(output: WatchOutput) {
         if (output.pill != lastPill) {
             lastPill = output.pill
-            Log.d(TAG, "pill: ${output.pill ?: "hidden"}")
+            Log.i(TAG, "pill: ${output.pill ?: "hidden"}")
             Monitoring.breadcrumb("watcher", if (output.pill == null) "suppressed" else "pill", "reason" to (output.pill?.javaClass?.simpleName ?: "hidden"))
             showPill(output.pill)
         }
@@ -180,7 +180,7 @@ class DockWatcherService : Service(), LifecycleOwner, SavedStateRegistryOwner {
     }
 
     private fun launchDock() {
-        Log.d(TAG, "opening the dock")
+        Log.i(TAG, "opening the dock")
         Monitoring.breadcrumb("watcher", "trigger")
         startActivity(
             Intent(this, MainActivity::class.java)
