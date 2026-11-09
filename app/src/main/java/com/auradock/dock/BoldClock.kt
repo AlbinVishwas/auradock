@@ -1,49 +1,43 @@
 package com.auradock.dock
 
+import android.graphics.Paint as NativePaint
+import android.graphics.PorterDuff
+import android.graphics.PorterDuffXfermode
+import android.graphics.Rect as NativeRect
+import android.graphics.Typeface
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.tween
-import com.auradock.ui.theme.AuraDockMotion
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ChatBubbleOutline
 import androidx.compose.material3.Icon
-import androidx.compose.ui.text.style.TextOverflow
-import com.auradock.ui.theme.AuraDockTypography
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.offset
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Rect
-import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.CompositingStrategy
-import androidx.compose.ui.graphics.Paint
-import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
-import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.layout.layout
-import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.text.PlatformTextStyle
-import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.graphics.nativeCanvas
+import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.platform.LocalFontFamilyResolver
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.rememberTextMeasurer
-import androidx.compose.ui.text.style.LineHeightStyle
-import androidx.compose.ui.unit.Constraints
-import androidx.compose.ui.unit.Density
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.text.style.TextOverflow
 import com.auradock.ui.theme.AuraDockBold
 import com.auradock.ui.theme.AuraDockColors
 import com.auradock.ui.theme.AuraDockDockLayout
+import com.auradock.ui.theme.AuraDockMotion
+import com.auradock.ui.theme.AuraDockTypography
 import com.auradock.ui.theme.NunitoFamily
 import java.time.Instant
 import java.time.ZoneId
@@ -58,112 +52,43 @@ fun boldTimeString(timeMillis: Long, use24Hour: Boolean, zone: ZoneId = ZoneId.s
     return (if (use24Hour) "%02d".format(hour) else hour.toString()) + ":" + "%02d".format(t.minute)
 }
 
+/** Digits are measured at this size (px) to read their ink; the numbers are then divided back to em. */
+private const val MEASURE_PX = 1000f
+
+/** The ink of each digit in [typeface], in em. */
+private fun measureInks(typeface: Typeface): Map<Char, Ink> {
+    val paint = NativePaint().apply { this.typeface = typeface; textSize = MEASURE_PX }
+    val r = NativeRect()
+    return ('0'..'9').associateWith { c ->
+        paint.getTextBounds(c.toString(), 0, 1, r)
+        Ink(r.left / MEASURE_PX, r.top / MEASURE_PX, r.right / MEASURE_PX, r.bottom / MEASURE_PX)
+    }
+}
+
 /**
- * Bold: nothing but the time, as big as the screen allows. Nunito Black digits at 80% opacity, alternating coral and light
- * coral, each leaning a little, tucked into each other and blended with "screen" where they overlap; the colon is two big
- * translucent grey dots. Pure black behind. [scale] makes it smaller (when the notification strip is showing).
+ * Bold: nothing but the time, as big as the safe area allows. Nunito Black digits, upright, alternating coral and light coral,
+ * each placed by its ink so every pair overlaps by the same amount; the colon is two dots in the gap. The whole time is laid out
+ * in landscape coordinates (the dock turns the finished layer when the window is portrait), its combined ink box centred in the
+ * safe area, or in the area above the notification strip when there is one. Pure black behind.
  */
 @Composable
 fun BoldClock(timeMillis: Long, use24Hour: Boolean, modifier: Modifier = Modifier, strip: List<String> = emptyList(), caption: String? = null) {
     val stripShown = strip.isNotEmpty() || caption != null
-    val scale = if (stripShown) AuraDockBold.StripScale else 1f
     val text = remember(timeMillis, use24Hour) { boldTimeString(timeMillis, use24Hour) }
-    val measurer = rememberTextMeasurer()
-    val density = LocalDensity.current
-    // Sizes are in pixels and ignore the phone's font-size setting: this is a picture of a time, not reading text.
-    val fixed = remember(density) { Density(density.density, fontScale = 1f) }
-    val style = TextStyle(
-        fontFamily = NunitoFamily,
-        fontWeight = FontWeight.Black,
-        fontFeatureSettings = "tnum",
-        platformStyle = PlatformTextStyle(includeFontPadding = false),
-        lineHeightStyle = LineHeightStyle(LineHeightStyle.Alignment.Center, LineHeightStyle.Trim.Both)
-    )
+    val resolver = LocalFontFamilyResolver.current
+    val typeface = remember(resolver) { resolver.resolve(NunitoFamily, FontWeight.Black).value as Typeface }
+    val inks = remember(typeface) { measureInks(typeface) }
 
-    BoxWithConstraints(
-        modifier = modifier
-            .fillMaxSize(),
-        contentAlignment = Alignment.Center
-    ) {
-        val availW = constraints.maxWidth.toFloat()
-        val availH = constraints.maxHeight.toFloat()
-        val refPx = 200f
-        val refStyle = style.copy(fontSize = with(fixed) { refPx.toSp() })
-        // How wide each glyph is, in em (a colon is a fixed slot).
-        val widthsEm = text.map { c ->
-            if (c == ':') AuraDockBold.ColonEm else measurer.measure(c.toString(), refStyle).size.width / refPx
-        }
-        val gaps = text.indices.drop(1).count { text[it] != ':' && text[it - 1] != ':' }
-        val totalEm = widthsEm.sum() - AuraDockBold.OverlapEm * gaps + 2 * AuraDockBold.EdgeEm
-        val emPx = minOf(availW * AuraDockBold.WidthFill / totalEm, availH * AuraDockBold.HeightShare) * scale
-        val fontSize = with(fixed) { emPx.toSp() }
-
-        Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.padding(top = if (stripShown) AuraDockBold.StripTopPad else 0.dp)) {
+    Column(modifier = modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
         // The minute changes with a 300 ms crossfade: the old time fades out as the new one fades in.
-        Crossfade(targetState = text, animationSpec = tween(AuraDockMotion.MinuteSwap), label = "boldMinute") { shownText ->
-        Row(
-            // The padding sits inside the layer, so the leaning digits are not clipped at its edge.
-            modifier = Modifier
-                .layout { measurable, constraints ->
-                    // The design sets the line box to 0.8 em, shorter than the font's own line, so the strip can sit close.
-                    // The time is measured at its natural width (it can be a touch wider than the space, with its ink inside it) and centred.
-                    val p = measurable.measure(constraints.copy(minWidth = 0, maxWidth = Constraints.Infinity, minHeight = 0, maxHeight = Constraints.Infinity))
-                    val boxH = (AuraDockBold.LineHeightEm * emPx).toInt()
-                    // The layer is wider than the time by the bleed on each side, so a leaning digit is not cut off; the layout is not.
-                    val bleed = (AuraDockBold.BleedEm * emPx).toInt()
-                    val natural = p.width - 2 * bleed
-                    val width = minOf(natural, constraints.maxWidth)
-                    layout(width, boxH) { p.place(-bleed + (width - natural) / 2, (boxH - p.height) / 2) }
-                }
-                .offset(x = with(fixed) { (-AuraDockBold.ShiftEm * emPx).toDp() }, y = with(fixed) { (-AuraDockBold.LiftEm * emPx).toDp() })
-                .graphicsLayer { compositingStrategy = CompositingStrategy.Offscreen }
-                .padding(horizontal = with(fixed) { ((AuraDockBold.EdgeEm + AuraDockBold.BleedEm) * emPx).toDp() }),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            var digitIndex = 0
-            shownText.forEachIndexed { i, c ->
-                val tuckedIn = i > 0 && c != ':' && shownText[i - 1] != ':'
-                val startShift = if (tuckedIn) -AuraDockBold.OverlapEm * emPx else 0f
-                if (c == ':') {
-                    val w = AuraDockBold.ColonEm * emPx
-                    Canvas(Modifier.size(with(fixed) { w.toDp() }, with(fixed) { emPx.toDp() })) {
-                        val r = AuraDockBold.ColonDotRadiusEm * emPx
-                        val dy = AuraDockBold.ColonDotOffsetEm * emPx
-                        val cx = AuraDockBold.ColonDotCenterXEm * emPx
-                        drawCircle(AuraDockColors.BoldColon, r, Offset(cx, size.height / 2 - dy))
-                        drawCircle(AuraDockColors.BoldColon, r, Offset(cx, size.height / 2 + dy))
-                    }
-                } else {
-                    val color = (if (digitIndex % 2 == 0) AuraDockColors.Coral else AuraDockColors.CoralLight).copy(alpha = AuraDockBold.DigitAlpha)
-                    val degrees = AuraDockBold.rotationDegrees(c)
-                    digitIndex++
-                    Text(
-                        text = c.toString(),
-                        style = style.copy(fontSize = fontSize, color = color),
-                        softWrap = false,
-                        overflow = TextOverflow.Visible,
-                        modifier = Modifier
-                            .layout { measurable, constraints ->
-                                val p = measurable.measure(constraints)
-                                layout(p.width + startShift.toInt(), p.height) { p.place(startShift.toInt(), 0) }
-                            }
-                            .drawWithContent {
-                                // Screen blend with what the earlier digits drew, and a lean about the digit's own centre.
-                                drawIntoCanvas { canvas ->
-                                    val paint = Paint().apply { blendMode = BlendMode.Screen }
-                                    canvas.saveLayer(Rect(-size.width, -size.height, size.width * 2, size.height * 2), paint)
-                                    rotate(degrees) { this@drawWithContent.drawContent() }
-                                    canvas.restore()
-                                }
-                            }
-                    )
-                }
+        Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
+            Crossfade(targetState = text, animationSpec = tween(AuraDockMotion.MinuteSwap), label = "boldMinute") { shown ->
+                BoldDigits(shown, typeface, inks, Modifier.fillMaxSize())
             }
-        }
         }
         if (stripShown) {
             Column(
-                modifier = Modifier.padding(top = AuraDockBold.StripGap),
+                modifier = Modifier.padding(top = AuraDockBold.StripGap, bottom = AuraDockBold.SafeVertical),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(AuraDockBold.StripLineGap)
             ) {
@@ -172,6 +97,37 @@ fun BoldClock(timeMillis: Long, use24Hour: Boolean, modifier: Modifier = Modifie
                 if (strip.isEmpty() && caption != null) Text(text = caption, color = AuraDockColors.HeldCaption, style = AuraDockTypography.BoldStrip, maxLines = 1)
             }
         }
+    }
+}
+
+/** The time, drawn by ink into whatever area it is given. */
+@Composable
+private fun BoldDigits(text: String, typeface: Typeface, inks: Map<Char, Ink>, modifier: Modifier) {
+    val plan = remember(text, inks) { planBold(text) { inks.getValue(it) } }
+    Canvas(modifier = modifier.graphicsLayer { compositingStrategy = CompositingStrategy.Offscreen }) {
+        val safeW = size.width - 2 * AuraDockBold.SafeSide.toPx()
+        val safeH = size.height - 2 * AuraDockBold.SafeVertical.toPx()
+        val em = boldFontSizePx(plan, safeW, safeH)
+        if (em <= 0f) return@Canvas
+        // The combined ink box of the digits and the colon is centred on the area's centre.
+        val originX = size.width / 2f - plan.centerX * em
+        val originY = size.height / 2f - plan.centerY * em
+        val paint = NativePaint(NativePaint.ANTI_ALIAS_FLAG).apply {
+            this.typeface = typeface
+            textSize = em
+            xfermode = PorterDuffXfermode(PorterDuff.Mode.SCREEN)
+        }
+        drawIntoCanvas { canvas ->
+            plan.digits.forEachIndexed { i, d ->
+                val tone = if (i % 2 == 0) AuraDockColors.Coral else AuraDockColors.CoralLight
+                paint.color = tone.copy(alpha = AuraDockBold.DigitAlpha).toArgb()
+                canvas.nativeCanvas.drawText(d.char.toString(), originX + d.penX * em, originY, paint)
+            }
+        }
+        plan.colonX?.let { x ->
+            val r = AuraDockBold.ColonDiameterEm * em / 2f
+            drawCircle(AuraDockColors.BoldColon, r, Offset(originX + x * em, originY + plan.colonUpperY * em))
+            drawCircle(AuraDockColors.BoldColon, r, Offset(originX + x * em, originY + plan.colonLowerY * em))
         }
     }
 }

@@ -244,68 +244,39 @@ object AuraDockGallery {
     val cardPadding: Dp = 18.dp
 }
 
-/** The Bold template's clock (docs/design/STYLE_GUIDE.md): numbers in "em", meaning a fraction of the digit size. */
+/**
+ * The Bold template's clock (docs/design/STYLE_GUIDE.md). Numbers in "em" are a fraction of the font size and are measured on the
+ * drawn glyphs (their ink), not on the font's advance widths.
+ */
 object AuraDockBold {
     /** Digits are drawn at 80% opacity, so overlapping ones screen into a lighter tone. */
     const val DigitAlpha = 0.8f
 
-    /** How far each digit tucks into the one before it: -0.12 em. */
-    const val OverlapEm = 0.12f
+    /** Each digit's ink overlaps the previous digit's ink by this much, for every pair. */
+    const val OverlapEm = 0.06f
 
-    /** The width of the colon's slot, and the size and spacing of its two dots. */
-    /** Room kept at each end of the time so a leaning digit is not clipped. */
-    const val EdgeEm = 0.08f
+    /** The time's ink box is this share of the safe width, but never taller than [HeightShare] of the safe height. */
+    const val WidthShare = 0.9f
+    const val HeightShare = 0.8f
 
-    /** A small nudge to the left, measured against the handoff render: the digits' ink sits slightly right of the design's. */
-    const val ShiftEm = 0f
+    /** Colon: two dots this wide (about the digits' stroke), centred at these shares of the digit height. */
+    const val ColonDiameterEm = 0.24f
+    const val ColonUpper = 0.33f
+    const val ColonLower = 0.67f
 
-    /** Extra room inside the blend layer, either side of the time, so a leaning digit is never clipped. */
-    const val BleedEm = 0.12f
+    /** The colon's dots reach into the digit on each side by this share of a dot's diameter. */
+    const val ColonOverlap = 0.3f
 
-    /** Colon (Dock-Bold.dc.html): dots 0.17 em wide, 0.1 em apart, a 0.02 em margin before and -0.06 em after. */
-    const val ColonEm = 0.13f
-    const val ColonDotRadiusEm = 0.085f
-    const val ColonDotOffsetEm = 0.135f
-    const val ColonDotCenterXEm = 0.105f
+    /** The safe area: the same 40 dp at the sides and 24 dp above and below that the other templates keep. */
+    val SafeSide = AuraDockDockLayout.screenPadding
+    val SafeVertical = AuraDockDockLayout.safeVertical
 
-    /** The line box of the digits, as a share of their size (line-height 0.8). */
-    const val LineHeightEm = 0.8f
-
-    /** The digits' size is this share of the dock's height (370 on 412). */
-    const val HeightShare = 0.898f
-
-    /** A small correction so the digits sit where the design has them inside its 0.8 em line box. */
-    const val LiftEm = 0.012f
-
-    /** Never wider than this share of the free width, so an unusual screen shape cannot clip the time. */
-    const val WidthFill = 1f
-
-    /** With a notification the clock shrinks to 316/370 of its size; the strip sits 22 dp under it. */
-    const val StripScale = 0.854f
+    /** The notification strip sits this far under the clock's area. */
     val StripGap = 22.dp
-    val StripTopPad = 6.dp
     val StripIcon = 18.dp
     val StripIconGap = 10.dp
     /** Space between the notification line and the held-for-you caption under it. */
     val StripLineGap = 6.dp
-
-    /**
-     * Each digit leans a little, so the time looks set by hand. The guide gives 1 -3, 2 +5, 3 -4, 0 +5; the others
-     * carry on in the same +-3 to +-5 range.
-     */
-    fun rotationDegrees(digit: Char): Float = when (digit) {
-        '0' -> 5f
-        '1' -> -3f
-        '2' -> 5f
-        '3' -> -4f
-        '4' -> 4f
-        '5' -> -5f
-        '6' -> 3f
-        '7' -> -4f
-        '8' -> -3f
-        '9' -> 5f
-        else -> 0f
-    }
 }
 
 /**
