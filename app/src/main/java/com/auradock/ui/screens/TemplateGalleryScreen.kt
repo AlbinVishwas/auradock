@@ -40,6 +40,13 @@ import com.auradock.ui.components.Badge
 import com.auradock.ui.components.PagerDots
 import com.auradock.ui.components.PrimaryPill
 import com.auradock.ui.components.ScaledPreview
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.semantics.semantics
+import com.auradock.ui.theme.AuraDockBold
+import com.auradock.ui.theme.BoldPalette
 import com.auradock.ui.theme.AuraDockColors
 import com.auradock.ui.theme.AuraDockGallery
 import com.auradock.ui.theme.AuraDockRadii
@@ -70,7 +77,9 @@ fun TemplateGalleryScreen(
     modifier: Modifier = Modifier,
     title: String = "Templates",
     /** Shown above the button (the walkthrough's progress dots). When set, the button always applies, even to the template in use. */
-    footer: (@Composable () -> Unit)? = null
+    footer: (@Composable () -> Unit)? = null,
+    /** Tapping a colour dot under the Bold card (the gallery only; null hides the row). The card previews it at once. */
+    onPickPalette: ((BoldPalette) -> Unit)? = null
 ) {
     val selected = state.selected
     val templates = state.templates
@@ -112,6 +121,14 @@ fun TemplateGalleryScreen(
             verticalArrangement = Arrangement.spacedBy(AuraDockSpacing.xl - AuraDockSpacing.xs, Alignment.CenterVertically)
         ) {
             TemplateCarousel(pagerState, templates, selected, state.dockState)
+            if (onPickPalette != null && DockTemplate.BOLD in templates) {
+                PaletteDots(
+                    current = state.dockState.boldPalette,
+                    visible = shown == DockTemplate.BOLD,
+                    onPick = onPickPalette,
+                    modifier = Modifier.padding(horizontal = AuraDockGallery.textInset - AuraDockBold.PaletteDotRoom)
+                )
+            }
             Column(
                 modifier = Modifier.padding(horizontal = AuraDockGallery.textInset),
                 verticalArrangement = Arrangement.spacedBy(AuraDockSpacing.xs + AuraDockSpacing.xxs)
@@ -227,6 +244,31 @@ private fun TemplateCard(template: DockTemplate, state: DockUiState, inUse: Bool
         // The real dock for this template, shrunk to the card.
         ScaledPreview(designWidth = AuraDockGallery.previewDesignWidth, modifier = Modifier.fillMaxSize()) {
             DockContent(template = template, state = state)
+        }
+    }
+}
+
+/** The Bold card's colourways as a row of dots; the one in use has a ring. Kept in place (just hidden) on the other cards so nothing jumps. */
+@Composable
+private fun PaletteDots(current: BoldPalette, visible: Boolean, onPick: (BoldPalette) -> Unit, modifier: Modifier = Modifier) {
+    Row(modifier = modifier.alpha(if (visible) 1f else 0f), verticalAlignment = Alignment.CenterVertically) {
+        BoldPalette.entries.forEach { palette ->
+            val chosen = palette == current
+            Box(
+                modifier = Modifier
+                    .size(AuraDockBold.PaletteHit)
+                    .clickable(enabled = visible, role = Role.RadioButton, onClickLabel = palette.label) { onPick(palette) }
+                    .semantics { contentDescription = "${palette.label} colour"; selected = chosen },
+                contentAlignment = Alignment.Center
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(AuraDockBold.PaletteDot)
+                        .clip(CircleShape)
+                        .background(palette.tone(0))
+                        .border(if (chosen) AuraDockSizes.lineThick else AuraDockSizes.none, AuraDockColors.OnBackground, CircleShape)
+                )
+            }
         }
     }
 }

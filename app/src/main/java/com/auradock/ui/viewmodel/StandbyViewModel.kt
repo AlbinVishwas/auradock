@@ -23,6 +23,7 @@ import com.auradock.onboarding.OnboardingState
 import com.auradock.permissions.canScheduleExactAlarms
 import com.auradock.dock.DockTemplate
 import com.auradock.dock.TemplateRepository
+import com.auradock.ui.theme.BoldPalette
 import com.auradock.tasks.TaskEntity
 import com.auradock.tasks.TaskRepository
 import com.auradock.weather.Weather
@@ -123,6 +124,10 @@ class StandbyViewModel @Inject constructor(
 
     /** The saved template choice (shared with the screensaver). */
     val currentTemplate: StateFlow<DockTemplate> = templateRepository.selected
+
+    /** The Bold clock's colourway (saved; the gallery previews it live as each dot is tapped). */
+    val boldPalette: StateFlow<BoldPalette> = templateRepository.boldPalette
+    fun setBoldPalette(palette: BoldPalette) = templateRepository.selectBoldPalette(palette)
 
     // Owned by the ViewModel (not the Activity) so a rotation, which destroys and recreates the
     // Activity, does not stop and restart it. It is stopped in onCleared().

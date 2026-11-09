@@ -92,6 +92,7 @@ fun DockContent(template: DockTemplate, state: DockUiState, modifier: Modifier =
             DockTemplate.BOLD -> BoldClock(
                 timeMillis = state.timeMillis,
                 use24Hour = DateFormat.is24HourFormat(LocalContext.current),
+                palette = state.boldPalette,
                 strip = lines,
                 caption = caption
             )

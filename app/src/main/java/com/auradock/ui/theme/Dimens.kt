@@ -278,6 +278,11 @@ object AuraDockBold {
     val SafeSide = AuraDockDockLayout.screenPadding
     val SafeVertical = AuraDockDockLayout.safeVertical
 
+    /** The colour dots under the Bold card in the gallery: a 28 dp dot in a 44 dp touch target (the row starts that far in, so the dots line up with the text). */
+    val PaletteDot = 28.dp
+    val PaletteHit = 44.dp
+    val PaletteDotRoom = (44 - 28).dp / 2
+
     /** The notification strip sits this far under the clock's area. */
     val StripGap = 22.dp
     val StripIcon = 18.dp

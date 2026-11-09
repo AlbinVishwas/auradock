@@ -71,10 +71,12 @@ fun DashboardRoute(viewModel: StandbyViewModel, navigation: Navigation, modifier
     val shutdownOffer by viewModel.shutdownOffer.collectAsState()
     val screensaverBanner by viewModel.screensaverBanner.collectAsState()
     val focusOn by viewModel.focusWhileDocked.collectAsState()
+    val boldPalette by viewModel.boldPalette.collectAsState()
 
     DashboardScreen(
         state = DashboardUiState(
             template = template,
+            boldPalette = boldPalette,
             timeMillis = time,
             weather = weather.usableAt(time),
             locationPermission = locationPermission,
@@ -121,9 +123,10 @@ private fun rememberGalleryState(viewModel: StandbyViewModel): TemplateGalleryUi
     val weather by viewModel.weather.collectAsState()
     val events by viewModel.todayEvents.collectAsState()
     val tasks by viewModel.tasks.collectAsState()
+    val palette by viewModel.boldPalette.collectAsState()
     return TemplateGalleryUiState(
         selected = template,
-        dockState = DockUiState(time, weather.usableAt(time), events.orEmpty(), tasks.orEmpty())
+        dockState = DockUiState(time, weather.usableAt(time), events.orEmpty(), tasks.orEmpty(), boldPalette = palette)
     )
 }
 
@@ -135,6 +138,7 @@ fun TemplateGalleryRoute(viewModel: StandbyViewModel, navigation: Navigation, mo
             viewModel.setTemplate(it)
             navigation.backToDashboard()
         },
+        onPickPalette = viewModel::setBoldPalette,
         modifier = modifier
     )
 }

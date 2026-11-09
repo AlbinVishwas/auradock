@@ -1,5 +1,6 @@
 package com.auradock.dock
 
+import com.auradock.ui.theme.BoldPalette
 import android.content.Context
 import com.auradock.data.CalendarEvent
 import com.auradock.data.CalendarRepository
@@ -56,6 +57,9 @@ class DockData @Inject constructor(
     fun setIntentionDone(done: Boolean) { intentions.setDone(done) }
 
     val selectedTemplate: StateFlow<DockTemplate> = templateRepository.selected
+
+    /** The Bold clock's colourway. */
+    val boldPalette: StateFlow<BoldPalette> = templateRepository.boldPalette
 
     /** The latest weather (may be old: use usableAt before showing it). */
     val weather: StateFlow<Weather?> = weatherRepository.weather

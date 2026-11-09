@@ -40,6 +40,7 @@ import com.auradock.ui.theme.AuraDockColors
 import com.auradock.ui.theme.AuraDockDockLayout
 import com.auradock.ui.theme.AuraDockMotion
 import com.auradock.ui.theme.AuraDockTypography
+import com.auradock.ui.theme.BoldPalette
 import com.auradock.ui.theme.NunitoFamily
 import java.time.Instant
 import java.time.ZoneId
@@ -74,7 +75,7 @@ private fun measureInks(typeface: Typeface): Map<Char, Ink> {
  * safe area, or in the area above the notification strip when there is one. Pure black behind.
  */
 @Composable
-fun BoldClock(timeMillis: Long, use24Hour: Boolean, modifier: Modifier = Modifier, strip: List<String> = emptyList(), caption: String? = null) {
+fun BoldClock(timeMillis: Long, use24Hour: Boolean, modifier: Modifier = Modifier, palette: BoldPalette = BoldPalette.default, strip: List<String> = emptyList(), caption: String? = null) {
     val stripShown = strip.isNotEmpty() || caption != null
     val text = remember(timeMillis, use24Hour) { boldTimeString(timeMillis, use24Hour) }
     val resolver = LocalFontFamilyResolver.current
@@ -85,7 +86,7 @@ fun BoldClock(timeMillis: Long, use24Hour: Boolean, modifier: Modifier = Modifie
         // The minute changes with a 300 ms crossfade: the old time fades out as the new one fades in.
         Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
             Crossfade(targetState = text, animationSpec = tween(AuraDockMotion.MinuteSwap), label = "boldMinute") { shown ->
-                BoldDigits(shown, typeface, inks, Modifier.fillMaxSize())
+                BoldDigits(shown, typeface, inks, palette, Modifier.fillMaxSize())
             }
         }
         if (stripShown) {
@@ -104,7 +105,7 @@ fun BoldClock(timeMillis: Long, use24Hour: Boolean, modifier: Modifier = Modifie
 
 /** The time, drawn by ink into whatever area it is given. */
 @Composable
-private fun BoldDigits(text: String, typeface: Typeface, inks: Map<Char, Ink>, modifier: Modifier) {
+private fun BoldDigits(text: String, typeface: Typeface, inks: Map<Char, Ink>, palette: BoldPalette, modifier: Modifier) {
     val plan = remember(text, inks) { planBold(text) { inks.getValue(it) } }
     Canvas(modifier = modifier.graphicsLayer {
         compositingStrategy = CompositingStrategy.Offscreen
@@ -126,7 +127,7 @@ private fun BoldDigits(text: String, typeface: Typeface, inks: Map<Char, Ink>, m
         val frost = NativePaint(NativePaint.ANTI_ALIAS_FLAG).apply { xfermode = PorterDuffXfermode(PorterDuff.Mode.SCREEN) }
         drawIntoCanvas { canvas ->
             plan.digits.forEachIndexed { i, d ->
-                val tone = if (i % 2 == 0) AuraDockColors.Coral else AuraDockColors.CoralLight
+                val tone = palette.tone(i)
                 paint.color = tone.copy(alpha = AuraDockBold.DigitAlpha).toArgb()
                 val x = originX + d.penX * em
                 val c = canvas.nativeCanvas

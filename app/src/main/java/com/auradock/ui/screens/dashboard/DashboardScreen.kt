@@ -68,6 +68,7 @@ import androidx.compose.ui.unit.dp
 import com.auradock.intention.IntentionLine
 import com.auradock.screensaver.ScreensaverBanner
 import com.auradock.sessions.SessionSummary
+import com.auradock.ui.theme.BoldPalette
 import com.auradock.sessions.WeeklyFocus
 import com.auradock.sessions.summaryIsFresh
 import com.auradock.ui.viewmodel.CalendarPermissionUiState
@@ -76,6 +77,7 @@ import com.auradock.ui.viewmodel.CalendarPermissionUiState
 data class DashboardUiState(
     val template: DockTemplate,
     val timeMillis: Long,
+    val boldPalette: BoldPalette = BoldPalette.default,
     val weather: Weather? = null,
     val locationPermission: CalendarPermissionUiState = CalendarPermissionUiState.GRANTED,
     /** Null until the first load finishes. */
@@ -184,7 +186,7 @@ fun DashboardScreen(
         BlurIn(index = 3) {
             DockCard(
                 template = state.template,
-                dockState = DockUiState(timeMillis, state.weather, state.events.orEmpty(), tasks.orEmpty()),
+                dockState = DockUiState(timeMillis, state.weather, state.events.orEmpty(), tasks.orEmpty(), boldPalette = state.boldPalette),
                 onChange = actions.onOpenTemplates,
                 onDockNow = actions.onDockNow,
                 showLabel = !emptyDay

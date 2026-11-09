@@ -4,6 +4,7 @@ import com.auradock.data.CalendarEvent
 import com.auradock.dock.lines.DockLines
 import com.auradock.data.NotificationItem
 import com.auradock.tasks.TaskEntity
+import com.auradock.ui.theme.BoldPalette
 import com.auradock.weather.Weather
 
 /**
@@ -27,7 +28,9 @@ data class DockUiState(
     /** The quiet lines under the clock (morning intention, and the lines later items add). Empty in thumbnails. */
     val lines: DockLines = DockLines(),
     /** Set while the morning question is showing: the text to start the field with ("" when there is none). */
-    val intentionPrompt: String? = null
+    val intentionPrompt: String? = null,
+    /** The Bold clock's colourway. */
+    val boldPalette: BoldPalette = BoldPalette.default
 )
 
 /** What the dock draws about the session: when it began, and how many notifications were held and let through. */

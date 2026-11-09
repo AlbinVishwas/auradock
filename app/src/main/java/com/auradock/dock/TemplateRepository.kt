@@ -1,6 +1,7 @@
 package com.auradock.dock
 
 import android.content.Context
+import com.auradock.ui.theme.BoldPalette
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -25,6 +26,16 @@ class TemplateRepository @Inject constructor(
     private val _selected = MutableStateFlow(parseDockTemplate(prefs.getString(KEY_TEMPLATE, null)))
     val selected: StateFlow<DockTemplate> = _selected.asStateFlow()
 
+    private val _boldPalette = MutableStateFlow(BoldPalette.parse(prefs.getString(KEY_BOLD_PALETTE, null)))
+
+    /** The Bold clock's colourway, saved on the phone. */
+    val boldPalette: StateFlow<BoldPalette> = _boldPalette.asStateFlow()
+
+    fun selectBoldPalette(palette: BoldPalette) {
+        _boldPalette.value = palette
+        prefs.edit().putString(KEY_BOLD_PALETTE, palette.name).apply()
+    }
+
     fun select(template: DockTemplate) {
         _selected.value = template
         prefs.edit().putString(KEY_TEMPLATE, template.name).apply()
@@ -33,5 +44,6 @@ class TemplateRepository @Inject constructor(
     private companion object {
         const val PREFS_NAME = "auradock_prefs"
         const val KEY_TEMPLATE = "dock_template"
+        const val KEY_BOLD_PALETTE = "bold_palette"
     }
 }
