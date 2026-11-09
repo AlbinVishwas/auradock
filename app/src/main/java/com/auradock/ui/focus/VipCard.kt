@@ -32,7 +32,10 @@ import com.auradock.ui.theme.AuraDockRadii
 import com.auradock.ui.theme.AuraDockSizes
 import com.auradock.ui.theme.AuraDockSpacing
 import com.auradock.ui.theme.AuraDockTypography
+import com.auradock.ui.components.AuraSheet
 import com.auradock.ui.components.AuraSwitch
+import com.auradock.ui.components.GreyTextButton
+import com.auradock.ui.components.PrimaryPill
 
 /** What the "People who can always reach you" card shows. */
 data class VipUiState(
@@ -40,7 +43,9 @@ data class VipUiState(
     /** Calls from them ring through Do Not Disturb while docked (on only if the permission to do it is also granted). */
     val ringThrough: Boolean = false,
     /** How many people are marked right now only because AuraDock lent the mark (normally 0 outside a dock). */
-    val onLoan: Int = 0
+    val onLoan: Int = 0,
+    /** The one-time confirmation sheet is showing. */
+    val confirming: Boolean = false
 )
 
 /** What the user can do on the card. */
@@ -48,7 +53,9 @@ data class VipActions(
     val onAdd: () -> Unit = {},
     val onRemove: (Vip) -> Unit = {},
     val onToggleRingThrough: (Boolean) -> Unit = {},
-    val onPutBack: () -> Unit = {}
+    val onPutBack: () -> Unit = {},
+    val onConfirm: () -> Unit = {},
+    val onCancelConfirm: () -> Unit = {}
 )
 
 /**
@@ -178,4 +185,25 @@ private fun FocusCardFrame(modifier: Modifier, content: @Composable androidx.com
 @Composable
 private fun CardDivider(modifier: Modifier = Modifier) {
     Box(modifier.fillMaxWidth().height(AuraDockSizes.line).background(AuraDockColors.RowDivider))
+}
+
+/**
+ * The one-time sheet shown the first time "Let their calls ring through" is turned on: says what changes in Contacts, that
+ * Favourites can sync, and that everything is put back. Put it last in a Box that fills the screen ([AuraSheet] covers what is under it).
+ */
+@Composable
+fun VipConfirmSheet(onTurnOn: () -> Unit, onCancel: () -> Unit) {
+    AuraSheet(onDismiss = onCancel) {
+        Text(text = "Let their calls ring through?", style = AuraDockTypography.SheetTitle, color = AuraDockColors.OnBackground, modifier = Modifier.padding(top = AuraDockSpacing.xs))
+        Text(
+            text = "While docked, AuraDock marks these people as Favourites in Contacts so their calls ring. Favourites can sync to your " +
+                "other devices. Everything is put back when you undock.",
+            style = AuraDockTypography.Secondary,
+            color = AuraDockColors.OnSurfaceVariant
+        )
+        androidx.compose.foundation.layout.Column(verticalArrangement = Arrangement.spacedBy(AuraDockSpacing.xs)) {
+            PrimaryPill(text = "Turn on", onClick = onTurnOn)
+            GreyTextButton(text = "Cancel", onClick = onCancel, modifier = Modifier.fillMaxWidth())
+        }
+    }
 }

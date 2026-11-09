@@ -98,3 +98,10 @@ private fun VipCardOnLoan() = AuraDockTheme { VipCard(VipUiState(vips = SomeVips
 private fun FocusWithPeople() = AuraDockTheme {
     FocusSettingsScreen(Full.copy(vip = VipUiState(vips = SomeVips, ringThrough = true)), FocusSettingsActions())
 }
+
+/** The one-time sheet the first time ring-through is switched on. */
+@PreviewPortrait
+@Composable
+private fun FocusVipConfirm() = AuraDockTheme {
+    FocusSettingsScreen(Full.copy(vip = VipUiState(vips = SomeVips, confirming = true)), FocusSettingsActions())
+}

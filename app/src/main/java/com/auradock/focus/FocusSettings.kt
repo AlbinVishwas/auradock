@@ -93,7 +93,18 @@ class FocusSettings @Inject constructor(
         prefs.edit().putBoolean(KEY_VIP_RING, enabled).apply()
     }
 
+    private val _vipConfirmed = MutableStateFlow(prefs.getBoolean(KEY_VIP_CONFIRMED, false))
+
+    /** True once the user has read the "Favourites can sync" sheet and turned ring-through on. It is shown only that first time. */
+    val vipConfirmed: StateFlow<Boolean> = _vipConfirmed.asStateFlow()
+
+    fun markVipConfirmed() {
+        _vipConfirmed.value = true
+        prefs.edit().putBoolean(KEY_VIP_CONFIRMED, true).apply()
+    }
+
     private companion object {
+        const val KEY_VIP_CONFIRMED = "vip_confirmed"
         const val KEY_VIPS = "vips"
         const val KEY_VIP_RING = "vip_ring_through"
         const val KEY_ANYWHERE = "dock_from_anywhere"

@@ -207,6 +207,7 @@ fun FocusSettingsRoute(viewModel: StandbyViewModel, modifier: Modifier = Modifie
     val vips by viewModel.vips.collectAsState()
     val ringThrough by viewModel.vipRingThrough.collectAsState()
     val onLoan by viewModel.vipsOnLoan.collectAsState()
+    val vipConfirming by viewModel.vipConfirming.collectAsState()
 
     FocusSettingsScreen(
         state = FocusSettingsUiState(
@@ -218,7 +219,7 @@ fun FocusSettingsRoute(viewModel: StandbyViewModel, modifier: Modifier = Modifie
             showMessageText = showText,
             dockFromAnywhere = dockFromAnywhere,
             overlayGranted = overlayGranted,
-            vip = VipUiState(vips = vips, ringThrough = ringThrough, onLoan = onLoan)
+            vip = VipUiState(vips = vips, ringThrough = ringThrough, onLoan = onLoan, confirming = vipConfirming)
         ),
         actions = FocusSettingsActions(
             onToggleFocus = { viewModel.setFocusWhileDocked(it) },
@@ -232,7 +233,9 @@ fun FocusSettingsRoute(viewModel: StandbyViewModel, modifier: Modifier = Modifie
                 onAdd = { viewModel.addVipTapped() },
                 onRemove = { viewModel.removeVip(it) },
                 onToggleRingThrough = { viewModel.setVipRingThrough(it) },
-                onPutBack = { viewModel.putVipsBack() }
+                onPutBack = { viewModel.putVipsBack() },
+                onConfirm = { viewModel.confirmVipRingThrough() },
+                onCancelConfirm = { viewModel.cancelVipRingThrough() }
             ),
             loadIcon = { viewModel.appIcon(it) }
         ),

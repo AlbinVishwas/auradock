@@ -120,8 +120,11 @@ fun FocusSettingsScreen(
 ) {
     var picking by rememberSaveable { mutableStateOf(false) }
     BackHandler(enabled = picking) { picking = false }
-    if (picking) AppPicker(state, actions, onDone = { picking = false }, modifier = modifier)
-    else FocusPage(state, actions, onChooseApps = { picking = true }, onOpenSetup = onOpenSetup, modifier = modifier)
+    Box(modifier = modifier.fillMaxSize()) {
+        if (picking) AppPicker(state, actions, onDone = { picking = false }, modifier = Modifier)
+        else FocusPage(state, actions, onChooseApps = { picking = true }, onOpenSetup = onOpenSetup, modifier = Modifier)
+        if (state.vip.confirming) VipConfirmSheet(onTurnOn = actions.vip.onConfirm, onCancel = actions.vip.onCancelConfirm)
+    }
 }
 
 @OptIn(ExperimentalLayoutApi::class)

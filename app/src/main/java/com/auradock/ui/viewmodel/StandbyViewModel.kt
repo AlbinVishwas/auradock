@@ -289,8 +289,28 @@ class StandbyViewModel @Inject constructor(
         dockFocus.refresh()
     }
 
-    /** Switching on asks for the permission to change contacts first; the switch turns on once it is granted. */
+    private val _vipConfirming = MutableStateFlow(false)
+
+    /** True while the one-time "Favourites can sync" sheet is showing. */
+    val vipConfirming: StateFlow<Boolean> = _vipConfirming.asStateFlow()
+
+    /** "Turn on": the sheet is only ever shown once; then the switch goes on (after the contacts permission, if still needed). */
+    fun confirmVipRingThrough() {
+        focusSettings.markVipConfirmed()
+        _vipConfirming.value = false
+        setVipRingThrough(true)
+    }
+
+    fun cancelVipRingThrough() {
+        _vipConfirming.value = false
+    }
+
+    /** The first time it is switched on, a sheet explains the Favourites mark; after that the switch just works. */
     fun setVipRingThrough(enabled: Boolean) {
+        if (enabled && !focusSettings.vipConfirmed.value) {
+            _vipConfirming.value = true
+            return
+        }
         if (enabled && !vipContacts.canWrite()) {
             _permissionActions.tryEmit(PermissionAction.RequestContactsWrite)
             return
