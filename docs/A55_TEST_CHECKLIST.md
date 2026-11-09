@@ -426,3 +426,41 @@ after 6 pm) can be done on the day, or by changing the phone's clock.
   the sender's name matching exactly; if a messaging app does neither, the name in its title may differ from your Contacts name.)
 - [ ] **Google contacts sync.** With a Google account, add a VIP, dock and undock, then look at contacts.google.com. Pass: the VIP is not left
   as a Favourite there. Note anything odd: the Favourite mark syncs, so it can show there briefly while docked.
+
+## Batch C (0.2.2): first run, trust and focus
+
+Use a fresh install of 0.2.2 for the first-run checks (Settings > Apps > AuraDock > Storage > Clear data, or uninstall and install), and a second
+phone to call from where noted.
+
+- [ ] **Upgrade keeps data.** Install 0.2.2 over 0.2.1 with sessions, tasks and a VIP in place. Pass: the dashboard opens (not onboarding), the weekly
+  line, tasks and VIPs are as before, nothing crashes. (Database 6 to 7 only adds the event log.)
+- [ ] **VIP confirmation, once.** Focus settings, switch on "Let their calls ring through" for the first time. Pass: a sheet says AuraDock marks these
+  people as Favourites in Contacts so their calls ring, that Favourites can sync to other devices, and that everything is put back when you undock;
+  "Turn on" (cream) goes on to the contacts permission if needed, "Cancel" leaves the switch off and shows the sheet again next time. After "Turn on"
+  the sheet never shows again, also after switching off and on.
+- [ ] **Dock first, timed.** On a fresh install, start a stopwatch as you open the app. Pass: Welcome, then "Get started": the Bold dock fills the screen
+  in landscape within 30 seconds of opening (it should be about 10) with "This is AuraDock" at the top left, and moves to "Pick your dock" by itself after
+  about 5 seconds (or on a touch). Then the template, the screensaver test and "Start it from anywhere" (both skippable), then the dashboard. No
+  permission is asked before the dashboard.
+- [ ] **Permissions asked when used.** Each permission card shows as a sheet, once, the first time its feature is used: Allow on the Calendar card
+  (calendar), "Allow location for weather" (location), the first app you pick or Allow in Focus (notification access), the first "Dock now" with Focus on
+  (Do Not Disturb), the first task with a time (notifications, then alarms), "Add a person" (contacts). Pass: each sheet has the card, "Nothing leaves this
+  phone." and Skip/Allow; Skip closes it and it does not come back by itself; tapping an Allow later shows it again. Setup lists all seven and its Allow
+  goes straight to Android.
+- [ ] **Screensaver test (the real one).** Setup, "Screensaver test" (or the walkthrough step). Choose AuraDock as screensaver, set a screen timeout of a
+  minute or two (steps 1 and 2 tick by themselves when you come back), then charge the phone sideways on the stand and wait. Pass: it starts by itself;
+  opening the app afterwards shows "✓ AuraDock appeared on its own" on the dashboard (and the Setup row says so); "Done" puts the note away.
+- [ ] **Screensaver hint.** On a phone where it has not appeared a day after install, the dashboard shows "The screensaver hasn't started yet." with
+  "Try again", which opens the test and hides the hint for a day.
+- [ ] **Undo focus.** Dock (Focus on, Do Not Disturb access allowed). Touch the screen once. Pass: a small "Undo focus" pill fades in at the top for 4 seconds
+  and goes by itself; tapping it turns Do Not Disturb back to how it was (check the quick settings) and any VIP Favourite marks are put back, while the dock
+  stays open; a touch while the pill shows closes the dock. With Focus off, a touch closes the dock at once.
+- [ ] **Trust caption.** Every permission card (the sheets, Setup) says "Nothing leaves this phone."
+- [ ] **Hidden debug page.** Setup, scroll to the bottom, tap the version label seven times. Pass: "Debug" shows "Activated within 24 h" (Yes once the screensaver was
+  set and the first dock happened within a day of install) and "Docked on 5+ of the last 7 days" with the day count, and the event counts. Nothing on it
+  names a task, a person or a message.
+- [ ] **Empty-day dashboard.** With no tasks, no events and the calendar allowed, the dashboard looks like the handoff frame (see
+  `docs/design/handoff/compare/Dashboard-Empty.png`): the greeting, then Today, Calendar, the dock card with only the preview and Dock now, and the one-line
+  Templates and Focus tiles. Add a task: the fuller layout returns, and its Focus tile reads "On while docked" (or "Off").
+- [ ] **Motion.** Tick a task: a light tick under the finger, the strike and fade where the row is, and after a moment the row glides down below the others.
+  Watch the dock clock over a minute change: the new time fades in as the old one fades out.
