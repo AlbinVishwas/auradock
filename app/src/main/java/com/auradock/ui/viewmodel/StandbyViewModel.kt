@@ -64,6 +64,7 @@ class StandbyViewModel @Inject constructor(
     private val dndController: DndController,
     private val dockFocus: DockFocusController,
     private val vipContacts: VipContacts,
+    private val screensaverTest: com.auradock.screensaver.ScreensaverTest,
     private val dockWatcher: DockWatcherController,
     private val onboardingState: OnboardingState,
     private val sessions: SessionTracker,
@@ -98,6 +99,12 @@ class StandbyViewModel @Inject constructor(
     val intention: StateFlow<IntentionLine?> = intentions.today.map { intentionLine(it.entry) }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
     fun setIntentionDone(done: Boolean) { intentions.setDone(done) }
+
+    /** The guided screensaver test: which of its three steps are done, and the note the dashboard shows about it. */
+    val screensaverSteps: StateFlow<com.auradock.screensaver.ScreensaverTestUiState> = screensaverTest.steps
+    val screensaverBanner: StateFlow<com.auradock.screensaver.ScreensaverBanner> = screensaverTest.banner
+    fun dismissScreensaverNote() = screensaverTest.dismissBanner()
+    fun snoozeScreensaverHint() = screensaverTest.snoozeHint()
 
     /** The card shown after a focus session of two minutes or more, until it is dismissed. */
     val undockSummary: StateFlow<SessionSummary?> = sessions.summary

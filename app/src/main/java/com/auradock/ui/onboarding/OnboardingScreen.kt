@@ -52,6 +52,7 @@ import androidx.compose.ui.text.drawText
 import androidx.compose.ui.unit.sp
 import com.auradock.dock.DockContent
 import com.auradock.dock.DockTemplate
+import com.auradock.screensaver.ScreensaverTestUiState
 import com.auradock.ui.components.BlurIn
 import com.auradock.ui.components.GreyTextButton
 import com.auradock.ui.components.PrimaryPill
@@ -80,6 +81,8 @@ data class OnboardingUiState(
     val screensaverSelected: Boolean,
     val dockFromAnywhere: Boolean,
     val overlayGranted: Boolean,
+    /** The guided screensaver test (the Screensaver step). */
+    val screensaverTest: ScreensaverTestUiState = ScreensaverTestUiState(),
     /** The template step, and the dock the preview shows. */
     val gallery: TemplateGalleryUiState
 )
@@ -89,6 +92,7 @@ data class OnboardingActions(
     val onAllowPermission: (SetupPermission) -> Unit = {},
     val onOpenScreensaverSettings: () -> Unit = {},
     val onOpenDisplaySettings: () -> Unit = {},
+    val screensaverTest: ScreensaverTestActions = ScreensaverTestActions(),
     val onToggleDockFromAnywhere: (Boolean) -> Unit = {},
     val onAllowOverlay: () -> Unit = {},
     val onPickTemplate: (DockTemplate) -> Unit = {},
@@ -156,8 +160,10 @@ fun OnboardingScreen(
             when (step) {
                 Step.WELCOME -> PrimaryPill(text = "Get started", onClick = { stepIndex++ })
                 Step.SCREENSAVER -> {
-                    PrimaryPill(text = "Open screensaver settings", onClick = { actions.onOpenScreensaverSettings(); stepIndex++ })
-                    GreyTextButton(text = "Skip for now", onClick = { stepIndex++ }, modifier = Modifier.fillMaxWidth())
+                    // The pill is the first test step still to do; once steps 1 and 2 are done it just moves on (the test finishes by itself).
+                    val pill = screensaverTestPill(state.screensaverTest, actions.screensaverTest)
+                    PrimaryPill(text = pill?.first ?: "Continue", onClick = { if (pill != null) pill.second() else stepIndex++ })
+                    GreyTextButton(text = if (pill == null) "Not now" else "Skip for now", onClick = { stepIndex++ }, modifier = Modifier.fillMaxWidth())
                 }
                 Step.ANYWHERE -> {
                     PrimaryPill(text = "Done", onClick = actions.onFinish)
@@ -204,7 +210,7 @@ private fun DockPreview(state: OnboardingUiState, actions: OnboardingActions, on
 private fun StepContent(step: Step, state: OnboardingUiState, actions: OnboardingActions) {
     when (step) {
         Step.WELCOME -> Welcome(state)
-        Step.SCREENSAVER -> Screensaver()
+        Step.SCREENSAVER -> Screensaver(state)
         Step.ANYWHERE -> DockFromAnywhereStep(state, actions)
         Step.PREVIEW, Step.TEMPLATE -> Unit
     }
@@ -268,37 +274,17 @@ private fun Welcome(state: OnboardingUiState) {
 }
 
 @Composable
-private fun Screensaver() {
+private fun Screensaver(state: OnboardingUiState) {
     Column(modifier = Modifier.fillMaxWidth()) {
-        Box(Modifier.fillMaxWidth().padding(top = AuraDockSpacing.sm, bottom = AuraDockSpacing.xl), contentAlignment = Alignment.Center) { ScreensaverIllustration() }
+        Box(Modifier.fillMaxWidth().padding(top = AuraDockSpacing.sm, bottom = AuraDockSpacing.lg), contentAlignment = Alignment.Center) { ScreensaverIllustration() }
         Text(text = "Opens on its own", color = AuraDockColors.OnBackground, style = AuraDockTypography.ScreenTitle)
         Text(
-            text = "Set AuraDock as your screensaver. It starts by itself when all three are true:",
+            text = "Charging, sideways on a stand, screen timed out. Three steps to see it work:",
             color = AuraDockColors.OnSurfaceVariant,
             style = AuraDockTypography.StepBody,
-            modifier = Modifier.padding(top = AuraDockSpacing.smd + AuraDockSpacing.xxs)
+            modifier = Modifier.padding(top = AuraDockSpacing.smd + AuraDockSpacing.xxs, bottom = AuraDockSpacing.md)
         )
-        Column(modifier = Modifier.padding(top = AuraDockSpacing.lg), verticalArrangement = Arrangement.spacedBy(AuraDockSpacing.smd - AuraDockSpacing.xxs)) {
-            Fact(Icons.Outlined.Bolt, "Phone is charging")
-            Fact(Icons.Outlined.DesktopWindows, "Sideways on a stand")
-            Fact(Icons.Outlined.Schedule, "Screen times out")
-        }
-    }
-}
-
-@Composable
-private fun Fact(icon: ImageVector, text: String) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(AuraDockRadii.row))
-            .background(AuraDockColors.Surface)
-            .padding(horizontal = AuraDockSpacing.md, vertical = AuraDockSpacing.smd + AuraDockSpacing.xxs),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(AuraDockSpacing.smd + AuraDockSpacing.xxs)
-    ) {
-        Icon(icon, contentDescription = null, tint = AuraDockColors.OnBackground, modifier = Modifier.size(AuraDockSizes.factIcon))
-        Text(text = text, color = AuraDockColors.OnBackground, style = AuraDockTypography.Body)
+        ScreensaverTestSteps(state.screensaverTest)
     }
 }
 

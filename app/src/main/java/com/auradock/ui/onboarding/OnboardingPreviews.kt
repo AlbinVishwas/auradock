@@ -2,6 +2,7 @@ package com.auradock.ui.onboarding
 
 import androidx.compose.runtime.Composable
 import com.auradock.dock.DockTemplate
+import com.auradock.screensaver.ScreensaverTestUiState
 import com.auradock.ui.preview.PreviewComponent
 import com.auradock.ui.preview.PreviewData
 import com.auradock.ui.preview.PreviewPortrait
@@ -80,3 +81,28 @@ private fun PermissionCardNotGranted() = AuraDockTheme { PermissionCard(SetupPer
 @PreviewComponent
 @Composable
 private fun PermissionCardGranted() = AuraDockTheme { PermissionCard(SetupPermission.DND_ACCESS, granted = true, onAllow = {}) }
+
+private val TestSteps1 = ScreensaverTestUiState(selected = true, timeoutOk = false)
+private val TestAppeared = ScreensaverTestUiState(selected = true, timeoutOk = true, appeared = true)
+
+/** The walkthrough's screensaver step, one step done. */
+@PreviewPortrait
+@Composable
+private fun OnboardingScreensaverTestOneDone() = AuraDockTheme {
+    OnboardingScreen(NothingGranted.copy(screensaverTest = TestSteps1), OnboardingActions(), initialStep = 3)
+}
+
+/** Waiting on the stand: the third step still open and no button but Continue. */
+@PreviewPortrait
+@Composable
+private fun OnboardingScreensaverTestWaiting() = AuraDockTheme {
+    OnboardingScreen(NothingGranted.copy(screensaverTest = ScreensaverTestUiState(selected = true, timeoutOk = true)), OnboardingActions(), initialStep = 3)
+}
+
+@PreviewPortrait
+@Composable
+private fun ScreensaverTestPageStart() = AuraDockTheme { ScreensaverTestScreen(ScreensaverTestUiState(), ScreensaverTestActions()) }
+
+@PreviewPortrait
+@Composable
+private fun ScreensaverTestPageAppeared() = AuraDockTheme { ScreensaverTestScreen(TestAppeared, ScreensaverTestActions()) }

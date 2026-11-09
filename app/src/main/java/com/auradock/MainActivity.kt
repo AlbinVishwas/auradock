@@ -57,6 +57,7 @@ import com.auradock.ui.routes.DashboardRoute
 import com.auradock.ui.routes.FocusSettingsRoute
 import com.auradock.ui.routes.Navigation
 import com.auradock.ui.routes.OnboardingRoute
+import com.auradock.ui.routes.ScreensaverTestRoute
 import com.auradock.ui.routes.SetupRoute
 import com.auradock.ui.routes.SystemSettings
 import com.auradock.ui.routes.TemplateGalleryRoute
@@ -86,6 +87,7 @@ class MainActivity : ComponentActivity() {
 
     @Inject lateinit var dockData: DockData
     @Inject lateinit var dockFocus: DockFocusController
+    @Inject lateinit var screensaverTest: com.auradock.screensaver.ScreensaverTest
     @Inject lateinit var sessions: com.auradock.sessions.SessionTracker
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -214,6 +216,7 @@ class MainActivity : ComponentActivity() {
                     page == "templates" -> "gallery"
                     page == "focus" -> "focus"
                     page == "setup" -> "setup"
+                    page == "screensaver" -> "screensaver"
                     else -> "dashboard"
                 }
 
@@ -226,6 +229,7 @@ class MainActivity : ComponentActivity() {
                     openTemplates = { page = "templates" },
                     openFocus = { page = "focus" },
                     openSetup = { page = "setup" },
+                    openScreensaverTest = { page = "screensaver" },
                     backToDashboard = { page = "dashboard" }
                 )
 
@@ -265,7 +269,8 @@ class MainActivity : ComponentActivity() {
 
                         "onboarding" -> OnboardingRoute(standbyViewModel, system)
                         "gallery" -> TemplateGalleryRoute(standbyViewModel, navigation)
-                        "setup" -> SetupRoute(standbyViewModel, system)
+                        "setup" -> SetupRoute(standbyViewModel, system, onOpenScreensaverTest = navigation.openScreensaverTest)
+                        "screensaver" -> ScreensaverTestRoute(standbyViewModel, system)
                         "focus" -> FocusSettingsRoute(standbyViewModel, onOpenSetup = navigation.openSetup)
                         else -> DashboardRoute(standbyViewModel, navigation)
                     }
@@ -323,6 +328,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onStart() {
         super.onStart()
+        screensaverTest.onAppOpened() // the screensaver appeared since the app was last open? the dashboard says so
         standbyViewModel.refreshCalendarPermission()
         standbyViewModel.refreshOverlayAccess()
         standbyViewModel.updateNotificationAccess(isNotificationAccessEnabled(this))
@@ -348,6 +354,7 @@ class MainActivity : ComponentActivity() {
     override fun onResume() {
         super.onResume()
         screensaverSelected = isAuraDockScreensaver(this) // the user may have just picked it
+        screensaverTest.refresh()
         standbyViewModel.refreshExactAlarmAccess() // the user may have just allowed it in settings
         standbyViewModel.refreshContactsAccess()
         standbyViewModel.refreshDndAccess()        // ...or just allowed Do Not Disturb access

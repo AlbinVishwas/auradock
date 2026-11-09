@@ -118,3 +118,17 @@ private fun UndockTomorrowStep() = AuraDockTheme {
 // The intention at the top of the Today card, open and done.
 @PreviewPortrait @Composable private fun DashboardIntention() = AuraDockTheme { DashboardScreen(Full.copy(intention = com.auradock.intention.IntentionLine("Ship the invoice to Meera", false)), DashboardActions()) }
 @PreviewPortrait @Composable private fun DashboardIntentionDone() = AuraDockTheme { DashboardScreen(Full.copy(intention = com.auradock.intention.IntentionLine("Ship the invoice to Meera", true)), DashboardActions()) }
+
+/** The screensaver appeared on its own (shown once, until "Done"). */
+@PreviewPortrait
+@Composable
+private fun DashboardScreensaverAppeared() = AuraDockTheme {
+    DashboardScreen(Full.copy(screensaverBanner = com.auradock.screensaver.ScreensaverBanner.APPEARED), DashboardActions())
+}
+
+/** A day after install and no screensaver yet: a gentle hint with "Try again". */
+@PreviewPortrait
+@Composable
+private fun DashboardScreensaverHint() = AuraDockTheme {
+    DashboardScreen(Full.copy(screensaverBanner = com.auradock.screensaver.ScreensaverBanner.HINT), DashboardActions())
+}

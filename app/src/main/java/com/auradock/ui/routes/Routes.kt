@@ -14,6 +14,8 @@ import com.auradock.ui.focus.VipUiState
 import com.auradock.ui.onboarding.OnboardingActions
 import com.auradock.ui.onboarding.OnboardingScreen
 import com.auradock.ui.onboarding.OnboardingUiState
+import com.auradock.ui.onboarding.ScreensaverTestActions
+import com.auradock.ui.onboarding.ScreensaverTestScreen
 import com.auradock.ui.onboarding.SetupActions
 import com.auradock.ui.onboarding.SetupPermission
 import com.auradock.ui.onboarding.SetupScreen
@@ -47,6 +49,7 @@ data class Navigation(
     val openTemplates: () -> Unit = {},
     val openFocus: () -> Unit = {},
     val openSetup: () -> Unit = {},
+    val openScreensaverTest: () -> Unit = {},
     val backToDashboard: () -> Unit = {}
 )
 
@@ -64,6 +67,7 @@ fun DashboardRoute(viewModel: StandbyViewModel, navigation: Navigation, modifier
     val weekly by viewModel.weeklyFocus.collectAsState()
     val intention by viewModel.intention.collectAsState()
     val shutdownOffer by viewModel.shutdownOffer.collectAsState()
+    val screensaverBanner by viewModel.screensaverBanner.collectAsState()
 
     DashboardScreen(
         state = DashboardUiState(
@@ -78,7 +82,8 @@ fun DashboardRoute(viewModel: StandbyViewModel, navigation: Navigation, modifier
             undockSummary = summary,
             weeklyFocus = weekly,
             intention = intention,
-            offerShutdown = shutdownOffer
+            offerShutdown = shutdownOffer,
+            screensaverBanner = screensaverBanner
         ),
         actions = DashboardActions(
             onEnableWeather = { viewModel.askPermission(SetupPermission.LOCATION) },
@@ -94,7 +99,12 @@ fun DashboardRoute(viewModel: StandbyViewModel, navigation: Navigation, modifier
             onDismissUndockSummary = { viewModel.dismissUndockSummary() },
             onToggleIntention = { viewModel.setIntentionDone(it) },
             onShutdownShown = { viewModel.shutdownShown(it) },
-            onSaveTomorrow = { title, dueAt -> viewModel.saveTomorrowTask(title, dueAt) }
+            onSaveTomorrow = { title, dueAt -> viewModel.saveTomorrowTask(title, dueAt) },
+            onDismissScreensaverNote = { viewModel.dismissScreensaverNote() },
+            onTryScreensaverAgain = {
+                viewModel.snoozeScreensaverHint()
+                navigation.openScreensaverTest()
+            }
         ),
         modifier = modifier
     )
@@ -149,14 +159,27 @@ private fun rememberGrantedPermissions(viewModel: StandbyViewModel): Set<SetupPe
 private fun allow(viewModel: StandbyViewModel, permission: SetupPermission) = viewModel.allow(permission)
 
 @Composable
-fun SetupRoute(viewModel: StandbyViewModel, system: SystemSettings, modifier: Modifier = Modifier) {
+fun SetupRoute(viewModel: StandbyViewModel, system: SystemSettings, onOpenScreensaverTest: () -> Unit, modifier: Modifier = Modifier) {
+    val test by viewModel.screensaverSteps.collectAsState()
     SetupScreen(
-        state = SetupUiState(granted = rememberGrantedPermissions(viewModel), screensaverSelected = system.screensaverSelected),
+        state = SetupUiState(granted = rememberGrantedPermissions(viewModel), screensaverSelected = system.screensaverSelected, screensaverTest = test),
         actions = SetupActions(
             onAllowPermission = { allow(viewModel, it) },
             onOpenScreensaverSettings = system.openScreensaverSettings,
-            onOpenDisplaySettings = system.openDisplaySettings
+            onOpenDisplaySettings = system.openDisplaySettings,
+            onOpenScreensaverTest = onOpenScreensaverTest
         ),
+        modifier = modifier
+    )
+}
+
+/** The guided screensaver test on its own page (from Setup, and from the dashboard's "Try again"). */
+@Composable
+fun ScreensaverTestRoute(viewModel: StandbyViewModel, system: SystemSettings, modifier: Modifier = Modifier) {
+    val test by viewModel.screensaverSteps.collectAsState()
+    ScreensaverTestScreen(
+        state = test,
+        actions = ScreensaverTestActions(onChoose = system.openScreensaverSettings, onSetTimeout = system.openDisplaySettings),
         modifier = modifier
     )
 }
@@ -165,8 +188,10 @@ fun SetupRoute(viewModel: StandbyViewModel, system: SystemSettings, modifier: Mo
 fun OnboardingRoute(viewModel: StandbyViewModel, system: SystemSettings, modifier: Modifier = Modifier) {
     val dockFromAnywhere by viewModel.dockFromAnywhere.collectAsState()
     val overlayGranted by viewModel.overlayGranted.collectAsState()
+    val test by viewModel.screensaverSteps.collectAsState()
     OnboardingScreen(
         state = OnboardingUiState(
+            screensaverTest = test,
             granted = rememberGrantedPermissions(viewModel),
             screensaverSelected = system.screensaverSelected,
             dockFromAnywhere = dockFromAnywhere,
@@ -177,6 +202,7 @@ fun OnboardingRoute(viewModel: StandbyViewModel, system: SystemSettings, modifie
             onAllowPermission = { allow(viewModel, it) },
             onOpenScreensaverSettings = system.openScreensaverSettings,
             onOpenDisplaySettings = system.openDisplaySettings,
+            screensaverTest = ScreensaverTestActions(onChoose = system.openScreensaverSettings, onSetTimeout = system.openDisplaySettings),
             onToggleDockFromAnywhere = { viewModel.setDockFromAnywhere(it) },
             onAllowOverlay = { viewModel.openOverlaySettings() },
             onPickTemplate = { viewModel.setTemplate(it) },

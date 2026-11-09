@@ -5,6 +5,9 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.ui.Alignment
+import com.auradock.screensaver.ScreensaverTestUiState
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
@@ -29,14 +32,16 @@ import com.auradock.ui.theme.fromScreenTop
 data class SetupUiState(
     /** The permissions that are currently allowed. */
     val granted: Set<SetupPermission>,
-    val screensaverSelected: Boolean
+    val screensaverSelected: Boolean,
+    val screensaverTest: ScreensaverTestUiState = ScreensaverTestUiState()
 )
 
 /** What the user can do on the Setup page. */
 data class SetupActions(
     val onAllowPermission: (SetupPermission) -> Unit = {},
     val onOpenScreensaverSettings: () -> Unit = {},
-    val onOpenDisplaySettings: () -> Unit = {}
+    val onOpenDisplaySettings: () -> Unit = {},
+    val onOpenScreensaverTest: () -> Unit = {}
 )
 
 /** Every permission with its status (handoff Setup), so ones skipped in the walkthrough can be allowed later. */
@@ -74,17 +79,26 @@ fun SetupScreen(
         }
         // Not in the handoff: the way back to the screensaver and screen-timeout settings the walkthrough pointed to.
         val shape = RoundedCornerShape(AuraDockRadii.row)
-        Text(
-            text = if (state.screensaverSelected) "Screensaver and screen timeout" else "Choose AuraDock as screensaver",
-            style = AuraDockTypography.RowLabel,
-            color = AuraDockColors.OnBackground,
+        Row(
             modifier = Modifier
                 .padding(top = AuraDockSpacing.sm)
                 .fillMaxWidth()
                 .clip(shape)
                 .border(AuraDockSizes.line, AuraDockColors.TileOutline, shape)
-                .clickable(role = Role.Button, onClick = actions.onOpenScreensaverSettings)
-                .padding(horizontal = AuraDockSpacing.md + AuraDockSpacing.xxs, vertical = AuraDockSpacing.md)
-        )
+                .clickable(role = Role.Button, onClick = actions.onOpenScreensaverTest)
+                .padding(horizontal = AuraDockSpacing.md + AuraDockSpacing.xxs, vertical = AuraDockSpacing.md),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(text = "Screensaver test", style = AuraDockTypography.RowLabel, color = AuraDockColors.OnBackground, modifier = Modifier.weight(1f))
+            Text(
+                text = when {
+                    state.screensaverTest.appeared -> "✓ Appeared on its own"
+                    state.screensaverTest.selected -> "Waiting for it"
+                    else -> "Not set up"
+                },
+                style = AuraDockTypography.Meta,
+                color = AuraDockColors.OnSurfaceVariant
+            )
+        }
     }
 }

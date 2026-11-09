@@ -65,6 +65,7 @@ class DockDreamService : DreamService(), LifecycleOwner, SavedStateRegistryOwner
 
     @Inject lateinit var dockData: DockData
     @Inject lateinit var dockFocus: DockFocusController
+    @Inject lateinit var screensaverTest: com.auradock.screensaver.ScreensaverTest
 
     private val handler = Handler(Looper.getMainLooper())
     private val stabilizer = OrientationStabilizer()
@@ -188,6 +189,7 @@ class DockDreamService : DreamService(), LifecycleOwner, SavedStateRegistryOwner
                 }
                 shownOrientation = decision.orientation
                 dockFocus.setActive(DockSource.DREAM, true) // the dock is really showing: Do Not Disturb on
+                screensaverTest.onDreamShown() // the guided test: "AuraDock appeared on its own"
             }
         }
     }

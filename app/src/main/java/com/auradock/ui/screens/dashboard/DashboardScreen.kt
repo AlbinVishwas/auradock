@@ -64,6 +64,7 @@ import com.auradock.ui.theme.AuraDockSpacing
 import com.auradock.ui.theme.fromScreenBottom
 import com.auradock.ui.theme.fromScreenTop
 import com.auradock.intention.IntentionLine
+import com.auradock.screensaver.ScreensaverBanner
 import com.auradock.sessions.SessionSummary
 import com.auradock.sessions.WeeklyFocus
 import com.auradock.sessions.summaryIsFresh
@@ -88,7 +89,9 @@ data class DashboardUiState(
     /** The morning intention, shown at the top of the Today card (null: none today). */
     val intention: IntentionLine? = null,
     /** The undock card gets a second step: "Tomorrow's top task?" (an evening session, not yet asked this evening). */
-    val offerShutdown: Boolean = false
+    val offerShutdown: Boolean = false,
+    /** A quiet line about the screensaver test, if there is one to say. */
+    val screensaverBanner: ScreensaverBanner = ScreensaverBanner.NONE
 )
 
 /** What the user can do on the dashboard. */
@@ -107,7 +110,9 @@ data class DashboardActions(
     val onToggleIntention: (done: Boolean) -> Unit = {},
     /** The "Tomorrow's top task?" step was shown, for the session that ended at this time. */
     val onShutdownShown: (endedAt: Long) -> Unit = {},
-    val onSaveTomorrow: (title: String, dueAt: Long?) -> Unit = { _, _ -> }
+    val onSaveTomorrow: (title: String, dueAt: Long?) -> Unit = { _, _ -> },
+    val onDismissScreensaverNote: () -> Unit = {},
+    val onTryScreensaverAgain: () -> Unit = {}
 )
 
 /** The "today" screen. Stateless: draws [state] and reports taps through [actions]. */
@@ -141,6 +146,7 @@ fun DashboardScreen(
                 Text(text = greetingFor(timeMillis), color = AuraDockColors.OnBackground, style = AuraDockTypography.Greeting)
                 WeatherRow(date = dateText, weather = state.weather, permission = state.locationPermission, onEnable = actions.onEnableWeather)
                 state.weeklyFocus?.let { WeeklyFocusLine(it) }
+                ScreensaverNote(state.screensaverBanner, onDone = actions.onDismissScreensaverNote, onTryAgain = actions.onTryScreensaverAgain)
             }
         }
 
