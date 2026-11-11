@@ -21,3 +21,13 @@ How an update is checked to keep the user's data. Done on `emulator-5554` only.
 | `auradock_split.xml` (stacks `L:DIAL,MONTH`, `R:TASKS,WEATHER,NOW_PLAYING`) | | identical |
 | `auradock.db` version | 7 | 8, only the tasks table left |
 | Dashboard | | "57 m focused this week", both tasks listed |
+
+## 0.3.1 to 0.3.2 (signed release builds, 11 Nov 2026)
+Installed the signed 0.3.1 release, onboarded, added two tasks and recorded a real 135 s Dock now session, then installed the signed 0.3.2 release over it
+(`adb install -r`, no uninstall). Before and after, the dashboard read the same: "2 m focused this week", the seven-day line, "2 left", both tasks.
+Stacks, the Bold colour preset and extra cities are preference files, which the 0.3.2 release does not touch; they were compared byte for byte on the debug
+upgrade above (release builds cannot be opened with `run-as`).
+
+## The case that lost sessions in 0.3.1
+On a fresh install the first dock of the day shows the intention prompt. On 0.3.1 (twice, debug and release) a Dock now session of over two minutes with the prompt
+up was not saved and the dashboard stayed empty. On 0.3.2 the same sequence (fresh install, onboarding, Dock now, type an intention, wait 135 s, Back) saved a 150 s session.

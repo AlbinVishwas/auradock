@@ -46,8 +46,8 @@ android {
         applicationId          = "com.auradock"
         minSdk                 = 26
         targetSdk              = 36
-        versionCode            = 11
-        versionName            = "0.3.1"
+        versionCode            = 12
+        versionName            = "0.3.2"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
         // The DSN is a public identifier (it ships in every app that uses Sentry). It is empty when sentry.properties is missing: then Sentry stays off.

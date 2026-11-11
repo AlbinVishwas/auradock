@@ -101,7 +101,7 @@ object Analytics {
     fun capture(name: String, properties: Map<String, Any?> = emptyMap()) {
         val clean = AnalyticsScrubber.clean(name, properties) ?: return
         sentNames += name
-        if (BuildConfig.DEBUG) Log.i(TAG, "event $name ${clean.keys}") // names of properties only, never values
+        Log.i(TAG, "event $name ${clean.keys}") // the event name and the property names only, never a value
         if (!ready) return
         runCatching { PostHog.capture(event = name, properties = clean) }
     }
