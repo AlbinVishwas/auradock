@@ -14,7 +14,11 @@ enum class DockTemplate(val label: String, val description: String, val shows: S
         val default = BOLD
 
         /** Templates the gallery offers, Bold first. */
-        val available = listOf(BOLD, CLASSIC, FOCUS, MINIMAL, PRODUCTIVITY, WORLD, SPLIT)
+        private val all = listOf(BOLD, CLASSIC, FOCUS, MINIMAL, PRODUCTIVITY, WORLD, SPLIT)
+
+        /** The templates on offer. World can be switched off remotely (feature flag `world_template`; on whenever the flag cannot be read). */
+        val available: List<DockTemplate>
+            get() = if (com.auradock.analytics.FeatureFlags.isOn(com.auradock.analytics.FeatureFlags.WORLD_TEMPLATE)) all else all - WORLD
     }
 }
 

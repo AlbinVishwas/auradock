@@ -19,7 +19,9 @@ class DockWatcherController @Inject constructor(
     @ApplicationContext private val context: Context,
     private val settings: FocusSettings
 ) {
-    fun shouldRun(): Boolean = settings.dockFromAnywhere.value && canDrawOverOtherApps(context)
+    fun shouldRun(): Boolean =
+        settings.dockFromAnywhere.value && canDrawOverOtherApps(context) &&
+            com.auradock.analytics.FeatureFlags.isOn(com.auradock.analytics.FeatureFlags.DOCK_FROM_ANYWHERE) // can be switched off remotely
 
     fun sync() {
         val intent = Intent(context, DockWatcherService::class.java)

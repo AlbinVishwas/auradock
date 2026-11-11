@@ -33,3 +33,19 @@ Crash, ANR and performance reporting (Sentry Android SDK, plugin for R8 mapping 
   deobfuscated from the uploaded R8 mapping. If the MCP is not connected, read issues in the Sentry web dashboard.
 - Sentry dashboard (set once): turn on spike protection, set per-key rate limits on the DSN, and keep inbound filters for legacy browsers and
   localhost on. The app also rate-limits itself (at most 10 of the same issue per device per hour).
+
+## Analytics (PostHog) and feature flags
+- Anonymous product analytics through PostHog (`analytics/`). Key and host come from `~/.auradock-signing/posthog.properties` (`key`, `host`, optional `dev.key`);
+  without the file the build works with analytics off. Debug builds send nothing unless `adb ... --es cmd analytics_on` was sent to the debug receiver
+  (then to the dev project, with `$environment=dev`). The "Share usage analytics" switch in Settings calls `PostHog.optOut()` when turned off.
+- Every event goes through `AnalyticsScrubber`, an allow-list. **Properties are only enums, counts and duration buckets, never anything the user typed or received.**
+  A new event or property must be added to the scrubber's lists and its test. Full event list: `docs/ANALYTICS.md`.
+- Feature flags (`analytics/FeatureFlags.kt`) all default ON when they cannot be read, so the app works offline. A flag set to `false` in PostHog turns the feature off:
+
+  | Flag | Turns off |
+  |---|---|
+  | `dock_from_anywhere` | the "Dock from anywhere" watcher service |
+  | `now_playing` | the Now playing widget's media listener |
+  | `world_template` | the World template in the gallery (a stored World choice falls back to Bold) |
+  | `ai_features` | reserved for the AI features that are out of V1; nothing reads it yet |
+- Surveys: a PostHog survey with one free-text question shows as a sheet on the dashboard only, after 7 days of use. The dock never shows one.

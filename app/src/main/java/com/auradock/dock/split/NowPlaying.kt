@@ -63,6 +63,7 @@ class NowPlayingRepository @Inject constructor(@ApplicationContext private val c
     /** Starts listening (does nothing without notification access, or if already listening). Safe to call whenever the dock appears. */
     fun start() {
         if (started || !isNotificationAccessEnabled(context)) return
+        if (!com.auradock.analytics.FeatureFlags.isOn(com.auradock.analytics.FeatureFlags.NOW_PLAYING)) return // switched off remotely
         val manager = context.getSystemService(MediaSessionManager::class.java) ?: return
         val component = ComponentName(context, AuraNotificationListenerService::class.java)
         runCatching {
