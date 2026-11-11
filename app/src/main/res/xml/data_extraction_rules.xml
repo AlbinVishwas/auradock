@@ -2,8 +2,8 @@
 <!-- Android 12+: what goes to Google's cloud backup and to a phone-to-phone transfer. Same list for both.
      Backed up: tasks (in the database), settings, template choice, colour preset, extra cities, stacks.
      Never: DND and VIP restore state, the weather cache, the event log, the monitoring flag, Sentry's cache.
-     Focus sessions, their checkpoint and the event log live in the same database file as the tasks, so they come along inside it
-     and are emptied on first launch after a restore (see RestoreCleanup). -->
+     Focus sessions, their checkpoint, the intention and the event log live in auradock_local.db, which is not listed, so it is never
+     backed up. -->
 <data-extraction-rules>
     <cloud-backup>
         <include domain="database" path="auradock.db" />

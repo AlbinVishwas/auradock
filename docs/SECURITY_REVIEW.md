@@ -24,31 +24,30 @@ plugin for the mapping upload. It is never written to `BuildConfig`, resources o
 
 ## 2. Backup (`allowBackup` replaced by explicit rules)
 
-`android:allowBackup` stays `true` so tasks survive a new phone, but it is now governed by `dataExtractionRules`
-(Android 12+, cloud backup and device transfer) and `fullBackupContent` (Android 11 and older). Both use an include list, so anything not listed is
-not backed up.
+`android:allowBackup` stays `true` so tasks and settings survive a new phone, but it is governed by `dataExtractionRules`
+(Android 12+, cloud backup and device transfer) and `fullBackupContent` (Android 11 and older). Both are include lists, so anything not
+listed is not backed up.
 
 | Backed up | File |
 |---|---|
-| Tasks (and the rest of the database) | `databases/auradock.db` (+ `-wal`, `-shm`) |
-| Settings, template choice, colour preset, extra cities | `auradock_prefs`, `auradock_focus_settings` |
+| Tasks | `databases/auradock.db` (+ `-wal`, `-shm`) |
+| Settings, template choice, Bold colour preset, extra cities | `auradock_prefs`, `auradock_focus_settings` |
 | Stacks | `auradock_split` |
 
-| Not backed up | Where it lives |
+| Never backed up | Where it lives |
 |---|---|
-| DND restore state | `auradock_focus_state` prefs |
+| Focus sessions, the open-session checkpoint, the morning intention, the event log | `databases/auradock_local.db` (since 0.3.2) |
+| DND restore state | `auradock_focus_state` prefs (synchronous write before DND is touched) |
 | VIP loan journal | `auradock_vip_loan` prefs |
-| Event log | `auradock_events` prefs and the `app_event` table |
 | Weather cache | `auradock_weather` prefs |
 | Sentry's cache and the "Share crash reports" flag | `cache/`, `auradock_monitoring` prefs |
 
-**The database is one file.** Tasks, focus sessions, the session checkpoint and the event log are tables of `auradock.db`, and a backup rule
-cannot pick tables. To meet "exclude focus sessions, checkpoints and the event log" anyway, `RestoreCleanup` (run first in
-`AuraDockApplication.onCreate`) empties `focus_sessions`, `session_checkpoint` and `app_event` on the first launch after a restore. It
-recognises a restore as: the app was installed and never updated (`firstInstallTime == lastUpdateTime`), a database file already exists, and there is no marker
-in `noBackupFilesDir`. An ordinary update from 0.3.0 has a later `lastUpdateTime`, so it is never treated as a restore and sessions are kept.
-The marker is written either way. The session data does sit in Google's cloud copy until the restore empties it; a split database
-(tasks apart from sessions) would remove that, and is the cleaner fix if this matters later.
+0.3.1 kept sessions and the event log in `auradock.db` and emptied them after a restore (`RestoreCleanup`). 0.3.2 splits the database
+instead: `DatabaseSplit` copies the four usage tables into `auradock_local.db`, checks the row counts, then drops them from
+`auradock.db`; it is safe to repeat and keeps the old tables if anything fails. `RestoreCleanup` is removed. Settings, stacks, the
+colour preset and cities are SharedPreferences, not database rows, and stay in the backed-up preference files. The DND/VIP restore
+state and weather cache stay in their (never backed up) preference files rather than the local database: the DND restore must be on
+disk synchronously before Do Not Disturb is changed, and Room does not allow that on the main thread.
 
 ## 3. Exported components
 
@@ -94,4 +93,3 @@ states, counts, durations and orientation codes).
 - Sentry sends crash and performance data with no personal content: `sendDefaultPii` off, no screenshots, no view hierarchy, no session
   replay, and the scrubber drops message text, titles, names and input (see `monitoring/Scrubber.kt`).
 - The notification listener sees notification content by design; the app keeps it in memory for the dock and does not persist or send it.
-- `RestoreCleanup` and the backup split are the one area to revisit if a stricter privacy promise is wanted (see section 2).

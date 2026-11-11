@@ -4,22 +4,25 @@ import androidx.room.Database
 import androidx.room.RoomDatabase
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
-import com.auradock.analytics.AppEventDao
-import com.auradock.analytics.AppEventEntity
-import com.auradock.intention.IntentionDao
-import com.auradock.intention.IntentionEntity
-import com.auradock.sessions.FocusSessionDao
-import com.auradock.sessions.FocusSessionEntity
-import com.auradock.sessions.SessionCheckpointEntity
 import com.auradock.tasks.TaskDao
 import com.auradock.tasks.TaskEntity
 
-@Database(entities = [TaskEntity::class, FocusSessionEntity::class, SessionCheckpointEntity::class, IntentionEntity::class, AppEventEntity::class], version = 7, exportSchema = false)
+/**
+ * `auradock.db`: the data worth backing up (tasks). Everything about how the phone was used (focus sessions, the open-session
+ * checkpoint, the morning intention, the event log) lives in [LocalDatabase] and is never backed up.
+ */
+@Database(entities = [TaskEntity::class], version = 8, exportSchema = false)
 abstract class AuraDockDatabase : RoomDatabase() {
     abstract fun taskDao(): TaskDao
-    abstract fun focusSessionDao(): FocusSessionDao
-    abstract fun intentionDao(): IntentionDao
-    abstract fun appEventDao(): AppEventDao
+}
+
+/**
+ * 0.3.2: sessions, checkpoint, intention and event log move to [LocalDatabase]. This step changes nothing in the file: the old
+ * tables stay until [DatabaseSplit] has copied them and checked the copy, and only then drops them. (Dropping here would lose
+ * them if the copy failed.)
+ */
+val MIGRATION_7_8 = object : Migration(7, 8) {
+    override fun migrate(db: SupportSQLiteDatabase) = Unit
 }
 
 /** 0.2.0: adds the focus sessions table. Tasks are untouched. */
