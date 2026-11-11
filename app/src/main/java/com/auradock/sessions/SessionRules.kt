@@ -17,15 +17,23 @@ const val MIN_SESSION_MS = 2 * 60_000L
 
 /**
  * One dock closing and the next opening (the screensaver handing over to the app, or a turn of the phone) happens within a
- * moment. Inside this window the two are one session. It matches the Do Not Disturb restore grace in DockFocusController.
+ * moment. Inside this window the two are one session. It is longer than the Do Not Disturb restore grace in DockFocusController
+ * (3 s) on purpose: recreating the dock Activity can take several seconds on a busy phone, and a session split in two by that
+ * would be dropped when each half is under two minutes.
  */
-const val HANDOVER_GRACE_MS = 3_000L
+const val HANDOVER_GRACE_MS = 10_000L
 
 /** What came in while docked: [held] were silenced, [through] reached the user (a picked app, or someone Do Not Disturb lets through). */
 data class SessionCounts(val held: Int = 0, val through: Int = 0)
 
 /** A session that is going on now. */
-data class LiveSession(val startedAt: Long, val source: SessionSource, val counts: SessionCounts = SessionCounts())
+data class LiveSession(
+    val startedAt: Long,
+    val source: SessionSource,
+    val counts: SessionCounts = SessionCounts(),
+    /** The monotonic clock reading when it started: lengths come from this, never from the wall clock, which can be stepped. */
+    val startElapsed: Long = startedAt
+)
 
 /** A session that has ended. */
 data class FinishedSession(
@@ -73,16 +81,18 @@ class SessionMachine {
     var live: LiveSession? = null
         private set
     private var closedAt: Long? = null
+    private var closedElapsed: Long = 0L
 
     /** True while a dock has just closed and the grace is running. */
     val closing: Boolean get() = closedAt != null
 
-    fun onShowing(showing: Boolean, source: SessionSource, now: Long) {
+    fun onShowing(showing: Boolean, source: SessionSource, now: Long, elapsed: Long = now) {
         if (showing) {
-            if (live == null) live = LiveSession(startedAt = now, source = source)
+            if (live == null) live = LiveSession(startedAt = now, source = source, startElapsed = elapsed)
             closedAt = null // a handover: the same session carries on
         } else if (live != null && closedAt == null) {
             closedAt = now
+            closedElapsed = elapsed
         }
     }
 
@@ -102,18 +112,23 @@ class SessionMachine {
     /** The session as it stands now that its dock has closed, for the undock card, which cannot wait out the grace. */
     fun provisional(): FinishedSession? {
         val session = live ?: return null
-        val closed = closedAt ?: return null
-        return FinishedSession(session.startedAt, closed, session.source, session.counts)
+        closedAt ?: return null
+        return finished(session)
     }
 
+    /** The session as it ended: its end is its start plus the monotonic time it ran, so a stepped wall clock cannot change its length. */
+    private fun finished(session: LiveSession) =
+        FinishedSession(session.startedAt, session.startedAt + (closedElapsed - session.startElapsed).coerceAtLeast(0L), session.source, session.counts)
+
     /** Call once the grace may have passed. Returns the session if it has now really ended. */
-    fun finishIfDue(now: Long): FinishedSession? {
+    fun finishIfDue(now: Long, elapsed: Long = now): FinishedSession? {
         val session = live ?: return null
-        val closed = closedAt ?: return null
-        if (now - closed < HANDOVER_GRACE_MS) return null
+        closedAt ?: return null
+        if (elapsed - closedElapsed < HANDOVER_GRACE_MS) return null
+        val done = finished(session)
         live = null
         closedAt = null
-        return FinishedSession(session.startedAt, closed, session.source, session.counts)
+        return done
     }
 }
 

@@ -118,7 +118,9 @@ class MainActivity : ComponentActivity() {
                 try {
                     standbyViewModel.dockVisible.collect { dockFocus.setActive(DockSource.APP, it) }
                 } finally {
-                    dockFocus.setActive(DockSource.APP, false)
+                    // A turn of the screen, or a font or theme change, destroys and recreates this Activity while the dock is still
+                    // up: that is not the dock closing, so it must not end the session or switch Do Not Disturb off.
+                    if (!isChangingConfigurations) dockFocus.setActive(DockSource.APP, false)
                 }
             }
         }

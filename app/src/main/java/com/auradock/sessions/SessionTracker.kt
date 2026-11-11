@@ -4,6 +4,7 @@ import com.auradock.monitoring.Monitoring
 import android.content.Context
 import android.os.Handler
 import android.os.Looper
+import android.os.SystemClock
 import android.util.Log
 import com.auradock.data.AuraDockDatabase
 import com.auradock.data.RawNotification
@@ -126,7 +127,7 @@ class SessionTracker @Inject constructor(
             events.log(com.auradock.analytics.AnalyticsEvents.SESSION_START, source.name)
             events.logOnce(com.auradock.analytics.AnalyticsEvents.FIRST_DOCK, source.name)
         }
-        machine.onShowing(active.isNotEmpty(), source, now)
+        machine.onShowing(active.isNotEmpty(), source, now, SystemClock.elapsedRealtime())
         _live.value = machine.live
         if (starting) {
             machine.live?.let { writeCheckpoint(it, now) }
@@ -183,7 +184,7 @@ class SessionTracker @Inject constructor(
 
     @Synchronized
     private fun finishNow() {
-        val done = machine.finishIfDue(System.currentTimeMillis()) ?: return
+        val done = machine.finishIfDue(System.currentTimeMillis(), SystemClock.elapsedRealtime()) ?: return
         Monitoring.breadcrumb("focus_session", "end", "kept" to done.worthKeeping)
         events.log(com.auradock.analytics.AnalyticsEvents.SESSION_END, (done.durationMs / 1000).toString())
         _live.value = machine.live
