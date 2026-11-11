@@ -181,14 +181,15 @@ private fun allow(viewModel: StandbyViewModel, permission: SetupPermission) = vi
 fun SetupRoute(viewModel: StandbyViewModel, system: SystemSettings, onOpenScreensaverTest: () -> Unit, onOpenDebug: () -> Unit, modifier: Modifier = Modifier) {
     val test by viewModel.screensaverSteps.collectAsState()
     SetupScreen(
-        state = SetupUiState(granted = rememberGrantedPermissions(viewModel), screensaverSelected = system.screensaverSelected, screensaverTest = test, version = viewModel.versionLabel, shareCrashReports = viewModel.shareCrashReports.collectAsState().value),
+        state = SetupUiState(granted = rememberGrantedPermissions(viewModel), screensaverSelected = system.screensaverSelected, screensaverTest = test, version = viewModel.versionLabel, shareCrashReports = viewModel.shareCrashReports.collectAsState().value, shareAnalytics = viewModel.shareAnalytics.collectAsState().value),
         actions = SetupActions(
             onAllowPermission = { allow(viewModel, it) },
             onOpenScreensaverSettings = system.openScreensaverSettings,
             onOpenDisplaySettings = system.openDisplaySettings,
             onOpenScreensaverTest = onOpenScreensaverTest,
             onOpenDebug = onOpenDebug,
-            onShareCrashReports = viewModel::setShareCrashReports
+            onShareCrashReports = viewModel::setShareCrashReports,
+            onShareAnalytics = viewModel::setShareAnalytics
         ),
         modifier = modifier
     )

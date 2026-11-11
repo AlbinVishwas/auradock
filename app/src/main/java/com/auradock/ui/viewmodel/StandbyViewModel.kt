@@ -601,6 +601,14 @@ class StandbyViewModel @Inject constructor(
         com.auradock.monitoring.Monitoring.setSharing(context.applicationContext as android.app.Application, share)
     }
 
+    /** "Share usage analytics" (Setup): on by default; turning it off calls PostHog.optOut() at once. */
+    private val _shareAnalytics = MutableStateFlow(com.auradock.analytics.Analytics.isSharing(context))
+    val shareAnalytics: StateFlow<Boolean> = _shareAnalytics.asStateFlow()
+    fun setShareAnalytics(share: Boolean) {
+        _shareAnalytics.value = share
+        com.auradock.analytics.Analytics.setSharing(context, share)
+    }
+
     /** Debug builds only (the debug page's button): sends a test crash and a non-fatal report to the Sentry dev environment. */
     fun sendTestEvents() {
         viewModelScope.launch(kotlinx.coroutines.Dispatchers.IO) { com.auradock.monitoring.Monitoring.sendTestEvents(context.applicationContext as android.app.Application) }

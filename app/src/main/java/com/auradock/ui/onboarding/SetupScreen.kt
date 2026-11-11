@@ -43,7 +43,10 @@ data class SetupUiState(
     /** E.g. "0.2.2 (8)". Tapping it seven times opens the hidden debug page. */
     val version: String = "",
     /** "Share crash reports": on by default. */
-    val shareCrashReports: Boolean = true
+    val shareCrashReports: Boolean = true,
+
+    /** "Share usage analytics": on by default. */
+    val shareAnalytics: Boolean = true
 )
 
 /** What the user can do on the Setup page. */
@@ -53,7 +56,8 @@ data class SetupActions(
     val onOpenDisplaySettings: () -> Unit = {},
     val onOpenScreensaverTest: () -> Unit = {},
     val onOpenDebug: () -> Unit = {},
-    val onShareCrashReports: (Boolean) -> Unit = {}
+    val onShareCrashReports: (Boolean) -> Unit = {},
+    val onShareAnalytics: (Boolean) -> Unit = {}
 )
 
 /** Every permission with its status (handoff Setup), so ones skipped in the walkthrough can be allowed later. */
@@ -119,6 +123,14 @@ fun SetupScreen(
                 com.auradock.ui.components.AuraSwitch(checked = state.shareCrashReports, onCheckedChange = actions.onShareCrashReports)
             }
             Text(text = "Sends crash and performance data with no personal content.", style = AuraDockTypography.Meta, color = AuraDockColors.OnSurfaceVariant)
+        }
+        // "Share usage analytics": anonymous counts of how the app is used. Off calls PostHog.optOut() at once.
+        Column(modifier = Modifier.padding(top = AuraDockSpacing.md, start = AuraDockSpacing.sm, end = AuraDockSpacing.sm), verticalArrangement = Arrangement.spacedBy(AuraDockSpacing.xs)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(text = "Share usage analytics", style = AuraDockTypography.RowLabel, color = AuraDockColors.OnBackground, modifier = Modifier.weight(1f))
+                com.auradock.ui.components.AuraSwitch(checked = state.shareAnalytics, onCheckedChange = actions.onShareAnalytics)
+            }
+            Text(text = "Anonymous counts of how you use AuraDock. Never your tasks, messages or contacts.", style = AuraDockTypography.Meta, color = AuraDockColors.OnSurfaceVariant)
         }
         if (state.version.isNotEmpty()) {
             var taps by androidx.compose.runtime.remember { androidx.compose.runtime.mutableIntStateOf(0) }
