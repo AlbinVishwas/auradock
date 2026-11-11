@@ -38,6 +38,8 @@ Notification content, calendar events, contact names and numbers, media info, ta
 
 ## Where the code disagrees with the brief
 
+Findings 1 and 2 are fixed in 0.3.3: the VIP list moved to `auradock_vips`, which is not backed up (an older list is moved over on first start), and the Geocoder now gets the 2-decimal coordinates. The table above describes 0.3.2.
+
 1. **The VIP list is in the Android backup.** `auradock_focus_settings` holds each VIP's contact lookup key and **display name** (`focus/FocusSettings.kt`, `Vip(lookupKey, name)`), and that file is on the backup include list. So with backup on, VIP names go to the user's Google account. Not Google-free, and not "never leaves the phone".
 2. **The Geocoder gets unrounded coordinates**, not the 2-decimal ones Open-Meteo gets.
 3. **`WRITE_CONTACTS` was not on the list.** It is used only for ring-through, and changes only the favourite flag.

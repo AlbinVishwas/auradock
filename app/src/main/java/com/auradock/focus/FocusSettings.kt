@@ -18,6 +18,15 @@ class FocusSettings @Inject constructor(
 ) {
     private val prefs = context.getSharedPreferences("auradock_focus_settings", Context.MODE_PRIVATE)
 
+    /** The VIP list (names and contact keys) lives in its own file, which is not on the backup list: it never leaves the phone. */
+    private val vipPrefs = context.getSharedPreferences("auradock_vips", Context.MODE_PRIVATE).also { local ->
+        // 0.3.2 and older kept the list in the backed-up file. Move it over once, then remove it from there.
+        if (prefs.contains(KEY_VIPS)) {
+            if (!local.contains(KEY_VIPS)) local.edit().putString(KEY_VIPS, prefs.getString(KEY_VIPS, "").orEmpty()).commit()
+            prefs.edit().remove(KEY_VIPS).apply()
+        }
+    }
+
     private val _focusWhileDocked = MutableStateFlow(prefs.getBoolean(KEY_FOCUS, true))
 
     /** On by default: it only does anything once the user has also granted DND access. */
@@ -64,7 +73,7 @@ class FocusSettings @Inject constructor(
         prefs.edit().putBoolean(KEY_ANYWHERE, enabled).apply()
     }
 
-    private val _vips = MutableStateFlow(decodeVips(prefs.getString(KEY_VIPS, "").orEmpty()))
+    private val _vips = MutableStateFlow(decodeVips(vipPrefs.getString(KEY_VIPS, "").orEmpty()))
 
     /** The (up to five) people who can always reach the user. Names and contact keys only, kept on the phone. */
     val vips: StateFlow<List<Vip>> = _vips.asStateFlow()
@@ -80,7 +89,7 @@ class FocusSettings @Inject constructor(
 
     private fun saveVips(list: List<Vip>) {
         _vips.value = list
-        prefs.edit().putString(KEY_VIPS, encodeVips(list)).apply()
+        vipPrefs.edit().putString(KEY_VIPS, encodeVips(list)).apply()
     }
 
     private val _vipRingThrough = MutableStateFlow(prefs.getBoolean(KEY_VIP_RING, false))

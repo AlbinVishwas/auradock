@@ -22,8 +22,11 @@ import kotlin.coroutines.resume
 class CityLookup @Inject constructor(
     @ApplicationContext private val context: Context
 ) {
-    suspend fun cityAt(latitude: Double, longitude: Double): String? {
+    suspend fun cityAt(rawLatitude: Double, rawLongitude: Double): String? {
         if (!Geocoder.isPresent()) return null
+        // The same 2 decimals (about 1 km) that Open-Meteo gets: a more exact position never goes to the system geocoder either.
+        val latitude = roundedCoordinate(rawLatitude)
+        val longitude = roundedCoordinate(rawLongitude)
         val geocoder = Geocoder(context, Locale.getDefault())
         val address: Address? = runCatching {
             if (Build.VERSION.SDK_INT >= 33) {
