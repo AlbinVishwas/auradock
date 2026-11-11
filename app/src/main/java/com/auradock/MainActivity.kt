@@ -302,7 +302,7 @@ class MainActivity : ComponentActivity() {
 
                         "onboarding" -> OnboardingRoute(standbyViewModel, system)
                         "gallery" -> TemplateGalleryRoute(standbyViewModel, navigation)
-                        "setup" -> SetupRoute(standbyViewModel, system, onOpenScreensaverTest = navigation.openScreensaverTest, onOpenDebug = navigation.openDebug)
+                        "setup" -> SetupRoute(standbyViewModel, system, onOpenScreensaverTest = navigation.openScreensaverTest, onOpenDebug = navigation.openDebug, onOpenPrivacy = { openPrivacyPolicy(this@MainActivity) })
                         "debug" -> DebugRoute(standbyViewModel)
                         "screensaver" -> ScreensaverTestRoute(standbyViewModel, system)
                         "focus" -> FocusSettingsRoute(standbyViewModel, onOpenSetup = navigation.openSetup)
@@ -321,7 +321,8 @@ class MainActivity : ComponentActivity() {
                         PermissionSheet(
                             permission = permission,
                             onAllow = { standbyViewModel.answerPrompt(allow = true) },
-                            onSkip = { standbyViewModel.answerPrompt(allow = false) }
+                            onSkip = { standbyViewModel.answerPrompt(allow = false) },
+                            onOpenPrivacy = { openPrivacyPolicy(this@MainActivity) }
                         )
                     }
                 }

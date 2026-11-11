@@ -455,7 +455,7 @@ phone to call from where noted.
 - [ ] **Undo focus.** Dock (Focus on, Do Not Disturb access allowed). Touch the screen once. Pass: a small "Undo focus" pill fades in at the top for 4 seconds
   and goes by itself; tapping it turns Do Not Disturb back to how it was (check the quick settings) and any VIP Favourite marks are put back, while the dock
   stays open. (Changed in 0.3.0: a single tap never closes the dock, with Focus on or off; double tap closes it. See the World and Split section.)
-- [ ] **Trust caption.** Every permission card (the sheets, Setup) says "Nothing leaves this phone."
+- [ ] **Trust caption.** Every permission card (the sheets, Setup) says "Nothing leaves this phone." (Location says "Only a rounded position goes to the weather service.")
 - [ ] **Hidden debug page.** Setup, scroll to the bottom, tap the version label seven times. Pass: "Debug" shows "Activated within 24 h" (Yes once the screensaver was
   set and the first dock happened within a day of install) and "Docked on 5+ of the last 7 days" with the day count, and the event counts. Nothing on it
   names a task, a person or a message.

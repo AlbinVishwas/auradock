@@ -56,6 +56,7 @@ data class SetupActions(
     val onOpenDisplaySettings: () -> Unit = {},
     val onOpenScreensaverTest: () -> Unit = {},
     val onOpenDebug: () -> Unit = {},
+    val onOpenPrivacy: () -> Unit = {},
     val onShareCrashReports: (Boolean) -> Unit = {},
     val onShareAnalytics: (Boolean) -> Unit = {}
 )
@@ -131,6 +132,20 @@ fun SetupScreen(
                 com.auradock.ui.components.AuraSwitch(checked = state.shareAnalytics, onCheckedChange = actions.onShareAnalytics)
             }
             Text(text = "Anonymous counts of how you use AuraDock. Never your tasks, messages or contacts.", style = AuraDockTypography.Meta, color = AuraDockColors.OnSurfaceVariant)
+        }
+        // Opens the privacy policy page in the browser.
+        Row(
+            modifier = Modifier
+                .padding(top = AuraDockSpacing.md)
+                .fillMaxWidth()
+                .clip(shape)
+                .border(AuraDockSizes.line, AuraDockColors.TileOutline, shape)
+                .clickable(role = Role.Button, onClick = actions.onOpenPrivacy)
+                .padding(horizontal = AuraDockSpacing.md + AuraDockSpacing.xxs, vertical = AuraDockSpacing.md),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(text = "Privacy policy", style = AuraDockTypography.RowLabel, color = AuraDockColors.OnBackground, modifier = Modifier.weight(1f))
+            Text(text = "Opens in your browser", style = AuraDockTypography.Meta, color = AuraDockColors.OnSurfaceVariant)
         }
         if (state.version.isNotEmpty()) {
             var taps by androidx.compose.runtime.remember { androidx.compose.runtime.mutableIntStateOf(0) }

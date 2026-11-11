@@ -178,7 +178,7 @@ private fun rememberGrantedPermissions(viewModel: StandbyViewModel): Set<SetupPe
 private fun allow(viewModel: StandbyViewModel, permission: SetupPermission) = viewModel.allow(permission)
 
 @Composable
-fun SetupRoute(viewModel: StandbyViewModel, system: SystemSettings, onOpenScreensaverTest: () -> Unit, onOpenDebug: () -> Unit, modifier: Modifier = Modifier) {
+fun SetupRoute(viewModel: StandbyViewModel, system: SystemSettings, onOpenScreensaverTest: () -> Unit, onOpenDebug: () -> Unit, onOpenPrivacy: () -> Unit, modifier: Modifier = Modifier) {
     val test by viewModel.screensaverSteps.collectAsState()
     SetupScreen(
         state = SetupUiState(granted = rememberGrantedPermissions(viewModel), screensaverSelected = system.screensaverSelected, screensaverTest = test, version = viewModel.versionLabel, shareCrashReports = viewModel.shareCrashReports.collectAsState().value, shareAnalytics = viewModel.shareAnalytics.collectAsState().value),
@@ -188,6 +188,7 @@ fun SetupRoute(viewModel: StandbyViewModel, system: SystemSettings, onOpenScreen
             onOpenDisplaySettings = system.openDisplaySettings,
             onOpenScreensaverTest = onOpenScreensaverTest,
             onOpenDebug = onOpenDebug,
+            onOpenPrivacy = onOpenPrivacy,
             onShareCrashReports = viewModel::setShareCrashReports,
             onShareAnalytics = viewModel::setShareAnalytics
         ),

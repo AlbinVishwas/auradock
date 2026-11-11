@@ -38,11 +38,11 @@ import com.auradock.ui.theme.AuraDockSpacing
 import com.auradock.ui.theme.AuraDockTypography
 
 /** Everything AuraDock can ask the user for, each with the one-line reason shown on its card (handoff v1 wording). */
-enum class SetupPermission(val title: String, val why: String, val icon: ImageVector, val sheetTitle: String) {
+enum class SetupPermission(val title: String, val why: String, val icon: ImageVector, val sheetTitle: String, val trust: String = "Nothing leaves this phone.") {
     CALENDAR("Calendar", "See today's events", Icons.Outlined.CalendarToday, "Show today's events?"),
     NOTIFICATION_ACCESS("Notification access", "Show messages from apps you choose", Icons.Outlined.ChatBubbleOutline, "Show messages on the dock?"),
     DND_ACCESS("Do Not Disturb access", "Silence distractions while docked", Icons.Outlined.DarkMode, "Silence distractions while docked?"),
-    LOCATION("Location", "Local weather, approximate only", Icons.Outlined.LocationOn, "Show the local weather?"),
+    LOCATION("Location", "Local weather, approximate only", Icons.Outlined.LocationOn, "Show the local weather?", trust = "Only a rounded position goes to the weather service."),
     POST_NOTIFICATIONS("Notifications", "Remind you when tasks are due", Icons.Outlined.Notifications, "Remind you when this is due?"),
     EXACT_ALARMS("Alarms and reminders", "Remind you on time", Icons.Outlined.Alarm, "Remind you on the minute?"),
     CONTACTS("Contacts", "Choose people who can always reach you", Icons.Outlined.People, "Choose who can always reach you?")
@@ -82,7 +82,7 @@ fun PermissionCard(
         Column(modifier = Modifier.weight(1f)) {
             Text(text = permission.title, style = AuraDockTypography.RowTitle, color = AuraDockColors.OnBackground)
             Text(text = permission.why, style = AuraDockTypography.RowCaption, color = AuraDockColors.OnSurfaceVariant, modifier = Modifier.padding(top = AuraDockSpacing.xxs))
-            Text(text = "Nothing leaves this phone.", style = AuraDockTypography.RowCaption, color = AuraDockColors.Tertiary, modifier = Modifier.padding(top = AuraDockSpacing.xxs))
+            Text(text = permission.trust, style = AuraDockTypography.RowCaption, color = AuraDockColors.Tertiary, modifier = Modifier.padding(top = AuraDockSpacing.xxs))
             if (showStatus) {
                 Row(modifier = Modifier.padding(top = AuraDockSpacing.sm - AuraDockSpacing.xxs), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(AuraDockSpacing.xs)) {
                     if (granted) Icon(Icons.Rounded.Check, contentDescription = null, tint = AuraDockColors.OnBackground, modifier = Modifier.size(AuraDockSizes.statusIcon))
