@@ -24,6 +24,10 @@ class TestMediaReceiver : BroadcastReceiver() {
             "pause" -> set(PlaybackState.STATE_PAUSED)
             "play" -> set(PlaybackState.STATE_PLAYING)
             // The same as the debug page's "Send test events", for scripted checks: a test crash event and a non-fatal report to Sentry's dev environment.
+            // PostHog in a debug build: "analytics_on" / "analytics_off" switch it for this install (takes effect at the next start; goes to the dev
+            // project with environment=dev). Without a key nothing is sent either way, but every event that WOULD be sent is logged under the tag Analytics.
+            "analytics_on" -> com.auradock.analytics.Analytics.setDebugOn(context, true)
+            "analytics_off" -> com.auradock.analytics.Analytics.setDebugOn(context, false)
             "sentry" -> Thread { com.auradock.monitoring.Monitoring.sendTestEvents(context.applicationContext as android.app.Application) }.start()
         }
     }

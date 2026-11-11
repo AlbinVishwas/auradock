@@ -3,7 +3,7 @@ package com.auradock.analytics
 /**
  * The names of the events AuraDock records locally (see [EventLog]). They are written the way Firebase Analytics wants event names
  * (lower case, underscores, under 40 characters) so they can be sent as they are if analytics is ever added; each has at most one
- * parameter, kept in the table's `detail` column. Nothing leaves the phone today.
+ * parameter, kept in the table's `detail` column. 
  *
  * | Event                | Parameter (detail)                          |
  * |----------------------|---------------------------------------------|
@@ -21,6 +21,11 @@ package com.auradock.analytics
  * | intention_done       | (none)                                      |
  * | shutdown_used        | (none)                                      |
  * | focus_undone         | (none)                                      |
+ * | widget_added         | widget: WidgetKind, side: left or right     |
+ * | widget_removed       | widget, side                                |
+ * | widget_reordered     | side                                        |
+ *
+ * Since 0.3.2 the same events are also forwarded to PostHog (see [Analytics]) with enums, counts and duration buckets only.
  */
 object AnalyticsEvents {
     const val ONBOARDING_STEP = "onboarding_step"
@@ -37,4 +42,7 @@ object AnalyticsEvents {
     const val INTENTION_DONE = "intention_done"
     const val SHUTDOWN_USED = "shutdown_used"
     const val FOCUS_UNDONE = "focus_undone"
+    const val WIDGET_ADDED = "widget_added"
+    const val WIDGET_REMOVED = "widget_removed"
+    const val WIDGET_REORDERED = "widget_reordered"
 }

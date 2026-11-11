@@ -15,6 +15,7 @@ activityCompose = "1.13.0"
 gson            = "2.15.0"
 room            = "2.8.5"
 sentry          = "8.63.0"
+posthog         = "3.76.2"
 sentryPlugin    = "6.26.0"
 
 [libraries]
@@ -24,6 +25,7 @@ hilt-android            = { group = "com.google.dagger",             name = "hil
 hilt-compiler           = { group = "com.google.dagger",             name = "hilt-android-compiler",         version.ref = "hilt" }
 coroutines-android      = { group = "org.jetbrains.kotlinx",         name = "kotlinx-coroutines-android",    version.ref = "coroutines" }
 lifecycle-viewmodel     = { group = "androidx.lifecycle",            name = "lifecycle-viewmodel-ktx",       version.ref = "lifecycle" }
+lifecycle-process       = { group = "androidx.lifecycle",            name = "lifecycle-process",             version.ref = "lifecycle" }
 lifecycle-runtime       = { group = "androidx.lifecycle",            name = "lifecycle-runtime-ktx",         version.ref = "lifecycle" }
 junit                   = { group = "junit",                         name = "junit",                         version.ref = "junit" }
 mockito-kotlin          = { group = "org.mockito.kotlin",            name = "mockito-kotlin",                version.ref = "mockitoKotlin" }
@@ -41,6 +43,7 @@ gson                    = { group = "com.google.code.gson",          name = "gso
 room-runtime            = { group = "androidx.room",                 name = "room-runtime",                  version.ref = "room" }
 room-ktx                = { group = "androidx.room",                 name = "room-ktx",                      version.ref = "room" }
 room-compiler           = { group = "androidx.room",                 name = "room-compiler",                 version.ref = "room" }
+posthog-android         = { group = "com.posthog",                     name = "posthog-android",               version.ref = "posthog" }
 sentry-android          = { group = "io.sentry",                     name = "sentry-android-core",           version.ref = "sentry" }
 
 [plugins]

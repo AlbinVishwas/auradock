@@ -26,6 +26,16 @@ val sentryDsn: String = sentryProperties.getProperty("dsn", "").trim()
 val sentryAuthToken: String = sentryProperties.getProperty("auth.token", "").trim()
 val sentryOrg: String = sentryProperties.getProperty("org", "").trim()
 val sentryProject: String = sentryProperties.getProperty("project", "").trim()
+// PostHog settings also live OUTSIDE the repo, in ~/.auradock-signing/posthog.properties: `key` (project API key), `host` (for example
+// https://eu.i.posthog.com) and optionally `dev.key` (a separate "dev" project used only by debug builds that turn analytics on). Without the file the
+// build succeeds with analytics off. The key is a public ingest key, like Sentry's DSN, so it is compiled into the app.
+val posthogProperties = Properties().apply {
+    val file = File(System.getProperty("user.home"), ".auradock-signing/posthog.properties")
+    if (file.exists()) file.inputStream().use { load(it) }
+}
+val posthogKey: String = posthogProperties.getProperty("key", "").trim()
+val posthogHost: String = posthogProperties.getProperty("host", "https://us.i.posthog.com").trim()
+val posthogDevKey: String = posthogProperties.getProperty("dev.key", "").trim()
 val sentryCanUpload = sentryAuthToken.isNotEmpty() && sentryOrg.isNotEmpty() && sentryProject.isNotEmpty()
 
 android {
@@ -42,6 +52,9 @@ android {
 
         // The DSN is a public identifier (it ships in every app that uses Sentry). It is empty when sentry.properties is missing: then Sentry stays off.
         buildConfigField("String", "SENTRY_DSN", "\"$sentryDsn\"")
+        buildConfigField("String", "POSTHOG_KEY", "\"$posthogKey\"")
+        buildConfigField("String", "POSTHOG_HOST", "\"$posthogHost\"")
+        buildConfigField("String", "POSTHOG_DEV_KEY", "\"$posthogDevKey\"")
 
         vectorDrawables {
             useSupportLibrary = true
@@ -113,6 +126,8 @@ sentry {
 dependencies {
     implementation(libs.core.ktx)
     implementation(libs.sentry.android)
+    implementation(libs.posthog.android)
+    implementation(libs.lifecycle.process)
     implementation(libs.appcompat)
 
     // Compose
