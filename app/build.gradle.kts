@@ -103,6 +103,7 @@ android {
 
     testOptions {
         unitTests.isReturnDefaultValues = true
+        unitTests.isIncludeAndroidResources = true // Robolectric tests can read the app's resources and manifest
     }
 }
 
@@ -159,6 +160,9 @@ dependencies {
 
     // Testing
     testImplementation(libs.junit)
+    testImplementation(libs.robolectric)
+    testImplementation(libs.androidx.test.core)
+    testImplementation(libs.androidx.test.junit)
     testImplementation(libs.mockito.kotlin)
     testImplementation(libs.coroutines.test)
 }
