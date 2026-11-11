@@ -31,8 +31,8 @@ object Analytics {
 
     @Volatile private var ready = false
 
-    /** Events handed to PostHog since this start, by name (debug and tests only: shows what is sent, never any values). */
-    val sentNames: MutableList<String> = java.util.Collections.synchronizedList(mutableListOf())
+    /** Everything handed over for sending since this start, exactly as it passed the scrubber (tests read this; nothing else does). */
+    internal val sent: MutableList<Pair<String, Map<String, Any>>> = java.util.Collections.synchronizedList(mutableListOf())
 
     fun isSharing(context: Context): Boolean = prefs(context).getBoolean(KEY_SHARE, true)
 
@@ -100,7 +100,7 @@ object Analytics {
     /** Sends one event: the name and properties go through [AnalyticsScrubber] first; anything not allowed is dropped. */
     fun capture(name: String, properties: Map<String, Any?> = emptyMap()) {
         val clean = AnalyticsScrubber.clean(name, properties) ?: return
-        sentNames += name
+        sent += name to clean
         Log.i(TAG, "event $name ${clean.keys}") // the event name and the property names only, never a value
         if (!ready) return
         runCatching { PostHog.capture(event = name, properties = clean) }
