@@ -14,3 +14,10 @@ captures/
 *.keystore
 
 keystore.properties
+
+# Secrets and signing material must never be committed
+.auradock-signing/
+sentry.properties
+posthog.properties
+*.pem
+.env
