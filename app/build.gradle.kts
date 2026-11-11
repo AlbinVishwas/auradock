@@ -105,6 +105,9 @@ android {
         unitTests.isReturnDefaultValues = true
         unitTests.isIncludeAndroidResources = true // Robolectric tests can read the app's resources and manifest
     }
+
+    // The exported Room schemas are test assets, so MigrationTestHelper can open a database as an older version.
+    sourceSets.getByName("test").assets.srcDir("$projectDir/schemas")
 }
 
 // The Sentry Gradle plugin: uploads the R8 mapping on release builds (so crash stack traces are readable) and does nothing in debug builds.
@@ -122,6 +125,11 @@ sentry {
     autoInstallation { enabled.set(false) }
     ignoredBuildTypes.set(setOf("debug"))
     telemetry.set(false)
+}
+
+// Room writes the database schemas here (one JSON per version). They are committed, and migration tests read them (see docs/TESTING.md).
+ksp {
+    arg("room.schemaLocation", "$projectDir/schemas")
 }
 
 dependencies {
@@ -161,6 +169,7 @@ dependencies {
     // Testing
     testImplementation(libs.junit)
     testImplementation(libs.robolectric)
+    testImplementation(libs.room.testing)
     testImplementation(libs.androidx.test.core)
     testImplementation(libs.androidx.test.junit)
     testImplementation(libs.mockito.kotlin)

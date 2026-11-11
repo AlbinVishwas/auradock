@@ -48,6 +48,7 @@ activity-compose        = { group = "androidx.activity",             name = "act
 gson                    = { group = "com.google.code.gson",          name = "gson",                          version.ref = "gson" }
 room-runtime            = { group = "androidx.room",                 name = "room-runtime",                  version.ref = "room" }
 room-ktx                = { group = "androidx.room",                 name = "room-ktx",                      version.ref = "room" }
+room-testing            = { group = "androidx.room",                 name = "room-testing",                  version.ref = "room" }
 room-compiler           = { group = "androidx.room",                 name = "room-compiler",                 version.ref = "room" }
 posthog-android         = { group = "com.posthog",                     name = "posthog-android",               version.ref = "posthog" }
 sentry-android          = { group = "io.sentry",                     name = "sentry-android-core",           version.ref = "sentry" }

@@ -11,7 +11,7 @@ import com.auradock.tasks.TaskEntity
  * `auradock.db`: the data worth backing up (tasks). Everything about how the phone was used (focus sessions, the open-session
  * checkpoint, the morning intention, the event log) lives in [LocalDatabase] and is never backed up.
  */
-@Database(entities = [TaskEntity::class], version = 8, exportSchema = false)
+@Database(entities = [TaskEntity::class], version = 8, exportSchema = true)
 abstract class AuraDockDatabase : RoomDatabase() {
     abstract fun taskDao(): TaskDao
 }

@@ -18,7 +18,7 @@ import com.auradock.sessions.SessionCheckpointEntity
 @Database(
     entities = [FocusSessionEntity::class, SessionCheckpointEntity::class, IntentionEntity::class, AppEventEntity::class],
     version = 1,
-    exportSchema = false
+    exportSchema = true
 )
 abstract class LocalDatabase : RoomDatabase() {
     abstract fun focusSessionDao(): FocusSessionDao
