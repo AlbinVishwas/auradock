@@ -10,7 +10,10 @@ import javax.inject.Singleton
 
 /** The Split dock's two stacks, saved on the phone and shared by the app and the screensaver (one instance). */
 @Singleton
-class SplitRepository @Inject constructor(@ApplicationContext context: Context) {
+class SplitRepository @Inject constructor(
+    @ApplicationContext context: Context,
+    private val events: com.auradock.analytics.EventLog
+) {
     private val prefs = context.getSharedPreferences("auradock_split", Context.MODE_PRIVATE)
     private val _stacks = MutableStateFlow(decodeStacks(prefs.getString(KEY, null)))
     val stacks: StateFlow<SplitStacks> = _stacks.asStateFlow()
@@ -20,9 +23,19 @@ class SplitRepository @Inject constructor(@ApplicationContext context: Context) 
         val otherSide = if (side == SplitSide.LEFT) SplitSide.RIGHT else SplitSide.LEFT
         val other = _stacks.value.of(otherSide)
         val trimmed = other.filter { it !in stack }.ifEmpty { other.take(1).filter { it !in stack } }.ifEmpty { other.take(1) }
+        val before = _stacks.value.of(side)
         val next = _stacks.value.with(side, stack).with(otherSide, trimmed)
+        noteEdit(side, before, stack)
         _stacks.value = next
         prefs.edit().putString(KEY, encodeStacks(next)).apply()
+    }
+
+    /** One event per widget added or removed, or one for a reorder. The widget's kind is a fixed code; nothing else is recorded. */
+    private fun noteEdit(side: SplitSide, before: List<WidgetKind>, after: List<WidgetKind>) {
+        val where = side.name.lowercase()
+        (after - before.toSet()).forEach { events.log(com.auradock.analytics.AnalyticsEvents.WIDGET_ADDED, "${it.name}:$where") }
+        (before - after.toSet()).forEach { events.log(com.auradock.analytics.AnalyticsEvents.WIDGET_REMOVED, "${it.name}:$where") }
+        if (before.toSet() == after.toSet() && before != after) events.log(com.auradock.analytics.AnalyticsEvents.WIDGET_REORDERED, where)
     }
 
     private companion object { const val KEY = "stacks" }

@@ -186,6 +186,7 @@ class SessionTracker @Inject constructor(
     private fun finishNow() {
         val done = machine.finishIfDue(System.currentTimeMillis(), SystemClock.elapsedRealtime()) ?: return
         Monitoring.breadcrumb("focus_session", "end", "kept" to done.worthKeeping)
+        com.auradock.analytics.Analytics.flush() // the dock has closed: send what is waiting
         events.log(com.auradock.analytics.AnalyticsEvents.SESSION_END, (done.durationMs / 1000).toString())
         _live.value = machine.live
         handler.removeCallbacks(tick)

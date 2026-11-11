@@ -9,7 +9,7 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 import javax.inject.Singleton
 
-/** The local event log: a fire-and-forget [log] that writes one row, with a timestamp and no content. Never leaves the phone. */
+/** The local event log: a fire-and-forget [log] that writes one row, with a timestamp and no content, and hands the same event to [Analytics]. */
 @Singleton
 class EventLog @Inject constructor(
     @ApplicationContext context: Context,
@@ -20,6 +20,7 @@ class EventLog @Inject constructor(
 
     fun log(name: String, detail: String? = null, at: Long = System.currentTimeMillis()) {
         scope.launch { runCatching { dao.insert(AppEventEntity(name = name, at = at, detail = detail)) } }
+        Analytics.capture(name, AnalyticsScrubber.fromLocalEvent(name, detail)) // the same event, as enums, counts and buckets only
     }
 
     /** Logs [name] only the first time ever (for "first dock", "screensaver set"). */
