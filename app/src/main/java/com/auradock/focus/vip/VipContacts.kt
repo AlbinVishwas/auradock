@@ -89,7 +89,7 @@ class VipContacts @Inject constructor(
         val stuck = planReturn(journal, markedNow).filterNot { key -> find(key)?.let { setStarred(it.id, false) } == true }.toSet()
         setJournal(stuck)
         Monitoring.breadcrumb("vip", "restored", "count" to (journal.size - stuck.size))
-        if (stuck.isNotEmpty()) Monitoring.nonFatal("vip.still_on_loan", "count" to stuck.size)
+        if (stuck.isNotEmpty()) Monitoring.nonFatal("vip.give_back_incomplete", "count" to stuck.size)
         Log.d(TAG, "gave back ${journal.size - stuck.size} of ${journal.size}")
     }
 

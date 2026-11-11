@@ -76,13 +76,17 @@ class NowPlayingRepository @Inject constructor(@ApplicationContext private val c
     private fun onSessions(controllers: List<MediaController>) {
         // Watch every active session, so a change in any of them is noticed; show the one that is playing (or else a paused one).
         val stale = watched.keys - controllers.toSet()
+        if (watched.isNotEmpty() && controllers.isEmpty()) Monitoring.breadcrumb("media_session", "disconnected")
         stale.forEach { c -> watched.remove(c)?.let { c.unregisterCallback(it) } }
         controllers.forEach { c ->
             if (c !in watched) {
                 val cb = object : MediaController.Callback() {
                     override fun onPlaybackStateChanged(state: PlaybackState?) = refresh()
                     override fun onMetadataChanged(metadata: MediaMetadata?) = refresh()
-                    override fun onSessionDestroyed() = refresh()
+                    override fun onSessionDestroyed() {
+                        Monitoring.breadcrumb("media_session", "disconnected", "reason" to "destroyed")
+                        refresh()
+                    }
                 }
                 watched[c] = cb
                 c.registerCallback(cb, main)

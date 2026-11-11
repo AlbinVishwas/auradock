@@ -176,8 +176,10 @@ object Monitoring {
         if (!BuildConfig.DEBUG || BuildConfig.SENTRY_DSN.isBlank()) return
         if (!Sentry.isEnabled()) start(app, environment = "dev")
         breadcrumb("test", "send_test_events", "count" to 2)
-        Sentry.captureException(IllegalStateException("test crash")) // the message is dropped by the scrubber; the stack trace stays
+        val crash = Sentry.captureException(IllegalStateException("test crash")) // the message is dropped by the scrubber; the stack trace stays
         nonFatal("test.non_fatal", "count" to 1)
+        val nonFatalId = Sentry.getLastEventId()
         Sentry.flush(5000)
+        android.util.Log.i("Monitoring", "test events sent: crash=$crash nonfatal=$nonFatalId")
     }
 }

@@ -45,6 +45,13 @@ class DockFocusController @Inject constructor(
     /** True while we have Focus (Do Not Disturb) switched on for the dock. The dock offers "Undo focus" only then. */
     val focusOn: StateFlow<Boolean> = _focusOn.asStateFlow()
 
+    // 30 seconds after the last dock closed: nobody should still be marked as a loaned Favourite. If anyone is, that is reported.
+    private val vipCheck = Runnable {
+        val stillOnLoan = vipContacts.onLoan.value
+        Monitoring.breadcrumb("vip", "check_after_undock", "count" to stillOnLoan)
+        if (stillOnLoan > 0 && active.isEmpty()) Monitoring.nonFatal("vip.still_on_loan_after_undock", "count" to stillOnLoan)
+    }
+
     private val delayedRefresh = Runnable {
         restorePending = false
         undone = false // the dock session is over for good (past the handover grace)
@@ -74,10 +81,12 @@ class DockFocusController @Inject constructor(
         _showing.value = active.isNotEmpty()
         sessions.onDockSources(active.toSet())
         handler.removeCallbacks(delayedRefresh)
+        handler.removeCallbacks(vipCheck)
         restorePending = false
         if (!isActive && active.isEmpty()) {
             restorePending = true
             handler.postDelayed(delayedRefresh, RESTORE_GRACE_MS)
+            handler.postDelayed(vipCheck, VIP_CHECK_MS)
         } else {
             refresh()
         }
@@ -184,5 +193,6 @@ class DockFocusController @Inject constructor(
     private companion object {
         const val TAG = "DockFocus"
         const val RESTORE_GRACE_MS = 3_000L
+        const val VIP_CHECK_MS = 30_000L
     }
 }

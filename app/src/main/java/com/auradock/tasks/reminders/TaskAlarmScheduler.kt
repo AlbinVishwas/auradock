@@ -26,6 +26,16 @@ class TaskAlarmScheduler @Inject constructor(
 
     /** Sets (or replaces) the alarm for [task], or cancels it if the task no longer needs one. */
     fun schedule(task: TaskEntity, nowMillis: Long = System.currentTimeMillis()) {
+        try {
+            scheduleNow(task, nowMillis)
+        } catch (e: Exception) {
+            // Whatever the reason (a revoked permission, the system's alarm limit, a missing service), the task has no alarm: report it.
+            Monitoring.nonFatal("alarm.schedule_failed", "reason" to e.javaClass.simpleName)
+            Log.w(TAG, "alarm for task ${task.id} could not be set", e)
+        }
+    }
+
+    private fun scheduleNow(task: TaskEntity, nowMillis: Long) {
         when (val plan = alarmPlan(task, nowMillis, canScheduleExactAlarms(context))) {
             AlarmPlan.None -> cancel(task.id)
             is AlarmPlan.Exact -> {
