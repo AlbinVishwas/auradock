@@ -311,6 +311,10 @@ class MainActivity : ComponentActivity() {
                     }
                 }
                 }
+                // A PostHog survey ("What's missing?") appears on the dashboard only, never on the dock.
+                if (!dockVisible && !previewing && onboardingDone && page == "dashboard" && permissionPrompt == null) {
+                    com.auradock.ui.components.SurveyHost()
+                }
                 // A permission is asked when its feature is first used: its card shows as a sheet over the screen (never over the dock).
                 permissionPrompt?.let { permission ->
                     if (!dockVisible && !previewing) {
