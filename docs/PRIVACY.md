@@ -1,6 +1,6 @@
 # AuraDock privacy policy
 
-**Effective date:** 12 November 2026 · **Version:** 1.0
+**Effective date:** 12 November 2026 · **Version:** 1.1
 
 ## What AuraDock is
 
@@ -31,7 +31,7 @@ Every permission is optional. AuraDock asks only when you use the feature, and s
 
 | Service | What is sent | Why | Where |
 |---|---|---|---|
-| **Open-Meteo** (weather) | Your position rounded to two decimals (about 1 km). Open-Meteo also sees your IP address, as any website does. No account, no key. | To get the weather | Europe |
+| **Open-Meteo** (weather) | Your position rounded to two decimals (about 1 km). Open-Meteo also sees your IP address, as any website does. No account, no key. | To get the weather | Operated by OpenMeteo GmbH (Switzerland). Their server logs may contain the rounded coordinates and your IP address, and are deleted after 90 days. [Open-Meteo terms](https://open-meteo.com/en/terms) |
 | **Android's city lookup** (Geocoder) | Your position rounded to two decimals | To show a city name. This is part of Android, not AuraDock. On most phones it is handled by Google. | Set by your phone |
 | **Sentry** (crash reports) | Crashes and freezes, slow-screen and start-up timings, phone model, Android version, app version, and short codes about what the app was doing. No IP address is stored. No personal content. | To find and fix crashes | United States |
 | **PostHog** (usage counts) | Anonymous events such as "task added" or "dock session ended", made of codes, counts and length buckets (like "5 to 15 minutes"). A random install number, and the app, Android and phone model details PostHog adds. No profile of you is built. Your IP address is discarded. | To see which features are used | United States |
@@ -65,7 +65,7 @@ All of this stays on your phone. Your tasks are also in your Android backup, onl
 
 - **Sentry:** 30 days, then it is deleted.
 - **PostHog:** up to 12 months, then it is deleted.
-- **Open-Meteo:** AuraDock does not keep anything there. Open-Meteo's own policy covers its server logs.
+- **Open-Meteo:** AuraDock does not keep anything there. Open-Meteo's server logs are deleted after 90 days (see its [terms](https://open-meteo.com/en/terms)).
 - **On your phone:** kept until you delete it or uninstall AuraDock.
 - **Android backup:** kept by Google under your Google account, until you delete it.
 
