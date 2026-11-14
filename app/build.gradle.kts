@@ -26,17 +26,30 @@ val sentryDsn: String = sentryProperties.getProperty("dsn", "").trim()
 val sentryAuthToken: String = sentryProperties.getProperty("auth.token", "").trim()
 val sentryOrg: String = sentryProperties.getProperty("org", "").trim()
 val sentryProject: String = sentryProperties.getProperty("project", "").trim()
-// PostHog settings also live OUTSIDE the repo, in ~/.auradock-signing/posthog.properties: `key` (project API key), `host` (for example
+// PostHog settings also live OUTSIDE the repo, in ~/.auradock-signing/posthog.properties: `key` or `api.key` (project API key), `host` (for example
 // https://eu.i.posthog.com) and optionally `dev.key` (a separate "dev" project used only by debug builds that turn analytics on). Without the file the
 // build succeeds with analytics off. The key is a public ingest key, like Sentry's DSN, so it is compiled into the app.
 val posthogProperties = Properties().apply {
     val file = File(System.getProperty("user.home"), ".auradock-signing/posthog.properties")
     if (file.exists()) file.inputStream().use { load(it) }
 }
-val posthogKey: String = posthogProperties.getProperty("key", "").trim()
+val posthogKey: String = (posthogProperties.getProperty("key") ?: posthogProperties.getProperty("api.key") ?: "").trim()
 val posthogHost: String = posthogProperties.getProperty("host", "https://us.i.posthog.com").trim()
 val posthogDevKey: String = posthogProperties.getProperty("dev.key", "").trim()
 val sentryCanUpload = sentryAuthToken.isNotEmpty() && sentryOrg.isNotEmpty() && sentryProject.isNotEmpty()
+
+// A release build with a missing key would ship with crash reports or analytics silently off, so say so loudly. Debug builds (and CI, which builds
+// debug only and has no key files) stay quiet. The warning never fails the build.
+gradle.taskGraph.whenReady {
+    val releaseBuild = allTasks.any { it.project == project && Regex("^(assemble|bundle|package)\\w*Release$").matches(it.name) }
+    if (releaseBuild) {
+        val missing = buildList {
+            if (sentryDsn.isEmpty()) add("Sentry DSN (`dsn` in ~/.auradock-signing/sentry.properties): crash reports will be OFF")
+            if (posthogKey.isEmpty()) add("PostHog key (`key` or `api.key` in ~/.auradock-signing/posthog.properties): analytics will be OFF")
+        }
+        missing.forEach { logger.warn("WARNING: this release build has no $it") }
+    }
+}
 
 android {
     namespace  = "com.auradock"
