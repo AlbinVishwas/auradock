@@ -34,6 +34,8 @@ object Analytics {
     /** Everything handed over for sending since this start, exactly as it passed the scrubber (tests read this; nothing else does). */
     internal val sent: MutableList<Pair<String, Map<String, Any>>> = java.util.Collections.synchronizedList(mutableListOf())
 
+    private val sentCounter = SentCounter()
+
     fun isSharing(context: Context): Boolean = prefs(context).getBoolean(KEY_SHARE, true)
 
     /** Debug builds only: whether analytics is switched on for this install (it goes to the dev project, with environment=dev). */
@@ -104,11 +106,18 @@ object Analytics {
         Log.i(TAG, "event $name ${clean.keys}") // the event name and the property names only, never a value
         if (!ready) return
         runCatching { PostHog.capture(event = name, properties = clean) }
+        sentCounter.recordSent()
     }
 
-    /** Sends what is waiting now (the app went to the background, or a dock closed). */
+    /**
+     * Sends what is waiting now (the app went to the background, or a dock closed), then logs `flush sent, events=N` at info level.
+     * N is the number of events this app handed to PostHog since the last flush; it does not include the SDK's own lifecycle events, and it
+     * shows that a flush was requested, not that the server received it. The line carries the number only.
+     */
     fun flush() {
-        if (ready) runCatching { PostHog.flush() }
+        if (!ready) return
+        runCatching { PostHog.flush() }
+        Log.i(TAG, SentCounter.flushMessage(sentCounter.takeSentCount()))
     }
 
     internal val isReady: Boolean get() = ready
