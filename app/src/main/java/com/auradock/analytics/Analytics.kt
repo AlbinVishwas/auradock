@@ -31,6 +31,9 @@ object Analytics {
 
     @Volatile private var ready = false
 
+    /** Mirrors the Settings switch for the flush count; while it is off the SDK drops events, so they are not counted. */
+    @Volatile private var sharing = true
+
     /** Everything handed over for sending since this start, exactly as it passed the scrubber (tests read this; nothing else does). */
     internal val sent: MutableList<Pair<String, Map<String, Any>>> = java.util.Collections.synchronizedList(mutableListOf())
 
@@ -77,6 +80,7 @@ object Analytics {
             surveysConfig.surveysDelegate = SurveyBridge
             optOut = !isSharing(app)
         }
+        sharing = isSharing(app)
         PostHogAndroid.setup(app, config)
         if (BuildConfig.DEBUG) PostHog.register("\$environment", "dev")
         ready = true
@@ -91,6 +95,7 @@ object Analytics {
     fun setSharing(context: Context, share: Boolean) {
         prefs(context).edit().putBoolean(KEY_SHARE, share).apply()
         if (!ready) return
+        sharing = share
         if (share) PostHog.optIn() else PostHog.optOut()
     }
 
@@ -105,14 +110,15 @@ object Analytics {
         sent += name to clean
         Log.i(TAG, "event $name ${clean.keys}") // the event name and the property names only, never a value
         if (!ready) return
-        runCatching { PostHog.capture(event = name, properties = clean) }
-        sentCounter.recordSent()
+        val handedOver = runCatching { PostHog.capture(event = name, properties = clean) }.isSuccess
+        if (SentCounter.shouldCount(sharing, handedOver)) sentCounter.recordSent()
     }
 
     /**
      * Sends what is waiting now (the app went to the background, or a dock closed), then logs `flush sent, events=N` at info level.
-     * N is the number of events this app handed to PostHog since the last flush; it does not include the SDK's own lifecycle events, and it
-     * shows that a flush was requested, not that the server received it. The line carries the number only.
+     * N is the number of events this app handed to PostHog since the last flush; it does not include the SDK's own lifecycle events or events
+     * dropped because sharing is off (or because the hand-off threw), and it shows that a flush was requested, not that the server
+     * received it. The line carries the number only.
      */
     fun flush() {
         if (!ready) return
